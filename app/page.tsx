@@ -33,6 +33,14 @@ type VerifiedCitation = {
   quote?: string;
   verdict: SourceVerdict;
 };
+type DiagramInfo = {
+  id: string;
+  name: string;
+  category: string;
+  ascii_preview: string;
+  use_case: string;
+};
+
 type Slide = {
   index: number;
   role: string;
@@ -42,6 +50,8 @@ type Slide = {
   zone_bottom: any;
   photo_hint: string | null;
   diagram: string | null;
+  diagram_info?: DiagramInfo | null;
+  canva_search_url?: string;
   sources?: VerifiedCitation[];
   notes?: string;
 };
@@ -461,8 +471,33 @@ function ResultView({ result }: { result: GenerateResult }) {
               )}
               {s.diagram && (
                 <div className="text-xs text-slate-600">
-                  📊 図解: {s.diagram}
+                  📊 図解: {s.diagram_info?.name || s.diagram}
+                  {s.diagram_info?.category && (
+                    <span className="text-slate-400 ml-1">
+                      （{s.diagram_info.category}）
+                    </span>
+                  )}
                 </div>
+              )}
+              {s.diagram_info?.ascii_preview && (
+                <pre className="mt-1 bg-slate-50 border border-slate-200 rounded p-2 text-[11px] leading-[1.3] font-mono overflow-x-auto whitespace-pre">
+{s.diagram_info.ascii_preview}
+                </pre>
+              )}
+              {s.diagram_info?.use_case && (
+                <div className="text-[11px] text-slate-500">
+                  用途: {s.diagram_info.use_case}
+                </div>
+              )}
+              {s.canva_search_url && (
+                <a
+                  href={s.canva_search_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-block text-xs text-blue-700 hover:underline mt-1"
+                >
+                  🎨 Canva で近いテンプレを検索 →
+                </a>
               )}
               {s.sources && s.sources.length > 0 && (
                 <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">

@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { loadAll } from "@/lib/data-loader";
 import { buildPrompt } from "@/lib/prompt";
 import { verifyCitations } from "@/lib/sources";
+import { getCanvaSearchUrl } from "@/lib/canva";
 
 // web_search tool でブロックする個人ブログ系ドメイン
 const BLOCKED_SEARCH_DOMAINS = [
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { formats, templates, rules, cta_patterns } = loadAll();
+    const { formats, templates, rules, cta_patterns, diagrams } = loadAll();
     const format = formats.find((f) => f.id === format_id);
     if (!format) {
       return NextResponse.json(
@@ -129,10 +130,28 @@ export async function POST(req: Request) {
       );
     }
 
-    // 各スライドの出典を検証
+    // 各スライドの出典を検証 + 図解プレビュー + Canva 検索 URL を付与
+    const diagramById = new Map(diagrams.map((d: any) => [d.id, d]));
     const slides = (parsed.slides || []).map((s: any) => {
       const verified = verifyCitations(s.sources || []);
-      return { ...s, sources: verified };
+      const diagramInfo = s.diagram ? diagramById.get(s.diagram) : undefined;
+      return {
+        ...s,
+        sources: verified,
+        diagram_info: diagramInfo
+          ? {
+              id: diagramInfo.id,
+              name: diagramInfo.name,
+              category: diagramInfo.category,
+              ascii_preview: diagramInfo.ascii_preview,
+              use_case: diagramInfo.use_case,
+            }
+          : null,
+        canva_search_url: getCanvaSearchUrl({
+          diagram: s.diagram,
+          role: s.role,
+        }),
+      };
     });
 
     // 全出典を集計
@@ -175,7 +194,9 @@ export async function POST(req: Request) {
       },
       photo_hint: null,
       diagram: null,
+      diagram_info: null,
       sources: [],
+      canva_search_url: getCanvaSearchUrl({ role: "CTA" }),
       notes: "CTA 固定（cta_follow + cta_save の default_combination）",
     };
 
