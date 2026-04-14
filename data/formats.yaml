@@ -1,0 +1,29 @@
+# フォーマット定義ファイル
+#
+# 各フォーマットを以下スキーマで定義する。
+# bot 実装時にそのまま辞書として読み込める形式。
+#
+# スキーマ：
+#   formats:
+#     - id: format_xx            # スネークケース。不変 ID
+#       name: "〇〇型"            # 日本語名
+#       description: "..."       # 1〜2 行で概要
+#       best_for:                # 向いているネタの特性（複数可）
+#         - "..."
+#       tone: "ビジネス / カジュアル / ..."
+#       total_slides: N
+#       slides:
+#         - index: 1
+#           role: "表紙"          # 表紙 / 本文 / まとめ / CTA など
+#           layout: "..."         # テキスト・画像の配置
+#           text_limits:
+#             title: 15           # 文字数上限
+#             body: 60
+#           visuals:
+#             - type: "背景写真"   # visual_vocabulary.yaml に準拠
+#               note: "..."
+#       examples:                # source-posts.yaml の id を参照
+#         - post_2025_01_15
+
+formats: []
+# ここに Canva 過去投稿の棚卸し結果からフォーマット型を追加していく。

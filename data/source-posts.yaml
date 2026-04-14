@@ -1,0 +1,13 @@
+# 分析元となった Canva 投稿のメタ情報
+#
+# スキーマ：
+#   posts:
+#     - id: post_YYYY_MM_DD        # 日付 + 必要なら連番（_a, _b）
+#       date: YYYY-MM-DD
+#       canva_link: "https://..."
+#       topic_summary: "..."       # 1 行でネタ内容
+#       assigned_format: format_xx # formats.yaml の id
+#       notes: "..."               # 分類理由・気づき
+
+posts: []
+# ここに 1〜3 月分の投稿を順次追加していく。
