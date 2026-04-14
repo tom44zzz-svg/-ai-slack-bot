@@ -112,4 +112,14 @@ lib/
 npm run build && npm run start     # 本番ビルド
 ```
 
-Vercel 等へのデプロイ時は環境変数 `ANTHROPIC_API_KEY` を設定すること。
+### Vercel へワンクリックデプロイ
+
+👉 **[Deploy to Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ftom44zzz-svg%2F-ai-slack-bot&env=ANTHROPIC_API_KEY&envDescription=Anthropic%20Claude%20API%20key&envLink=https%3A%2F%2Fconsole.anthropic.com%2Fsettings%2Fkeys&project-name=feed-post-generator&repository-name=feed-post-generator)**
+
+上記リンクを開くと：
+1. GitHub リポジトリが自動でフォーク・インポート
+2. `ANTHROPIC_API_KEY` の入力画面に直接進む
+3. 数分で `https://xxx.vercel.app` の URL が発行される
+
+⚠ **ブランチ選択**：デフォルトの `main` ではなく `claude/analyze-canva-formats-yqqe4` を Production Branch に設定してください。
+詳細は `docs/deploy.md` 参照。
