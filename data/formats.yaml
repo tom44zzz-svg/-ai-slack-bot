@@ -1,29 +1,128 @@
-# フォーマット定義ファイル
+# 投稿フォーマット定義（組み合わせレシピ）
 #
-# 各フォーマットを以下スキーマで定義する。
-# bot 実装時にそのまま辞書として読み込める形式。
+# 考え方：
+#   投稿フォーマット = 「どのスライドテンプレを、どの順で、何枚並べるか」のレシピ
+#   テンプレ本体は slide-templates.yaml を参照（tpl_xxx 形式の ID）
 #
 # スキーマ：
 #   formats:
-#     - id: format_xx            # スネークケース。不変 ID
-#       name: "〇〇型"            # 日本語名
-#       description: "..."       # 1〜2 行で概要
-#       best_for:                # 向いているネタの特性（複数可）
+#     - id: format_xxx
+#       name: "日本語名"
+#       description: "..."
+#       best_for:                 # 向いているネタの特性
 #         - "..."
-#       tone: "ビジネス / カジュアル / ..."
-#       total_slides: N
-#       slides:
-#         - index: 1
-#           role: "表紙"          # 表紙 / 本文 / まとめ / CTA など
-#           layout: "..."         # テキスト・画像の配置
-#           text_limits:
-#             title: 15           # 文字数上限
-#             body: 60
-#           visuals:
-#             - type: "背景写真"   # visual_vocabulary.yaml に準拠
-#               note: "..."
-#       examples:                # source-posts.yaml の id を参照
-#         - post_2025_01_15
+#       tone: "..."
+#       typical_slide_count: N    # 目安枚数（範囲可）
+#       recipe:                   # スライド構成（順序あり）
+#         - role: "..."           # 役割
+#           template: tpl_xxx     # 使うテンプレ ID
+#           repeat: N             # 繰り返し回数（デフォルト 1）
+#           optional: true/false  # 省略可か
+#           note: "..."
+#       examples:                 # source-posts.yaml の id
+#         - post_xxx
 
-formats: []
-# ここに Canva 過去投稿の棚卸し結果からフォーマット型を追加していく。
+formats:
+
+  # -----------------------------------------------------------
+  - id: format_howto_n_sen
+    name: "ハウツー・N 選型"
+    description: |
+      1 つのテーマに対して N 個（主に 3〜7 個）の対処法／方法／ポイントを
+      ストーリー立てて紹介する王道フォーマット。
+      問題提起 → 言語化 → 対処法列挙 → CTA の流れ。
+    best_for:
+      - "読者が抱える具体的な困りごとに対し、複数の解決策を提示したいネタ"
+      - "対処法の各項目が独立しており、タイプが異なるネタ（事例別／対象別）"
+      - "『〜のときの対処法 N 選』『〇〇の方法 N つ』のような問いかけ型テーマ"
+    tone: "丁寧・共感"
+    typical_slide_count: "9〜11"
+    recipe:
+      - role: "表紙"
+        template: tpl_cover_category
+      - role: "問題提起"
+        template: tpl_problem_quote
+      - role: "比較・導入"
+        template: tpl_compare_2x3
+        note: "今回紹介する N 選の導入につなげる"
+      - role: "項目"
+        template_options:             # ネタに応じて 1 スライドずつ選択
+          - tpl_item_beforeafter
+          - tpl_item_icons_3
+          - tpl_item_persona_table
+          - tpl_item_cards_3_caption_ref
+        repeat: "N (3〜7)"
+        note: "各項目でネタの性質に合うテンプレを選ぶ（同テンプレ連続も可）"
+      - role: "CTA"
+        template: tpl_cta_phone
+    examples:
+      - post_shinsa_5
+
+  # -----------------------------------------------------------
+  - id: format_checklist
+    name: "チェックリスト・カルーセル型"
+    description: |
+      『保存版 N つのチェックリスト』のように、
+      同質な項目を順番に並べる保存訴求型フォーマット。
+      各項目は同一テンプレで統一し、読み手が振り返りやすい構造。
+    best_for:
+      - "手順・確認項目を網羅したいネタ"
+      - "『保存して後で見返す』価値を訴求したいネタ"
+      - "各項目が同じ粒度・構造で並列可能なネタ"
+    tone: "実務的・信頼重視"
+    typical_slide_count: "9〜11"
+    recipe:
+      - role: "表紙"
+        template: tpl_cover_category
+      - role: "導入"
+        template: tpl_problem_quote
+        optional: true
+        note: "目次や全体像を示すスライドが挟まる場合あり（要確認）"
+      - role: "項目"
+        template: tpl_item_beforeafter   # 本シリーズでは写真型が中心
+        repeat: "N (主に 7)"
+        note: |
+          本アカウントのチェックリスト系は『番号バッジ＋タイトル＋写真＋💡本文』の
+          統一テンプレ。bot 実装時はこのパターンを tpl_item_photo として分離検討。
+      - role: "CTA"
+        template_options:
+          - tpl_cta_family
+          - tpl_cta_phone
+    examples:
+      - post_akiya_checklist_7
+
+  # -----------------------------------------------------------
+  - id: format_howto_case_based
+    name: "ケース分岐・解説型"
+    description: |
+      『〇〇できるか？』『〇〇の分け方』のような問いに対し、
+      ケースごとの選択肢を整理→推奨策を提案する解説フォーマット。
+      N 選型よりも構造的で、比較表・3 列並列・ケース別推薦などを多用する。
+    best_for:
+      - "読者の状況によって最適解が変わるネタ（ケース分岐）"
+      - "専門用語の整理と関係性の図解が必要なネタ"
+      - "制度・分類・手法の違いを示したいネタ"
+    tone: "解説的・中立"
+    typical_slide_count: "10〜12"
+    recipe:
+      - role: "表紙"
+        template: tpl_cover_category
+      - role: "導入・問題提起"
+        template_options:
+          - tpl_problem_quote
+          - tpl_compare_2x3
+        note: "テーマに応じて選択"
+      - role: "条件・前提"
+        template: tpl_item_cards_2x2
+        optional: true
+        note: "『〇〇の場合』『〇〇が必要』のような前提整理"
+      - role: "選択肢比較"
+        template: tpl_compare_3_column
+        note: "N 個の選択肢を並列比較"
+      - role: "ケース別推薦"
+        template: tpl_recommend_by_case
+        note: "ケースごとに最適解（＝自社サービス）を提案"
+      - role: "CTA"
+        template: tpl_cta_phone
+    examples:
+      - post_souzoku_bunkatsu

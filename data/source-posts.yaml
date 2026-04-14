@@ -75,4 +75,204 @@ posts:
       - 01〜06 は未受領だが、ページ番号バッジの連続性・番号付きタイトル（05→06→07）から
         「表紙 + 項目 01〜07 + CTA = 10枚」構成である可能性が極めて高い。
         ※ 表紙/目次の有無、導入スライドの枚数は要確認。
-      - チェックリスト型として format_01 に仮分類。
+      - チェックリスト型として format_checklist に仮分類。
+
+  # =========================================================================
+  - id: post_shinsa_5
+    date: null                      # 要確認
+    canva_link: null                # 要確認（画像のみ受領）
+    account: "セゾンファンデックス"
+    topic_summary: "不動産担保ローン 審査に落ちてしまったときの対処法 5 選"
+    total_slides: 9
+    assigned_format: format_howto_n_sen
+    observed_slides:
+      - page: "01/09"
+        role: "表紙"
+        template: tpl_cover_category
+        category_pill: "不動産担保ローン"
+        main_title: "審査に落ちてしまったときの対処法5選"
+        highlight_phrases: ["審査", "5"]
+        visual: "LOAN APPLICATION 書類＋REJECTED スタンプ（半透明オーバーレイ）"
+      - page: "02/09"
+        role: "問題提起"
+        template: tpl_problem_quote
+        title: "多くの人がぶつかる「審査の壁」"
+        quote: |
+          「年収は500万円あるのに…」
+          「不動産を持っているのに…」
+        visual: "REJECTED スタンプ付きローン申込書を見て頭を抱える人物"
+        summary: |
+          審査に落ちてしまう原因は
+          「年収額」や「資産額」だけではありません。
+      - page: "03/09"
+        role: "比較・導入"
+        template: tpl_compare_2x3
+        title: "審査に通りやすい人と通りにくい人の違い"
+        compare_axes: ["収入・滞納歴", "借入状況", "書類"]
+        compare_rows:
+          通りやすい: ["収入が安定・滞納歴なし", "なし", "正確"]
+          通りにくい: ["収入が不安定・滞納歴あり", "あり", "誤記入あり"]
+        question: "審査に通るためにはどうすれば良い？"
+        summary: "今回は、審査に落ちてしまった時の対処法5選をご紹介します。"
+      - page: "04/09"
+        role: "項目01"
+        template: tpl_item_beforeafter
+        item_number: "01"
+        title: "担保物件を変える"
+        comparison: ["担保価値の低い家", "担保価値の高い家"]
+        summary: |
+          より新しい物件や立地条件の良い物件に変更することで、
+          担保価値を向上させることができます。
+        highlight_phrases: ["担保価値を向上させる"]
+        footer: "審査に落ちた時の対処法：02 ▶"
+      - page: "05/09"
+        role: "項目02"
+        template: tpl_item_beforeafter    # label サブパターン（金額付き）
+        item_number: "02"
+        title: "融資希望額を減らす"
+        comparison: ["5,000万円", "4,000万円"]
+        summary: |
+          融資額を減らすことで返済負担率が下がり、
+          金融機関のリスク評価が改善される可能性があります。
+        highlight_phrases: ["金融機関のリスク評価が改善される"]
+        footer: "審査に落ちた時の対処法：03 ▶"
+      - page: "06/09"
+        role: "項目03"
+        template: tpl_item_icons_3
+        item_number: "03"
+        title: "返済能力向上を示す（事業主）"
+        icons_3:
+          - "収入増加の見込み"
+          - "支出の見直し"
+          - "他の借入金の返済状況改善"
+        summary: |
+          具体的な施策と数値目標を通して返済能力の向上を明確に示すことで、
+          再審査での承認可能性が高まることが期待できます。
+        highlight_phrases: ["具体的な施策と数値目標"]
+        footer: "審査に落ちた時の対処法：04 ▶"
+      - page: "07/09"
+        role: "項目04"
+        template: tpl_item_persona_table
+        item_number: "04"
+        title: "別の金融機関に相談する"
+        next_action: |
+          金融機関によって審査の基準が異なるため、
+          諦めずに複数の金融機関に相談してみましょう。
+        diagram: "人物 → A社×／B社×／C社○"
+        feature_table:
+          メガバンク: "大規模な融資に強い。金利が低く審査基準は厳格。"
+          地方銀行: "地域密着型で柔軟な対応に期待できる。"
+          信用金庫: "中小企業や個人事業主向けの融資に強みがある。"
+          ノンバンク: "銀行に比べて審査基準が緩やか。銀行で融資が難しくても利用できる可能性がある。"
+        footer: "審査に落ちた時の対処法：05 ▶"
+      - page: "08/09"
+        role: "項目05"
+        template: tpl_item_cards_3_caption_ref
+        item_number: "05"
+        title: "不動産担保ローン以外の選択肢を検討する"
+        description: |
+          不動産担保ローン以外の資金調達方法の一例として
+          以下のような選択肢があります。
+        cards_3: ["リースバック", "ABL(法人向け)", "公的融資制度"]
+        caption_ref: "詳しくはキャプションに記載しています。"
+        summary: |
+          ただし、無理な借入は避け、
+          自身の返済能力を冷静に判断することが何よりも大切です。
+        highlight_phrases: ["冷静に判断すること"]
+        footer: "SWIPE ▶"
+      - page: "09/09"
+        role: "CTA"
+        template: tpl_cta_phone
+        main_copy: |
+          不動産やお金に関する
+          お役立ち情報を発信中！
+        follow_cta: "フォローして最新情報をGET！"
+        save_hint: "いつでも見返せるように保存！"
+    notes: |
+      - 9 枚全て受領済み（Post 2 はコンプリート）。
+      - 「表紙 + 問題提起 + 比較・導入 + 項目 ×5 + CTA = 9 枚」構成。
+      - 項目 5 つがそれぞれ異なるテンプレ（before/after, icons_3, persona_table, cards_3）
+        で構成されており、ネタの性質に応じて項目テンプレを選択していることが分かる。
+
+  # =========================================================================
+  - id: post_souzoku_bunkatsu
+    date: null                      # 要確認
+    canva_link: null                # 要確認
+    account: "セゾンファンデックス"
+    topic_summary: "実家相続で揉めないための分割方法"
+    total_slides: 10
+    assigned_format: format_howto   # 仮（まだ表紙前半未受領）
+    observed_slides:
+      - page: "01/10"
+        role: "表紙"
+        template: tpl_cover_category
+        category_pill: "相続不動産を平等に分割できる？"
+        main_title: "実家相続で揉めないための分割方法"
+        highlight_phrases: ["分割方法"]
+        visual: "家の模型を手で指し示す（半透明オーバーレイ）"
+      - page: "07/10"
+        role: "項目"
+        template: tpl_item_cards_2x2   # 4 カード＋上下まとめ。要新規テンプレ登録検討
+        title: "代償金を用意できない場合"
+        lede: "代償分割は、代償金を支払えることが前提の方法。"
+        highlight_phrases: ["代償金を支払えること"]   # 黄色ハイライト
+        cards_4:
+          - "自己資金を充てる"
+          - "生命保険金を活用する"
+          - "不動産を担保に融資を受ける"
+          - "遺産分割ローンを利用する"
+        summary: |
+          資金の見通しが立たなければ、
+          実務上は選択が難しいケースもあります。
+        footer: "代償分割以外の分け方 ▶"
+      - page: "08/10"
+        role: "項目"
+        template: tpl_compare_3_column   # 3 列比較。要新規テンプレ登録
+        title: "代償分割以外の分け方"
+        columns_3:
+          - label: "現物分割"
+            description: "不動産をそれぞれ分けて取得"
+            illustration: "家3軒 → 母／長男／長女"
+          - label: "換価分割"
+            description: "不動産を売却し現金で分ける"
+            illustration: "家 → 現金袋 → 母／長男／長女"
+          - label: "共有分割"
+            description: "複数人で持ち続ける"
+            illustration: "家と車 → 相続人（グループ）"
+        summary: |
+          『現時点での公平性』と『将来にわたる生活の安定』が
+          ご家族にとっての優先順位が判断の鍵となります。
+        highlight_phrases: ["現時点での公平性", "将来にわたる生活の安定"]
+        footer: "ケースに合わせたおすすめの資金調達方法 ▶"
+      - page: "09/10"
+        role: "まとめ・提案"
+        template: tpl_recommend_by_case   # ケース別推薦。要新規テンプレ登録
+        title: "ケースに合わせたおすすめの資金調達方法"
+        cases:
+          - case: "相続不動産を「手放す」場合（換価分割）"
+            solutions:
+              - name: "不動産売却前提ローン"
+                bullets:
+                  - "売却成立前に資金を確保し納税や諸費用に充当。"
+                  - "余裕を持った売却活動でより良い条件を目指せる。"
+          - case: "相続不動産を「受け継ぐ」場合（代償分割）"
+            solutions:
+              - name: "① 遺産分割ローン"
+                bullets:
+                  - "他の相続人の持分を買い取り単独所有にする。"
+              - name: "② リースバック"
+                bullets:
+                  - "自宅に住み続けながら資金化し代償金や納税資金にする。"
+        footer: "SWIPE ▶"
+      - page: "10/10"
+        role: "CTA"
+        template: tpl_cta_phone
+        main_copy: |
+          不動産やお金に関する
+          お役立ち情報を発信中！
+        follow_cta: "フォローして最新情報をGET！"
+        save_hint: "いつでも見返せるように保存！"
+    notes: |
+      - 5 枚（01, 07, 08, 09, 10）受領。02〜06 未受領。
+      - 07〜09 で 3 つの新テンプレ候補が出現（cards_2x2 / compare_3_column / recommend_by_case）。
+        → slide-templates.yaml に追加登録が必要。
