@@ -4,13 +4,30 @@ import { loadAll } from "@/lib/data-loader";
 import { buildPrompt } from "@/lib/prompt";
 import { verifyCitations } from "@/lib/sources";
 
+// web_search tool でブロックする個人ブログ系ドメイン
+const BLOCKED_SEARCH_DOMAINS = [
+  "ameblo.jp",
+  "note.com",
+  "hatenablog.com",
+  "hatenablog.jp",
+  "blog.livedoor.jp",
+  "blog.goo.ne.jp",
+  "fc2.com",
+  "seesaa.net",
+  "medium.com",
+  "wordpress.com",
+  "blogger.com",
+  "qiita.com",
+  "zenn.dev",
+];
+
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { topic, target, goal, format_id } = body;
+    const { topic, target, goal, format_id, use_web_search = true } = body;
 
     if (!topic || !format_id) {
       return NextResponse.json(
@@ -35,6 +52,7 @@ export async function POST(req: Request) {
       format,
       templates,
       rules,
+      useWebSearch: use_web_search,
     });
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -50,15 +68,50 @@ export async function POST(req: Request) {
 
     const client = new Anthropic({ apiKey });
 
+    // web_search ツール（Anthropic 提供のサーバーサイドツール）
+    const tools: any[] = use_web_search
+      ? [
+          {
+            type: "web_search_20250305",
+            name: "web_search",
+            max_uses: 6,
+            blocked_domains: BLOCKED_SEARCH_DOMAINS,
+          },
+        ]
+      : [];
+
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 4096,
+      max_tokens: 8192,
       system,
       messages: [{ role: "user", content: user }],
+      ...(tools.length > 0 ? { tools } : {}),
     });
 
-    const textBlock = response.content.find((b) => b.type === "text");
-    const rawText = textBlock && textBlock.type === "text" ? textBlock.text : "";
+    // 全 text ブロックを連結（web_search を使った場合、tool_use / tool_result
+    // ブロックの合間に最終回答 text が分散することがある）
+    const rawText = response.content
+      .filter((b: any) => b.type === "text")
+      .map((b: any) => b.text || "")
+      .join("\n");
+
+    // web_search を使った場合の検索履歴を集計
+    const searchQueries: string[] = [];
+    const searchResultUrls: Array<{ url: string; title?: string }> = [];
+    for (const block of response.content as any[]) {
+      if (block.type === "server_tool_use" && block.name === "web_search") {
+        const q = block.input?.query;
+        if (q) searchQueries.push(q);
+      }
+      if (block.type === "web_search_tool_result") {
+        const results = block.content || [];
+        for (const r of results) {
+          if (r.type === "web_search_result" && r.url) {
+            searchResultUrls.push({ url: r.url, title: r.title });
+          }
+        }
+      }
+    }
 
     // JSON を抽出（コードフェンス内 or 直 JSON の両方を許容）
     let parsed: any = null;
@@ -137,6 +190,11 @@ export async function POST(req: Request) {
       caption_outline: parsed.caption_outline || [],
       risk_notes: riskNotes,
       source_summary: sourceSummary,
+      web_search: {
+        used: use_web_search,
+        queries: searchQueries,
+        result_count: searchResultUrls.length,
+      },
       cta_default: cta_patterns
         .filter((c) => c.default)
         .map((c) => c.copy_options[0]),

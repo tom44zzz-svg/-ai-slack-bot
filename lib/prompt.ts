@@ -11,8 +11,9 @@ export function buildPrompt(args: {
   format: Format;
   templates: Template[];
   rules: Rule[];
+  useWebSearch?: boolean;
 }): { system: string; user: string } {
-  const { topic, target, goal, format, templates, rules } = args;
+  const { topic, target, goal, format, templates, rules, useWebSearch } = args;
 
   // recipe に登場する template_options をフラット化
   const usedTemplateIds = new Set<string>();
@@ -56,7 +57,28 @@ ${highRules.map((r) => `- [${r.id}] ${r.content}`).join("\n")}
 5. **数値・制度の記載がない**スライド（概念説明のみ、行動提案のみ等）は
    出典不要（sources を空配列 [] にする）。
 6. **不明な場合**：URL を推測してはいけない。null を設定し、
-   risk_notes に『要・手動で出典追加』と記載すること。
+   risk_notes に『要・手動で出典追加』と記載すること。${
+    useWebSearch
+      ? `
+
+## Web 検索ツールの利用（重要）
+
+今回はあなたに **web_search ツール** が提供されています。数値・制度・法令・統計の
+裏取りが必要な箇所は、**自分の記憶に頼らず、必ず web_search ツールで検索して一次ソースを
+確認**してください。以下の手順を守ること：
+
+1. ネタに関連する制度・数値・法令の**最新情報**を web_search で検索（例：
+   『住宅ローン控除 2026 国税庁』『不動産取得税 軽減 国土交通省』）。
+2. 検索結果で **公的ドメイン（go.jp / lg.jp / ac.jp / or.jp）** を優先的に
+   クリックして内容確認。個人ブログ系は無視。
+3. 取得した情報をもとに、該当スライドの \`sources\` 配列に URL ・タイトル・
+   何ページ／どのセクションかを記載。
+4. **検索で確認できなかった情報は使わない**か、\`sources\` を null にして
+   risk_notes に『要手動確認』と記載。
+5. 検索回数には上限があるため、**本当に出典が必要な箇所のみ**検索すること。
+   概念説明や行動提案は検索不要。`
+      : ""
+  }
 
 ## 出力形式（厳密に従う）
 以下の JSON のみを出力してください。前後に説明文を付けないでください。

@@ -53,6 +53,7 @@ type GenerateResult = {
   caption_outline: string[];
   risk_notes: Array<{ rule_id: string; note: string }>;
   source_summary?: { total: number; ok: number; warn: number; block: number };
+  web_search?: { used: boolean; queries: string[]; result_count: number };
   cta_default: string[];
 };
 
@@ -77,6 +78,7 @@ export default function Home() {
   }>({ exact: [], partial: [] });
 
   const [selectedFormatId, setSelectedFormatId] = useState<string>("");
+  const [useWebSearch, setUseWebSearch] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [error, setError] = useState<string>("");
@@ -110,6 +112,7 @@ export default function Home() {
           target,
           goal,
           format_id: selectedFormatId,
+          use_web_search: useWebSearch,
         }),
       });
       const data = await res.json();
@@ -224,14 +227,30 @@ export default function Home() {
       </section>
 
       {/* ========== 生成ボタン ========== */}
-      <section>
+      <section className="space-y-3">
+        <label className="flex items-center gap-2 text-sm bg-white border border-slate-200 rounded-lg p-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={useWebSearch}
+            onChange={(e) => setUseWebSearch(e.target.checked)}
+            className="w-4 h-4"
+          />
+          <span>
+            <strong>Web 検索で出典を裏取りする</strong>
+            <span className="text-slate-500 text-xs ml-2">
+              （ON 推奨。遅くなるが公的ソースの URL が入る）
+            </span>
+          </span>
+        </label>
         <button
           disabled={!topic || !selectedFormatId || generating}
           onClick={handleGenerate}
           className="w-full py-3 rounded-lg bg-blue-600 text-white font-semibold disabled:bg-slate-300 disabled:cursor-not-allowed"
         >
           {generating
-            ? "生成中… (数十秒かかります)"
+            ? useWebSearch
+              ? "生成中… (Web 検索中・1〜2 分かかります)"
+              : "生成中… (数十秒かかります)"
             : !topic
             ? "ネタを入力してください"
             : !selectedFormatId
@@ -373,7 +392,7 @@ function ResultView({ result }: { result: GenerateResult }) {
       </div>
 
       {result.source_summary && result.source_summary.total > 0 && (
-        <div className="flex items-center gap-3 text-sm bg-slate-50 border border-slate-200 rounded p-3">
+        <div className="flex items-center gap-3 text-sm bg-slate-50 border border-slate-200 rounded p-3 flex-wrap">
           <span className="font-medium">🔗 出典チェック</span>
           <span className="text-emerald-700">公的/信頼 {result.source_summary.ok}</span>
           <span className="text-amber-700">要確認 {result.source_summary.warn}</span>
@@ -381,6 +400,26 @@ function ResultView({ result }: { result: GenerateResult }) {
           <span className="text-slate-500 text-xs">
             / 合計 {result.source_summary.total} 件
           </span>
+        </div>
+      )}
+
+      {result.web_search && result.web_search.used && (
+        <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm">
+          <div className="font-medium text-blue-900 mb-1">
+            🔍 Web 検索履歴（{result.web_search.queries.length} 回検索 /{" "}
+            {result.web_search.result_count} 件ヒット）
+          </div>
+          {result.web_search.queries.length > 0 ? (
+            <ul className="list-disc list-inside text-xs text-blue-800 space-y-0.5">
+              {result.web_search.queries.map((q, i) => (
+                <li key={i}>{q}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-blue-800">
+              Web 検索は実行されませんでした（出典不要と判断された可能性）
+            </p>
+          )}
         </div>
       )}
 
