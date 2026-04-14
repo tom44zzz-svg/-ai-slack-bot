@@ -1,0 +1,331 @@
+# スライドテンプレ（3 層スキーマ）
+#
+# 1 スライドを zone_top / zone_middle / zone_bottom に分け、
+# 各ゾーンに elements.yaml の要素 id を配置する。
+#
+# スキーマ：
+#   templates:
+#     - id: <tpl_xxx>
+#       name: "日本語名"
+#       role: "表紙 / 問題提起 / 本文 / 項目 / 比較 / まとめ / CTA"
+#       zone_top:
+#         element: <elements.yaml の id>
+#         note: "..."
+#       zone_middle:
+#         element: <要素 id または diagram>
+#         diagram: <diagram-gallery.yaml の id>   # middle に図解が入る場合
+#         note: "..."
+#       zone_bottom:
+#         element: <elements.yaml の id>
+#         note: "..."
+#       seen_in_posts:
+#         - post_xxx
+
+templates:
+
+  # =========================================================================
+  # 表紙テンプレ
+  # =========================================================================
+  - id: tpl_cover_pill_title
+    name: "表紙・カテゴリピル型"
+    role: "表紙"
+    zone_top:
+      element: category_pill
+    zone_middle:
+      element: main_title
+      note: "背景に photo を半透明オーバーレイで重ねる"
+      background_photo: true
+    zone_bottom:
+      element: logo
+    seen_in_posts: [post_shinsa_5, post_souzoku_bunkatsu]
+
+  - id: tpl_cover_number
+    name: "表紙・数字強調型"
+    role: "表紙"
+    zone_top:
+      element: category_pill
+      optional: true
+    zone_middle:
+      element: main_title
+      note: "タイトル内の『N 選』『TOP N』部分を大きく強調"
+      background_photo: true
+    zone_bottom:
+      element: logo
+
+  - id: tpl_cover_question
+    name: "表紙・問いかけ型"
+    role: "表紙"
+    zone_top:
+      element: question
+      note: "青ピル内に問いかけ（例：『相続不動産を平等に分割できる？』）"
+    zone_middle:
+      element: main_title
+      background_photo: true
+    zone_bottom:
+      element: logo
+    seen_in_posts: [post_souzoku_bunkatsu]
+
+  - id: tpl_cover_casual_hook
+    name: "表紙・会話フック型"
+    role: "表紙"
+    zone_top:
+      element: caption
+      note: "『あのとき、こうしていれば…』等の省略記号付き会話調"
+    zone_middle:
+      element: main_title
+      background_photo: true
+    zone_bottom:
+      element: logo
+
+  # =========================================================================
+  # 問題提起・導入
+  # =========================================================================
+  - id: tpl_intro_quote
+    name: "問題提起・引用型"
+    role: "問題提起"
+    zone_top:
+      element: heading
+    zone_middle:
+      element: diagram
+      diagram: quote_callout
+      note: "引用＋写真の組合せ"
+    zone_bottom:
+      element: highlight_box
+      note: "このページのまとめ（原因示唆）"
+    seen_in_posts: [post_shinsa_5]
+
+  - id: tpl_intro_compare_table
+    name: "問題提起・比較表型"
+    role: "問題提起 / 導入"
+    zone_top:
+      element: heading
+    zone_middle:
+      element: diagram
+      diagram: compare_table_row
+    zone_bottom:
+      elements: [question, highlight_box]
+      note: "問いかけで読者を本論へ誘導"
+    seen_in_posts: [post_shinsa_5]
+
+  - id: tpl_intro_stat
+    name: "問題提起・大数字型"
+    role: "問題提起"
+    zone_top:
+      element: heading
+    zone_middle:
+      element: diagram
+      diagram: number_highlight
+    zone_bottom:
+      element: highlight_box
+
+  # =========================================================================
+  # 本文・項目
+  # =========================================================================
+  - id: tpl_item_beforeafter
+    name: "項目・対比型"
+    role: "項目"
+    zone_top:
+      elements: [label_tag, heading]
+      note: "番号バッジ＋項目タイトル"
+    zone_middle:
+      element: diagram
+      diagram_options:
+        - compare_before_after
+        - compare_pros_cons
+        - compare_do_dont
+        - compare_vs_2col
+      note: "対比系の図解から 1 つ選ぶ"
+    zone_bottom:
+      elements: [highlight_box, footer_next]
+    seen_in_posts: [post_shinsa_5]
+
+  - id: tpl_item_icons_3
+    name: "項目・3 アイコン並列型"
+    role: "項目"
+    zone_top:
+      elements: [label_tag, heading]
+    zone_middle:
+      element: diagram
+      diagram: icons_row_3
+    zone_bottom:
+      elements: [highlight_box, footer_next]
+    seen_in_posts: [post_shinsa_5]
+
+  - id: tpl_item_cards_2x2
+    name: "項目・2×2 カード型"
+    role: "項目"
+    zone_top:
+      elements: [heading, lede]
+    zone_middle:
+      element: diagram
+      diagram: cards_2x2
+    zone_bottom:
+      elements: [outro, footer_next]
+    seen_in_posts: [post_souzoku_bunkatsu]
+
+  - id: tpl_item_cards_3
+    name: "項目・3 カード＋キャプション誘導型"
+    role: "項目"
+    zone_top:
+      elements: [label_tag, heading, lede]
+    zone_middle:
+      element: diagram
+      diagram: compare_3_column
+    zone_bottom:
+      elements: [caption, highlight_box, footer_next]
+      note: "caption で『詳しくはキャプションに記載』誘導"
+    seen_in_posts: [post_shinsa_5]
+
+  - id: tpl_item_persona_table
+    name: "項目・人物＋丸抜き＋特徴表型"
+    role: "項目"
+    zone_top:
+      elements: [label_tag, heading, lede]
+    zone_middle:
+      element: diagram
+      diagram: persona_pass_fail
+    zone_bottom:
+      element: diagram
+      diagram: compare_table_row
+    seen_in_posts: [post_shinsa_5]
+
+  - id: tpl_item_photo
+    name: "項目・写真＋説明型"
+    role: "項目"
+    zone_top:
+      elements: [label_tag, heading]
+    zone_middle:
+      element: photo
+      photo_mood_options: [object_symbolic, scenery, object_handheld]
+    zone_bottom:
+      elements: [highlight_box, footer_next]
+    seen_in_posts: [post_akiya_checklist_7]
+
+  - id: tpl_item_illustration
+    name: "項目・イラスト＋解説型"
+    role: "項目"
+    zone_top:
+      elements: [label_tag, heading]
+    zone_middle:
+      element: illustration_single
+    zone_bottom:
+      element: outro
+
+  - id: tpl_step_flow
+    name: "項目・ステップフロー型"
+    role: "項目 / 手順"
+    zone_top:
+      element: heading
+    zone_middle:
+      element: diagram
+      diagram: flow_arrow_steps
+    zone_bottom:
+      element: highlight_box
+
+  - id: tpl_item_warning
+    name: "項目・警告型"
+    role: "項目"
+    zone_top:
+      elements: [label_tag, heading]
+    zone_middle:
+      element: diagram
+      diagram: warning_callout
+    zone_bottom:
+      element: highlight_box
+      note: "失敗・NG 型で使用"
+
+  - id: tpl_item_checklist
+    name: "項目・チェックリスト型"
+    role: "項目 / まとめ"
+    zone_top:
+      element: heading
+    zone_middle:
+      element: diagram
+      diagram: checkmark_list
+    zone_bottom:
+      element: outro
+
+  # =========================================================================
+  # Q&A・クイズ系
+  # =========================================================================
+  - id: tpl_qa_pair
+    name: "Q&A ペア型"
+    role: "項目"
+    zone_top:
+      element: question
+      note: "『Q. 〇〇？』"
+    zone_middle:
+      element: illustration_single
+    zone_bottom:
+      element: highlight_box
+      note: "『A. 〇〇です。』"
+
+  - id: tpl_quiz_reveal
+    name: "クイズ・解答隠し型"
+    role: "項目"
+    zone_top:
+      element: question
+    zone_middle:
+      element: bullets
+      note: "選択肢を列挙（A / B / C）"
+    zone_bottom:
+      element: footer_next
+      note: "『次で答え合わせ ▶』"
+
+  # =========================================================================
+  # まとめ・推薦
+  # =========================================================================
+  - id: tpl_summary_recommend
+    name: "ケース別推薦・まとめ型"
+    role: "まとめ"
+    zone_top:
+      element: heading
+    zone_middle:
+      element: diagram
+      diagram: recommend_by_case
+    zone_bottom:
+      element: footer_next
+    seen_in_posts: [post_souzoku_bunkatsu]
+
+  - id: tpl_summary_keypoints
+    name: "要点まとめ型"
+    role: "まとめ"
+    zone_top:
+      element: heading
+    zone_middle:
+      element: diagram
+      diagram: checkmark_list
+    zone_bottom:
+      element: outro
+
+  # =========================================================================
+  # CTA テンプレ（実体は cta-patterns.yaml 参照）
+  # =========================================================================
+  - id: tpl_cta_phone
+    name: "CTA・スマホ UI 型"
+    role: "CTA"
+    zone_top:
+      element: heading
+      note: "『不動産やお金に関するお役立ち情報を発信中！』等"
+    zone_middle:
+      element: phone_mockup
+      side_card: true
+      note: "右側に黄色アクセント付きフォロー誘導カード"
+    zone_bottom:
+      element: caption
+      note: "『いつでも見返せるように保存！』＋ブックマーク"
+    seen_in_posts: [post_shinsa_5, post_souzoku_bunkatsu]
+
+  - id: tpl_cta_illustration
+    name: "CTA・イラスト型"
+    role: "CTA"
+    zone_top:
+      element: caption
+      note: "『▲ 他の投稿はこちらから』"
+    zone_middle:
+      elements: [heading, illustration_single]
+      note: "コピー＋家族イラスト"
+    zone_bottom:
+      elements: [heading, caption]
+      note: "フォロー誘導ボタン＋『後で見返すために保存！』"
+    seen_in_posts: [post_akiya_checklist_7]

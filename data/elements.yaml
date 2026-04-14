@@ -1,0 +1,155 @@
+# 要素タイプ辞書
+#
+# スライドの「上・中・下」3 層の各ゾーンに入る部品（element）を定義。
+# templates.yaml の zone_top / zone_middle / zone_bottom は、ここの id を参照する。
+#
+# 大分類：
+#   text_elements      … テキスト系
+#   visual_elements    … ビジュアル系（図解・写真等）
+#   photo_moods        … 写真指定の雰囲気カタログ（制作ルール 13 と整合）
+
+# =============================================================================
+# テキスト系要素
+# =============================================================================
+text_elements:
+
+  - id: heading
+    name: "見出し"
+    text_limit_chars: 25
+    max_lines: 2
+    note: "青バー等で強調。ページ主題を一言で示す"
+
+  - id: subheading
+    name: "サブ見出し"
+    text_limit_chars: 15
+    max_lines: 1
+    note: "見出しの補助・ラベル（例：『主な準備方法』）"
+
+  - id: category_pill
+    name: "カテゴリピル"
+    text_limit_chars: 20
+    max_lines: 2
+    note: "表紙のカテゴリ表記（例：『不動産担保ローン』）"
+
+  - id: main_title
+    name: "メインタイトル"
+    chars_per_line: 7
+    max_lines: 5
+    note: "表紙のメインコピー。キーワード強調（色変え）推奨"
+
+  - id: lede
+    name: "リード文"
+    text_limit_chars: 60
+    max_lines: 2
+    note: "中見出しの下の導入文"
+
+  - id: quote
+    name: "引用・悩みの声"
+    text_limit_chars: 40
+    max_lines: 2
+    note: "『〜のに…』『〜なのに…』パターンで共感喚起"
+
+  - id: bullets
+    name: "箇条書き"
+    chars_per_bullet: 15
+    max_bullets: 4
+    note: "横並び or 縦並び。1 行で完結させる"
+
+  - id: caption
+    name: "補足キャプション"
+    text_limit_chars: 30
+    note: "小さい説明テキスト"
+
+  - id: question
+    name: "問いかけ"
+    text_limit_chars: 25
+    note: "読者に投げかける疑問形"
+
+  - id: outro
+    name: "まとめ・次へ誘導"
+    text_limit_chars: 60
+    note: "このページのまとめ or 次ページの予告"
+
+  - id: highlight_box
+    name: "ハイライトボックス"
+    text_limit_chars: 60
+    note: "💡電球アイコン付き枠囲み。本文の要点を強調"
+
+  - id: number_big
+    name: "大きな数字"
+    note: "『5 選』『80%』など数字を大きく表示。強調パーツ"
+
+  - id: label_tag
+    name: "ラベルタグ"
+    text_limit_chars: 12
+    note: "青角丸の小ラベル（例：項目番号 01、『メガバンク』）"
+
+  - id: footer_next
+    name: "フッター次項予告"
+    text_limit_chars: 30
+    note: "『〇〇：02 ▶』『SWIPE ▶』等"
+
+  - id: source_note
+    name: "出典・参照元注記"
+    text_limit_chars: 60
+    note: "引用時の出典 URL（制作ルール 4 と整合）"
+
+# =============================================================================
+# ビジュアル系要素（図解タイプは diagram-gallery.yaml 参照）
+# =============================================================================
+visual_elements:
+
+  - id: photo
+    name: "写真"
+    note: "Canva ストック写真。photo_moods から雰囲気を指定"
+
+  - id: illustration_single
+    name: "イラスト 1 点"
+    note: "フラットイラスト 1 つ"
+
+  - id: diagram
+    name: "図解"
+    note: "種類は diagram-gallery.yaml を参照"
+
+  - id: phone_mockup
+    name: "スマホ UI モックアップ"
+    note: "Instagram プロフィール画面等。CTA で使用"
+
+  - id: logo
+    name: "ロゴ"
+    note: "セゾンファンデックス ロゴ。全投稿共通・右下 or 中央"
+
+# =============================================================================
+# 写真の雰囲気カタログ（制作ルール 13 に準拠）
+# =============================================================================
+# 使える素材タイプのみ列挙。顔が鮮明な人物・悲壮感強めは NG。
+photo_moods:
+
+  - id: scenery
+    name: "風景"
+    examples: ["街並み", "住宅地", "オフィスビル", "空", "窓辺"]
+
+  - id: object_handheld
+    name: "物体＋手元"
+    examples: ["書類を持つ手", "電卓を操作する手", "鍵を持つ手", "ペンでチェックする手"]
+
+  - id: person_far
+    name: "人物・遠景（顔が鮮明でない）"
+    examples: ["リビングでくつろぐ家族（遠景）", "窓辺で考える人物のシルエット"]
+
+  - id: person_back
+    name: "人物・後ろ姿"
+    examples: ["PC に向かう後ろ姿", "家族で家を眺める後ろ姿"]
+
+  - id: object_symbolic
+    name: "象徴物のモチーフ"
+    examples: ["家の模型", "コインの山", "電卓と家のフィギュア", "契約書と印鑑"]
+
+# =============================================================================
+# NG（禁止）
+# =============================================================================
+photo_ng:
+  - "顔が鮮明な人物"
+  - "悲壮感が強すぎる表情・シチュエーション"
+  - "困窮を明示的に表す（涙・うなだれる等）"
+# → 制作ルール 13 参照

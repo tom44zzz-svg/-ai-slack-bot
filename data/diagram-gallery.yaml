@@ -1,0 +1,311 @@
+# 図解ギャラリー
+#
+# スライドに入る「図解」のタイプを一覧化。
+# 各タイプに ASCII プレビューを付け、Web アプリ化時は画像サムネに差し替える想定。
+#
+# templates.yaml の diagram: フィールドから、この id を参照する。
+#
+# スキーマ：
+#   diagrams:
+#     - id: <スネークケース>
+#       name: "日本語名"
+#       category: "2値比較 / N値比較 / 階層 / フロー / 分布 / 強調"
+#       ascii_preview: |
+#         ...アスキーアート...
+#       use_case: "どんな情報を示すのに向いているか"
+#       text_slots: N                # 図解内に入るテキスト枠の数
+#       photo_hint: "写真が挿入される場合のヒント（なければ null）"
+#       seen_in_posts:                # 過去投稿で観察された例
+#         - post_xxx
+
+diagrams:
+
+  # ---------------------------------------------------------------------
+  # 2 値比較系
+  # ---------------------------------------------------------------------
+  - id: compare_before_after
+    name: "Before / After 2 点対比"
+    category: "2値比較"
+    ascii_preview: |
+      ┌────┐          ┌────┐
+      │ 前 │   ─→    │ 後 │
+      └────┘          └────┘
+       label            label
+    use_case: "施策前後・状態変化・金額変化を示す"
+    text_slots: 4
+    photo_hint: "イラスト 2 点を左右配置、矢印でつなぐ"
+    seen_in_posts: [post_shinsa_5]
+
+  - id: compare_vs_2col
+    name: "2 列 VS 比較"
+    category: "2値比較"
+    ascii_preview: |
+      ┌──────────┐  ┌──────────┐
+      │   A 側   │  │   B 側   │
+      │  特徴1   │  │  特徴1   │
+      │  特徴2   │  │  特徴2   │
+      │  特徴3   │  │  特徴3   │
+      └──────────┘  └──────────┘
+    use_case: "A と B の違いを 3 要素程度で列挙"
+    text_slots: 8
+    photo_hint: null
+
+  - id: compare_pros_cons
+    name: "メリット / デメリット"
+    category: "2値比較"
+    ascii_preview: |
+      ◎ メリット            × デメリット
+      ─────────             ─────────
+      ・項目1               ・項目1
+      ・項目2               ・項目2
+      ・項目3               ・項目3
+    use_case: "選択肢の長所短所を対比"
+    text_slots: 6
+    photo_hint: null
+
+  - id: compare_do_dont
+    name: "対策してる人 / してない人"
+    category: "2値比較"
+    ascii_preview: |
+      🙆 している人        🙅 していない人
+      ─────────          ─────────
+      特徴1                特徴1
+      特徴2                特徴2
+    use_case: "行動の差による結果の違いを示す"
+    text_slots: 4
+    photo_hint: "人物イラスト 2 点（遠景／後ろ姿）"
+
+  # ---------------------------------------------------------------------
+  # N 値比較系
+  # ---------------------------------------------------------------------
+  - id: compare_table_row
+    name: "複数行比較表"
+    category: "N値比較"
+    ascii_preview: |
+      │ 軸項目 │  A  │  B  │  C  │
+      │ 軸 1   │ ○  │ ×  │ △  │
+      │ 軸 2   │ ○  │ ○  │ ×  │
+      │ 軸 3   │ ×  │ ○  │ ○  │
+    use_case: "3〜4 対象を複数軸で一覧比較"
+    text_slots: "可変"
+    photo_hint: null
+    seen_in_posts: [post_shinsa_5]
+
+  - id: compare_3_column
+    name: "3 列カード比較"
+    category: "N値比較"
+    ascii_preview: |
+      ┌──────┐  ┌──────┐  ┌──────┐
+      │ 現物 │  │ 換価 │  │ 共有 │
+      │  🏠  │  │ 🏠→💰│  │  🏠  │
+      │ 説明 │  │ 説明 │  │ 説明 │
+      └──────┘  └──────┘  └──────┘
+    use_case: "3 選択肢を並列提示（違いを視覚化）"
+    text_slots: 9
+    photo_hint: "各カードにアイコン／関係図イラスト"
+    seen_in_posts: [post_souzoku_bunkatsu]
+
+  - id: icons_row_3
+    name: "3 アイコン並列"
+    category: "N値比較"
+    ascii_preview: |
+      ┌────┐   ┌────┐   ┌────┐
+      │ 🔺 │   │ 💰 │   │ 📋 │
+      └────┘   └────┘   └────┘
+        A         B         C
+    use_case: "3 つの選択肢・要素を短ラベルで並列"
+    text_slots: 3
+    photo_hint: "各スロットにアイコン 1 点"
+    seen_in_posts: [post_shinsa_5]
+
+  - id: cards_2x2
+    name: "2×2 グリッド（4 選択肢）"
+    category: "N値比較"
+    ascii_preview: |
+      ┌──────┐  ┌──────┐
+      │ 選択1│  │ 選択2│
+      └──────┘  └──────┘
+      ┌──────┐  ┌──────┐
+      │ 選択3│  │ 選択4│
+      └──────┘  └──────┘
+    use_case: "4 つの選択肢・準備方法を並列提示"
+    text_slots: 4
+    photo_hint: "各カードに小アイコン"
+    seen_in_posts: [post_souzoku_bunkatsu]
+
+  # ---------------------------------------------------------------------
+  # 階層・関係系
+  # ---------------------------------------------------------------------
+  - id: tree_relation
+    name: "ツリー関係図"
+    category: "階層"
+    ascii_preview: |
+             ┌────┐
+             │ 親 │
+             └─┬──┘
+          ┌────┴────┐
+          ↓         ↓
+        ┌──┐      ┌──┐
+        │ A│      │ B│
+        └──┘      └──┘
+    use_case: "親子関係・分配・分岐を示す"
+    text_slots: "可変"
+    photo_hint: null
+
+  - id: persona_pass_fail
+    name: "人物 → 丸抜き選択（○×）"
+    category: "階層"
+    ascii_preview: |
+       👤──→  A社  B社  C社
+              [×]  [×]  [○]
+    use_case: "誰が・どれを選ぶべきかを判定型で示す"
+    text_slots: 4
+    photo_hint: "人物アイコン 1 点"
+    seen_in_posts: [post_shinsa_5]
+
+  # ---------------------------------------------------------------------
+  # フロー系
+  # ---------------------------------------------------------------------
+  - id: flow_arrow_steps
+    name: "矢印ステップ"
+    category: "フロー"
+    ascii_preview: |
+      ┌──┐ → ┌──┐ → ┌──┐ → ┌──┐
+      │1 │   │2 │   │3 │   │4 │
+      └──┘   └──┘   └──┘   └──┘
+    use_case: "手順・時系列・プロセスを左→右で示す"
+    text_slots: "可変（3〜5）"
+    photo_hint: "各ステップにアイコン可"
+
+  - id: flow_cycle
+    name: "サイクル（循環）"
+    category: "フロー"
+    ascii_preview: |
+           ┌─→ 2 ─┐
+           │      ↓
+           1      3
+           ↑      │
+           └─ 4 ──┘
+    use_case: "繰り返し・PDCA 的な循環プロセス"
+    text_slots: 4
+    photo_hint: null
+
+  # ---------------------------------------------------------------------
+  # ケース別推薦
+  # ---------------------------------------------------------------------
+  - id: recommend_by_case
+    name: "ケース別推薦"
+    category: "フロー"
+    ascii_preview: |
+      ・ケースA（○○の場合）
+        ┌─────────────┐
+        │ 解決策ラベル │ ・bullet 1
+        │              │ ・bullet 2
+        └─────────────┘
+      ・ケースB（○○の場合）
+        ┌─────────────┐
+        │ ①解決策     │ ・bullet
+        ├─────────────┤
+        │ ②解決策     │ ・bullet
+        └─────────────┘
+    use_case: "状況別に最適解を提案（ケース分岐型の核）"
+    text_slots: "可変"
+    photo_hint: "各解決策に小アイコン"
+    seen_in_posts: [post_souzoku_bunkatsu]
+
+  # ---------------------------------------------------------------------
+  # ランキング・分布
+  # ---------------------------------------------------------------------
+  - id: ranking_top_n
+    name: "ランキング（TOP N）"
+    category: "分布"
+    ascii_preview: |
+      🥇 1 位  ─────────  ラベル
+      🥈 2 位  ─────────  ラベル
+      🥉 3 位  ─────────  ラベル
+         4 位  ─────────  ラベル
+         5 位  ─────────  ラベル
+    use_case: "順位付きリストを視覚化"
+    text_slots: "可変（3〜7）"
+    photo_hint: "上位 3 つにアイコン／写真を添える"
+
+  - id: graph_bar
+    name: "棒グラフ"
+    category: "分布"
+    ascii_preview: |
+      A ████████████  60
+      B ██████        30
+      C ████          20
+      D ██            10
+    use_case: "数量の比較（統計・データ解説型で使用）"
+    text_slots: "可変"
+    photo_hint: null
+    source_requirement: "制作ルール 3：国・企業データ限定"
+
+  - id: graph_line
+    name: "折れ線グラフ"
+    category: "分布"
+    ascii_preview: |
+       100│      ╱╲
+        80│    ╱╲  ╲
+        60│  ╱╲  ╲  ╲
+        40│╱   ╲  ╲
+         └───────────
+          2020 2023 2026
+    use_case: "推移を示す（統計データ）"
+    text_slots: "可変"
+    photo_hint: null
+    source_requirement: "制作ルール 3：国・企業データ限定"
+
+  # ---------------------------------------------------------------------
+  # 強調系
+  # ---------------------------------------------------------------------
+  - id: number_highlight
+    name: "大数字強調"
+    category: "強調"
+    ascii_preview: |
+              ┌─────┐
+              │ 80% │
+              └─────┘
+          ～の人が知らない
+    use_case: "統計・割合を一枚で強く訴求"
+    text_slots: 2
+    photo_hint: "背景に薄く関連写真を重ねる"
+    source_requirement: "制作ルール 3：国・企業データ限定"
+
+  - id: quote_callout
+    name: "引用吹き出し"
+    category: "強調"
+    ascii_preview: |
+      ┌──────────────────┐
+      │「〇〇のに…」    │
+      │「〇〇なのに…」  │
+      └──────────────────┘
+    use_case: "読者の声を引用して共感を喚起"
+    text_slots: 2
+    photo_hint: "困った様子の遠景／後ろ姿写真と組合せ"
+    seen_in_posts: [post_shinsa_5]
+
+  - id: checkmark_list
+    name: "チェックマークリスト"
+    category: "強調"
+    ascii_preview: |
+      ☑ 項目 1
+      ☑ 項目 2
+      ☑ 項目 3
+      ☑ 項目 4
+    use_case: "保存性の高いチェック項目リスト"
+    text_slots: "可変（3〜7）"
+    photo_hint: null
+
+  - id: warning_callout
+    name: "注意・警告ボックス"
+    category: "強調"
+    ascii_preview: |
+      ┌──────────────────┐
+      │ ⚠ 注意            │
+      │ 〇〇するのは危険  │
+      └──────────────────┘
+    use_case: "失敗・NG 型で警告を明示"
+    text_slots: 2
+    photo_hint: null
