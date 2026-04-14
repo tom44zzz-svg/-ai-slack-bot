@@ -14,6 +14,25 @@ type FormatSummary = {
   example_topics: string[];
 };
 
+type SourceVerdict = {
+  url: string;
+  domain: string;
+  classification:
+    | "official"
+    | "corporate_trusted"
+    | "corporate_unknown"
+    | "personal_blog"
+    | "invalid";
+  severity: "ok" | "warn" | "block";
+  reason: string;
+};
+type VerifiedCitation = {
+  url: string;
+  title?: string;
+  page_or_section?: string;
+  quote?: string;
+  verdict: SourceVerdict;
+};
 type Slide = {
   index: number;
   role: string;
@@ -23,6 +42,7 @@ type Slide = {
   zone_bottom: any;
   photo_hint: string | null;
   diagram: string | null;
+  sources?: VerifiedCitation[];
   notes?: string;
 };
 
@@ -32,6 +52,7 @@ type GenerateResult = {
   slides: Slide[];
   caption_outline: string[];
   risk_notes: Array<{ rule_id: string; note: string }>;
+  source_summary?: { total: number; ok: number; warn: number; block: number };
   cta_default: string[];
 };
 
@@ -351,6 +372,18 @@ function ResultView({ result }: { result: GenerateResult }) {
         {result.format.id}）
       </div>
 
+      {result.source_summary && result.source_summary.total > 0 && (
+        <div className="flex items-center gap-3 text-sm bg-slate-50 border border-slate-200 rounded p-3">
+          <span className="font-medium">🔗 出典チェック</span>
+          <span className="text-emerald-700">公的/信頼 {result.source_summary.ok}</span>
+          <span className="text-amber-700">要確認 {result.source_summary.warn}</span>
+          <span className="text-red-700">NG {result.source_summary.block}</span>
+          <span className="text-slate-500 text-xs">
+            / 合計 {result.source_summary.total} 件
+          </span>
+        </div>
+      )}
+
       <div>
         <h3 className="font-medium mb-2">■ タイトル案 3 つ</h3>
         <ol className="space-y-1 list-decimal list-inside text-sm">
@@ -392,6 +425,16 @@ function ResultView({ result }: { result: GenerateResult }) {
                   📊 図解: {s.diagram}
                 </div>
               )}
+              {s.sources && s.sources.length > 0 && (
+                <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">
+                  <div className="text-xs font-medium text-slate-700">
+                    🔗 出典
+                  </div>
+                  {s.sources.map((src, i) => (
+                    <CitationRow key={i} c={src} />
+                  ))}
+                </div>
+              )}
               {s.notes && (
                 <div className="text-xs text-slate-400">{s.notes}</div>
               )}
@@ -426,6 +469,53 @@ function ResultView({ result }: { result: GenerateResult }) {
         </div>
       )}
     </section>
+  );
+}
+
+function CitationRow({ c }: { c: VerifiedCitation }) {
+  const v = c.verdict;
+  const color =
+    v.severity === "ok"
+      ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+      : v.severity === "warn"
+      ? "text-amber-800 bg-amber-50 border-amber-200"
+      : "text-red-700 bg-red-50 border-red-200";
+  const label =
+    v.classification === "official"
+      ? "公的"
+      : v.classification === "corporate_trusted"
+      ? "信頼企業"
+      : v.classification === "corporate_unknown"
+      ? "企業・要確認"
+      : v.classification === "personal_blog"
+      ? "NG（個人ブログ）"
+      : "URL 不正";
+  return (
+    <div className="text-xs space-y-0.5 pl-2 border-l-2 border-slate-200">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className={`inline-block px-1.5 py-0.5 text-[10px] rounded border ${color}`}>
+          {label}
+        </span>
+        <a
+          href={c.url}
+          target="_blank"
+          rel="noreferrer"
+          className="text-blue-700 hover:underline break-all"
+        >
+          {c.url}
+        </a>
+      </div>
+      {c.title && <div className="text-slate-700">📄 {c.title}</div>}
+      {c.page_or_section && (
+        <div className="text-slate-600">📍 {c.page_or_section}</div>
+      )}
+      {c.quote && (
+        <div className="text-slate-500 italic">「{c.quote}」</div>
+      )}
+      {v.severity !== "ok" && (
+        <div className="text-[11px] text-slate-500">{v.reason}</div>
+      )}
+    </div>
   );
 }
 

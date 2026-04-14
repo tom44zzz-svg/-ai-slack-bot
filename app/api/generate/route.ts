@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { loadAll } from "@/lib/data-loader";
 import { buildPrompt } from "@/lib/prompt";
+import { verifyCitations } from "@/lib/sources";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -75,9 +76,39 @@ export async function POST(req: Request) {
       );
     }
 
+    // 各スライドの出典を検証
+    const slides = (parsed.slides || []).map((s: any) => {
+      const verified = verifyCitations(s.sources || []);
+      return { ...s, sources: verified };
+    });
+
+    // 全出典を集計
+    const allCitations = slides.flatMap((s: any) => s.sources || []);
+    const sourceSummary = {
+      total: allCitations.length,
+      ok: allCitations.filter((c: any) => c.verdict.severity === "ok").length,
+      warn: allCitations.filter((c: any) => c.verdict.severity === "warn").length,
+      block: allCitations.filter((c: any) => c.verdict.severity === "block").length,
+    };
+
+    // ブロック級違反を risk_notes に自動追加
+    const riskNotes = [...(parsed.risk_notes || [])];
+    if (sourceSummary.block > 0) {
+      riskNotes.push({
+        rule_id: "rule_03_source",
+        note: `個人ブログ等の NG ドメインが ${sourceSummary.block} 件検出されました。該当 URL を公的ソースに差し替えてください。`,
+      });
+    }
+    if (sourceSummary.warn > 0) {
+      riskNotes.push({
+        rule_id: "rule_03_source",
+        note: `企業ドメインとして未登録のソースが ${sourceSummary.warn} 件あります。公的ソースか確認してください。`,
+      });
+    }
+
     // CTA スライドを固定追加
     const ctaSlide = {
-      index: (parsed.slides?.length || 0) + 1,
+      index: slides.length + 1,
       role: "CTA",
       template_id: "tpl_cta_phone",
       zone_top: { element: "heading", content: "不動産やお金に関するお役立ち情報を発信中！" },
@@ -91,6 +122,7 @@ export async function POST(req: Request) {
       },
       photo_hint: null,
       diagram: null,
+      sources: [],
       notes: "CTA 固定（cta_follow + cta_save の default_combination）",
     };
 
@@ -101,9 +133,10 @@ export async function POST(req: Request) {
         axes: format.axes,
       },
       titles: parsed.titles || [],
-      slides: [...(parsed.slides || []), ctaSlide],
+      slides: [...slides, ctaSlide],
       caption_outline: parsed.caption_outline || [],
-      risk_notes: parsed.risk_notes || [],
+      risk_notes: riskNotes,
+      source_summary: sourceSummary,
       cta_default: cta_patterns
         .filter((c) => c.default)
         .map((c) => c.copy_options[0]),

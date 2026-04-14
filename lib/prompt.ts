@@ -41,6 +41,23 @@ ${highRules.map((r) => `- [${r.id}] ${r.content}`).join("\n")}
 各スライドは zone_top / zone_middle / zone_bottom の 3 ゾーンで構成されます。
 各ゾーンに配置する要素（テキスト・図解・写真等）を明示してください。
 
+## 出典（エビデンス）の扱い — 重要
+
+制作ルール 3・4 に基づき、投稿内で数値・統計・制度・法令に触れる箇所には
+**必ず出典を構造化して添える**こと。以下を厳守：
+
+1. **許容ソース**：国・地方自治体（go.jp / lg.jp）、公益法人（or.jp）、
+   大学（ac.jp）、信頼できる企業の公式サイト（企業の自社情報に限る）。
+2. **NG ソース**：個人ブログ（note.com、ameblo、hatenablog、medium 等）、
+   まとめサイト、SNS 投稿、出典不明記事。これらは引用しないこと。
+3. **URL を必ず記載**：推測の URL は NG。本当に存在し、該当情報が載っている URL のみ。
+4. **何ページ／どのセクション**か具体的に：PDF なら『p.12』、Web なら『〇〇章』『〇〇
+   （見出し名）』のように特定できる形で記載。
+5. **数値・制度の記載がない**スライド（概念説明のみ、行動提案のみ等）は
+   出典不要（sources を空配列 [] にする）。
+6. **不明な場合**：URL を推測してはいけない。null を設定し、
+   risk_notes に『要・手動で出典追加』と記載すること。
+
 ## 出力形式（厳密に従う）
 以下の JSON のみを出力してください。前後に説明文を付けないでください。
 
@@ -57,7 +74,27 @@ ${highRules.map((r) => `- [${r.id}] ${r.content}`).join("\n")}
       "zone_bottom": { "element": "logo", "content": "ロゴ" },
       "photo_hint": "物体＋手元：家の模型を指し示す手元",
       "diagram": null,
+      "sources": [],
       "notes": "任意の補足"
+    },
+    {
+      "index": 3,
+      "role": "項目01",
+      "template_id": "tpl_item_beforeafter",
+      "zone_top": {"element": "heading", "content": "..."},
+      "zone_middle": {"element": "diagram", "content": "..."},
+      "zone_bottom": {"element": "highlight_box", "content": "住宅ローン控除は 2026 年末まで延長されています。"},
+      "photo_hint": null,
+      "diagram": "compare_before_after",
+      "sources": [
+        {
+          "url": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1213.htm",
+          "title": "国税庁 No.1213 認定住宅の新築等をした場合（住宅借入金等特別控除）",
+          "page_or_section": "制度概要・適用要件",
+          "quote": "令和4年1月1日から令和7年12月31日までの間に居住の用に供した場合…"
+        }
+      ],
+      "notes": ""
     }
   ],
   "caption_outline": [
