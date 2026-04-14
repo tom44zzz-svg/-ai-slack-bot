@@ -1,0 +1,68 @@
+# CTA パターン辞書
+#
+# 最終スライド（CTA）のアクション種別を定義。
+# スライド自体のデザインは templates.yaml の tpl_cta_phone / tpl_cta_illustration に準拠。
+# ここは「誘導先と訴求コピーのバリエーション」を持つ。
+#
+# 通常は cta_follow + cta_save を併置（Instagram フォロー＋保存の両方を促す）。
+# 記事内容に応じて cta_profile_hp / cta_caption_ref を追加。
+
+cta_patterns:
+
+  - id: cta_follow
+    name: "フォロー誘導"
+    action: "Instagram アカウントをフォロー"
+    copy_options:
+      - "フォローして最新情報を GET！"
+      - "フォローお願いします！"
+      - "お役立ち情報を発信中！"
+    placement: "最終スライド中央（黄色アクセントカード or 青ボタン）"
+    default: true
+    note: "すべての投稿で常設"
+
+  - id: cta_save
+    name: "保存誘導"
+    action: "投稿を保存（ブックマーク）"
+    copy_options:
+      - "いつでも見返せるように保存！"
+      - "後で見返すために保存！"
+      - "保存して、チェックリストとしてご活用ください"
+    placement: "最終スライド最下部（ブックマークアイコン付き）"
+    default: true
+    note: "cta_follow と併置するのが定番"
+
+  - id: cta_profile_hp
+    name: "プロフィール URL 誘導（HP 遷移）"
+    action: "プロフィール URL から公式 HP へ遷移"
+    copy_options:
+      - "詳細はプロフィールの URL から"
+      - "商品詳細・お問い合わせはプロフィール URL から"
+    placement: "キャプション内 or 本文スライド追記"
+    use_when:
+      - "商品詳細を確認してもらいたい"
+      - "貸付条件表などの法令表示が必要"
+      - "監修情報（制作ルール 10）を参照させる必要がある"
+    related_rule: rule_10_supervisor
+
+  - id: cta_caption_ref
+    name: "キャプション誘導"
+    action: "キャプション本文を読ませる"
+    copy_options:
+      - "詳しくはキャプションに記載しています。"
+      - "保存して、キャプションも後でチェック！"
+    placement: "本文スライド下部（tpl_item_cards_3 等で使用）"
+    use_when:
+      - "スライド内に収まりきらない情報量がある"
+      - "数値データ・法令条件など注記が必要"
+    related_rule: rule_04_citation
+
+# ---------------------------------------------------------------------------
+# デフォルトの組合せルール
+# ---------------------------------------------------------------------------
+default_combination:
+  always: [cta_follow, cta_save]
+  conditional:
+    - if: "本文スライドに商品訴求を含む"
+      add: cta_profile_hp
+    - if: "スライドに収まらない注記・詳細データがある"
+      add: cta_caption_ref

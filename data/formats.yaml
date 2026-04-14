@@ -1,128 +1,672 @@
-# 投稿フォーマット定義（組み合わせレシピ）
+# 投稿フォーマット定義（20 種 × 3 軸 × リスクフラグ）
 #
-# 考え方：
-#   投稿フォーマット = 「どのスライドテンプレを、どの順で、何枚並べるか」のレシピ
-#   テンプレ本体は slide-templates.yaml を参照（tpl_xxx 形式の ID）
+# 各フォーマットは以下を持つ：
+#   axes: 3 軸（hook / tone / structure）でタグ付け
+#   recipe: 本文スライドの構成（CTA は固定で自動追加、ここには含めない）
+#   title_templates: タイトル 3 案を生成するための雛形
+#   risk_flags: 制作ルール 14 項目への抵触可能性
+#   enterprise_caution: エンプラ運用上の注意レベル（ok / caution / avoid）
+#   example_topics: 使用可能なネタの例
 #
 # スキーマ：
 #   formats:
-#     - id: format_xxx
+#     - id: f_xxx
 #       name: "日本語名"
-#       description: "..."
-#       best_for:                 # 向いているネタの特性
-#         - "..."
-#       tone: "..."
-#       typical_slide_count: N    # 目安枚数（範囲可）
-#       recipe:                   # スライド構成（順序あり）
-#         - role: "..."           # 役割
-#           template: tpl_xxx     # 使うテンプレ ID
-#           repeat: N             # 繰り返し回数（デフォルト 1）
-#           optional: true/false  # 省略可か
+#       one_liner: "1 行説明"
+#       axes:
+#         hook: <elements 軸値>
+#         tone: positive / neutral / negative
+#         structure: list / step / compare / deepdive / story / qa / branch
+#       min_slides: N
+#       max_slides: N
+#       recipe:
+#         - role: "..."
+#           template_options: [tpl_xxx, tpl_yyy]
+#           repeat: N or "N〜M" or "variable"
+#           optional: true/false
+#       title_templates:
+#         - "<テンプレ文字列、{} 内は可変部>"
+#       risk_flags:
+#         - rule_id: <writing-rules.yaml の id>
+#           severity: low / medium / high
 #           note: "..."
-#       examples:                 # source-posts.yaml の id
-#         - post_xxx
+#       enterprise_caution: ok / caution / avoid
+#       example_topics:
+#         - "..."
 
 formats:
 
-  # -----------------------------------------------------------
-  - id: format_howto_n_sen
-    name: "ハウツー・N 選型"
-    description: |
-      1 つのテーマに対して N 個（主に 3〜7 個）の対処法／方法／ポイントを
-      ストーリー立てて紹介する王道フォーマット。
-      問題提起 → 言語化 → 対処法列挙 → CTA の流れ。
-    best_for:
-      - "読者が抱える具体的な困りごとに対し、複数の解決策を提示したいネタ"
-      - "対処法の各項目が独立しており、タイプが異なるネタ（事例別／対象別）"
-      - "『〜のときの対処法 N 選』『〇〇の方法 N つ』のような問いかけ型テーマ"
-    tone: "丁寧・共感"
-    typical_slide_count: "9〜11"
+  # =========================================================================
+  - id: f_n_sen
+    name: "N 選型"
+    one_liner: "「おすすめ / 対処法 N 選」を並列で紹介する王道"
+    axes:
+      hook: number
+      tone: positive
+      structure: list
+    min_slides: 6
+    max_slides: 10
     recipe:
       - role: "表紙"
-        template: tpl_cover_category
-      - role: "問題提起"
-        template: tpl_problem_quote
-      - role: "比較・導入"
-        template: tpl_compare_2x3
-        note: "今回紹介する N 選の導入につなげる"
-      - role: "項目"
-        template_options:             # ネタに応じて 1 スライドずつ選択
-          - tpl_item_beforeafter
-          - tpl_item_icons_3
-          - tpl_item_persona_table
-          - tpl_item_cards_3_caption_ref
-        repeat: "N (3〜7)"
-        note: "各項目でネタの性質に合うテンプレを選ぶ（同テンプレ連続も可）"
-      - role: "CTA"
-        template: tpl_cta_phone
-    examples:
-      - post_shinsa_5
-
-  # -----------------------------------------------------------
-  - id: format_checklist
-    name: "チェックリスト・カルーセル型"
-    description: |
-      『保存版 N つのチェックリスト』のように、
-      同質な項目を順番に並べる保存訴求型フォーマット。
-      各項目は同一テンプレで統一し、読み手が振り返りやすい構造。
-    best_for:
-      - "手順・確認項目を網羅したいネタ"
-      - "『保存して後で見返す』価値を訴求したいネタ"
-      - "各項目が同じ粒度・構造で並列可能なネタ"
-    tone: "実務的・信頼重視"
-    typical_slide_count: "9〜11"
-    recipe:
-      - role: "表紙"
-        template: tpl_cover_category
+        template_options: [tpl_cover_number]
       - role: "導入"
-        template: tpl_problem_quote
-        optional: true
-        note: "目次や全体像を示すスライドが挟まる場合あり（要確認）"
+        template_options: [tpl_intro_quote, tpl_intro_compare_table]
       - role: "項目"
-        template: tpl_item_beforeafter   # 本シリーズでは写真型が中心
-        repeat: "N (主に 7)"
-        note: |
-          本アカウントのチェックリスト系は『番号バッジ＋タイトル＋写真＋💡本文』の
-          統一テンプレ。bot 実装時はこのパターンを tpl_item_photo として分離検討。
-      - role: "CTA"
         template_options:
-          - tpl_cta_family
-          - tpl_cta_phone
-    examples:
-      - post_akiya_checklist_7
+          - tpl_item_photo
+          - tpl_item_illustration
+          - tpl_item_icons_3
+          - tpl_item_cards_3
+        repeat: "3〜7"
+      - role: "まとめ"
+        template_options: [tpl_summary_keypoints]
+        optional: true
+    title_templates:
+      - "{ターゲット}が知っておきたい{トピック} {N}選"
+      - "{トピック}の{観点} {N}選"
+      - "プロが選ぶ {トピック} {N}選"
+    risk_flags:
+      - rule_id: rule_03_source
+        severity: medium
+        note: "数字やランキング根拠は国・企業ソース必須"
+    enterprise_caution: ok
+    example_topics:
+      - "不動産担保ローン 審査落ち対処法 5 選"
+      - "空き家売却で注意すべきポイント 7 つ"
 
-  # -----------------------------------------------------------
-  - id: format_howto_case_based
-    name: "ケース分岐・解説型"
-    description: |
-      『〇〇できるか？』『〇〇の分け方』のような問いに対し、
-      ケースごとの選択肢を整理→推奨策を提案する解説フォーマット。
-      N 選型よりも構造的で、比較表・3 列並列・ケース別推薦などを多用する。
-    best_for:
-      - "読者の状況によって最適解が変わるネタ（ケース分岐）"
-      - "専門用語の整理と関係性の図解が必要なネタ"
-      - "制度・分類・手法の違いを示したいネタ"
-    tone: "解説的・中立"
-    typical_slide_count: "10〜12"
+  # =========================================================================
+  - id: f_ranking
+    name: "ランキング型"
+    one_liner: "TOP N で順位付きリストを提示"
+    axes:
+      hook: number
+      tone: positive
+      structure: list
+    min_slides: 6
+    max_slides: 10
     recipe:
       - role: "表紙"
-        template: tpl_cover_category
-      - role: "導入・問題提起"
-        template_options:
-          - tpl_problem_quote
-          - tpl_compare_2x3
-        note: "テーマに応じて選択"
-      - role: "条件・前提"
-        template: tpl_item_cards_2x2
+        template_options: [tpl_cover_number]
+      - role: "選定基準"
+        template_options: [tpl_intro_compare_table, tpl_intro_stat]
+      - role: "ランキング"
+        template_options: [tpl_item_photo, tpl_item_illustration]
+        repeat: "3〜7"
+        note: "1 位〜N 位を個別スライドで。ranking_top_n 図解を使うならまとめ 1 枚でも可"
+      - role: "まとめ"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "{トピック} 人気ランキング TOP{N}"
+      - "知っておきたい {トピック} TOP{N}"
+      - "プロが選ぶ {トピック} BEST{N}"
+    risk_flags:
+      - rule_id: rule_03_source
+        severity: high
+        note: "ランキング根拠は国・企業データ必須。個人の主観で順位付けは NG"
+      - rule_id: rule_07_no_copy
+        severity: medium
+        note: "他メディアのランキングの丸パクリ NG"
+    enterprise_caution: ok
+
+  # =========================================================================
+  - id: f_howto_steps
+    name: "ハウツー手順型"
+    one_liner: "「〇〇のやり方」を Step で示す"
+    axes:
+      hook: promise
+      tone: neutral
+      structure: step
+    min_slides: 5
+    max_slides: 10
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_pill_title]
+      - role: "導入"
+        template_options: [tpl_intro_quote]
         optional: true
-        note: "『〇〇の場合』『〇〇が必要』のような前提整理"
-      - role: "選択肢比較"
-        template: tpl_compare_3_column
-        note: "N 個の選択肢を並列比較"
-      - role: "ケース別推薦"
-        template: tpl_recommend_by_case
-        note: "ケースごとに最適解（＝自社サービス）を提案"
-      - role: "CTA"
-        template: tpl_cta_phone
-    examples:
-      - post_souzoku_bunkatsu
+      - role: "Step"
+        template_options: [tpl_step_flow, tpl_item_photo, tpl_item_illustration]
+        repeat: "3〜7"
+      - role: "まとめ"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "{トピック}の進め方 完全ガイド"
+      - "はじめての {トピック} Step-by-Step"
+      - "{トピック}を成功させる {N} ステップ"
+    risk_flags:
+      - rule_id: rule_09_institution_check
+        severity: high
+        note: "手順内で制度・法令を扱う場合は最新情報確認必須"
+    enterprise_caution: ok
+
+  # =========================================================================
+  - id: f_checklist
+    name: "チェックリスト型"
+    one_liner: "保存版として使える N 項目のチェック"
+    axes:
+      hook: promise
+      tone: neutral
+      structure: list
+    min_slides: 7
+    max_slides: 10
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_pill_title]
+        note: "『【保存版】』を冠するのが定番"
+      - role: "項目"
+        template_options: [tpl_item_photo, tpl_item_illustration]
+        repeat: "5〜7"
+      - role: "まとめ"
+        template_options: [tpl_item_checklist, tpl_summary_keypoints]
+    title_templates:
+      - "【保存版】{トピック} {N}つのチェックリスト"
+      - "{ターゲット}が確認すべき {トピック} チェック {N}項目"
+      - "抜け漏れ防止！{トピック} {N}ステップ チェックリスト"
+    risk_flags:
+      - rule_id: rule_09_institution_check
+        severity: high
+        note: "制度・法令チェック項目を扱う場合は最新情報確認必須"
+    enterprise_caution: ok
+    example_topics:
+      - "空き家売却 7 つのチェックリスト"
+
+  # =========================================================================
+  - id: f_what_is
+    name: "用語解説型"
+    one_liner: "「〇〇とは？」を定義→特徴→具体例で解説"
+    axes:
+      hook: category
+      tone: neutral
+      structure: deepdive
+    min_slides: 5
+    max_slides: 9
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_pill_title, tpl_cover_question]
+      - role: "定義"
+        template_options: [tpl_intro_quote, tpl_item_illustration]
+      - role: "特徴・仕組み"
+        template_options: [tpl_item_icons_3, tpl_item_cards_2x2]
+        repeat: "2〜3"
+      - role: "具体例"
+        template_options: [tpl_item_photo, tpl_item_cards_3]
+      - role: "まとめ"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "{トピック}とは？仕組みと特徴を解説"
+      - "知っておきたい {トピック} の基本"
+      - "{トピック}をわかりやすく図解"
+    risk_flags:
+      - rule_id: rule_09_institution_check
+        severity: high
+        note: "制度・法令の説明は最新状態を確認"
+      - rule_id: rule_04_citation
+        severity: medium
+        note: "定義の根拠に引用する場合は出典 URL 必須"
+    enterprise_caution: ok
+
+  # =========================================================================
+  - id: f_beginner_guide
+    name: "基礎知識ガイド型"
+    one_liner: "「知っておきたい〇〇」初心者向けの全体像"
+    axes:
+      hook: promise
+      tone: neutral
+      structure: deepdive
+    min_slides: 7
+    max_slides: 10
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_pill_title]
+      - role: "全体像"
+        template_options: [tpl_intro_compare_table, tpl_item_cards_2x2]
+      - role: "要素別解説"
+        template_options: [tpl_item_photo, tpl_item_illustration, tpl_item_icons_3]
+        repeat: "3〜5"
+      - role: "注意点"
+        template_options: [tpl_item_warning]
+        optional: true
+      - role: "まとめ"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "知っておきたい！ {トピック} の基礎知識"
+      - "{ターゲット}のための {トピック} 入門"
+      - "{トピック} まるわかりガイド"
+    risk_flags:
+      - rule_id: rule_09_institution_check
+        severity: high
+      - rule_id: rule_10_supervisor
+        severity: medium
+        note: "「FP 監修」を謳う場合はキャプション URL 必須"
+    enterprise_caution: ok
+
+  # =========================================================================
+  - id: f_compare
+    name: "比較・VS 型"
+    one_liner: "A と B の違いを軸で整理"
+    axes:
+      hook: category
+      tone: neutral
+      structure: compare
+    min_slides: 5
+    max_slides: 9
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_question, tpl_cover_pill_title]
+      - role: "比較表"
+        template_options: [tpl_intro_compare_table]
+      - role: "A 側詳細"
+        template_options: [tpl_item_photo, tpl_item_cards_3]
+      - role: "B 側詳細"
+        template_options: [tpl_item_photo, tpl_item_cards_3]
+      - role: "使い分け"
+        template_options: [tpl_summary_recommend]
+    title_templates:
+      - "{A} と {B} の違いとは？"
+      - "知っておきたい {A} vs {B}"
+      - "どっちを選ぶ？ {A} と {B} の使い分け"
+    risk_flags:
+      - rule_id: rule_08_saison
+        severity: low
+        note: "自社サービス言及時『セゾンのリースバック』以外で『セゾン』単独使用 NG"
+    enterprise_caution: ok
+
+  # =========================================================================
+  - id: f_contrast
+    name: "対比型（旧 Before/After 拡張）"
+    one_liner: "2 つの状態・人・行動を対比して示す"
+    axes:
+      hook: promise
+      tone: neutral
+      structure: compare
+    min_slides: 5
+    max_slides: 9
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_pill_title, tpl_cover_question]
+      - role: "対比軸の提示"
+        template_options: [tpl_intro_compare_table]
+      - role: "対比詳細"
+        template_options: [tpl_item_beforeafter]
+        repeat: "2〜4"
+        note: "diagram_options から選ぶ：before_after / pros_cons / do_dont / vs_2col"
+      - role: "まとめ"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "{対象} の Before / After で変わること"
+      - "{A}している人と{B}していない人の違い"
+      - "{トピック} のメリット・デメリット完全整理"
+    risk_flags: []
+    enterprise_caution: ok
+
+  # =========================================================================
+  - id: f_case_branch
+    name: "ケース分岐型"
+    one_liner: "状況別に最適解を提案"
+    axes:
+      hook: question
+      tone: neutral
+      structure: branch
+    min_slides: 7
+    max_slides: 10
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_question]
+      - role: "全体像"
+        template_options: [tpl_intro_compare_table]
+      - role: "前提整理"
+        template_options: [tpl_item_cards_2x2]
+        optional: true
+      - role: "ケース別選択肢"
+        template_options: [tpl_item_cards_3, tpl_item_beforeafter]
+        repeat: "2〜3"
+      - role: "推薦"
+        template_options: [tpl_summary_recommend]
+    title_templates:
+      - "ケース別 {トピック} の選び方"
+      - "{状況}ならどうする？ {トピック} の判断基準"
+      - "状況別おすすめ {トピック}"
+    risk_flags:
+      - rule_id: rule_09_institution_check
+        severity: high
+    enterprise_caution: ok
+    example_topics:
+      - "実家相続で揉めないための分割方法"
+
+  # =========================================================================
+  - id: f_ng_pattern
+    name: "失敗・NG 型"
+    one_liner: "やりがちな失敗 N 選を警告"
+    axes:
+      hook: mistake
+      tone: negative
+      structure: list
+    min_slides: 6
+    max_slides: 10
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_number, tpl_cover_pill_title]
+      - role: "導入"
+        template_options: [tpl_intro_quote]
+      - role: "NG 項目"
+        template_options: [tpl_item_warning, tpl_item_beforeafter]
+        repeat: "3〜5"
+      - role: "正解提示"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "やりがちな {トピック} のミス {N}選"
+      - "{ターゲット}が失敗する {N}パターン"
+      - "プロが見てきた {トピック} NG 行動 {N}選"
+    risk_flags:
+      - rule_id: rule_13_photo
+        severity: high
+        note: "悲壮感の強い写真・表情を使わない。遠景・後ろ姿・物体で表現"
+      - rule_id: rule_07_no_copy
+        severity: medium
+    enterprise_caution: caution
+    note: "失敗をあおる表現はユーザー寄り添い姿勢に反するため、トーンは警告→解決提示の流れを厳守"
+
+  # =========================================================================
+  - id: f_dont_miss_out
+    name: "知らないと損型"
+    one_liner: "「〇〇しないと損する」で FOMO を喚起"
+    axes:
+      hook: mistake
+      tone: negative
+      structure: list
+    min_slides: 6
+    max_slides: 10
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_pill_title, tpl_cover_number]
+      - role: "警告導入"
+        template_options: [tpl_intro_stat, tpl_intro_quote]
+      - role: "損する項目"
+        template_options: [tpl_item_beforeafter, tpl_item_warning]
+        repeat: "3〜5"
+      - role: "対策まとめ"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "知らないと損する {トピック} {N}つ"
+      - "{N}%が見落とす {トピック} のポイント"
+      - "今すぐ知りたい {トピック} の盲点"
+    risk_flags:
+      - rule_id: rule_13_photo
+        severity: high
+      - rule_id: rule_03_source
+        severity: high
+        note: "『N%が見落とす』系の統計は国・企業ソース必須"
+    enterprise_caution: caution
+
+  # =========================================================================
+  - id: f_myth_fact
+    name: "Myth vs Fact 型"
+    one_liner: "常識・誤解を反転させて正しい理解に導く"
+    axes:
+      hook: myth
+      tone: neutral
+      structure: compare
+    min_slides: 5
+    max_slides: 9
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_question, tpl_cover_pill_title]
+      - role: "誤解の提示"
+        template_options: [tpl_intro_quote]
+      - role: "反転（Myth vs Fact）"
+        template_options: [tpl_item_beforeafter]
+        repeat: "2〜4"
+        note: "diagram: compare_vs_2col で『思い込み／実は』を対比"
+      - role: "まとめ"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "【誤解】{トピック} の本当のところ"
+      - "実は違う！ {トピック} の常識 {N}選"
+      - "知らないと恥ずかしい {トピック} の勘違い"
+    risk_flags:
+      - rule_id: rule_03_source
+        severity: high
+        note: "『Fact』側の根拠が国・企業ソースで裏付けされていること"
+    enterprise_caution: ok
+
+  # =========================================================================
+  - id: f_faq
+    name: "Q&A / FAQ 型"
+    one_liner: "よくある質問を一問一答で整理"
+    axes:
+      hook: question
+      tone: neutral
+      structure: qa
+    min_slides: 6
+    max_slides: 10
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_question]
+      - role: "Q&A"
+        template_options: [tpl_qa_pair]
+        repeat: "4〜7"
+      - role: "まとめ"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "{トピック} によくある質問 {N}選"
+      - "{ターゲット}が疑問に思う {トピック} Q&A"
+      - "{トピック} の FAQ まとめ"
+    risk_flags:
+      - rule_id: rule_09_institution_check
+        severity: high
+    enterprise_caution: ok
+
+  # =========================================================================
+  - id: f_quiz
+    name: "クイズ型"
+    one_liner: "読者に問題を出して参加を促す"
+    axes:
+      hook: question
+      tone: positive
+      structure: qa
+    min_slides: 6
+    max_slides: 10
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_question]
+      - role: "クイズ出題"
+        template_options: [tpl_quiz_reveal]
+        repeat: "3〜5"
+      - role: "解答・解説"
+        template_options: [tpl_qa_pair]
+        note: "直前の出題に対する答えを次スライドで見せる"
+      - role: "まとめ"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "あなたは答えられる？ {トピック} クイズ"
+      - "{N}問でわかる {トピック} の理解度テスト"
+      - "挑戦！ {トピック} 基礎クイズ"
+    risk_flags:
+      - rule_id: rule_07_no_copy
+        severity: medium
+    enterprise_caution: ok
+
+  # =========================================================================
+  - id: f_diagnosis
+    name: "診断型"
+    one_liner: "質問に答えていくと自分のタイプがわかる"
+    axes:
+      hook: question
+      tone: positive
+      structure: qa
+    min_slides: 6
+    max_slides: 10
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_question]
+      - role: "質問"
+        template_options: [tpl_quiz_reveal]
+        repeat: "3〜5"
+      - role: "タイプ別結果"
+        template_options: [tpl_item_cards_3, tpl_summary_recommend]
+      - role: "まとめ"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "あなたは何タイプ？ {トピック} 診断"
+      - "{N}問でわかる {トピック} タイプ診断"
+      - "自分に合う {トピック} は？"
+    risk_flags:
+      - rule_id: rule_09_institution_check
+        severity: medium
+        note: "診断結果に制度・商品を紐付ける場合は最新情報確認"
+    enterprise_caution: caution
+    note: "結果が属人的判断に依存しすぎないよう、定型化された分類軸を使う"
+
+  # =========================================================================
+  - id: f_story
+    name: "体験談・ストーリー型"
+    one_liner: "時系列で物語として伝える"
+    axes:
+      hook: story
+      tone: positive
+      structure: story
+    min_slides: 6
+    max_slides: 10
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_casual_hook]
+      - role: "状況"
+        template_options: [tpl_intro_quote, tpl_item_photo]
+      - role: "転機・選択"
+        template_options: [tpl_item_beforeafter]
+      - role: "結果・学び"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "{主人公}が {トピック} で学んだこと"
+      - "実例で見る {トピック} の事例"
+      - "{トピック} で {結果} した話"
+    risk_flags:
+      - rule_id: rule_07_no_copy
+        severity: high
+        note: "他者の体験談の転用 NG"
+      - rule_id: rule_13_photo
+        severity: medium
+    enterprise_caution: caution
+    note: "エンプラでは「案件事例」として客観化された形に限定推奨。主観的な個人体験は避ける"
+
+  # =========================================================================
+  - id: f_arua_aru
+    name: "あるある型"
+    one_liner: "共感できる「あるある」を並列"
+    axes:
+      hook: story
+      tone: positive
+      structure: list
+    min_slides: 5
+    max_slides: 10
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_casual_hook]
+      - role: "あるある項目"
+        template_options: [tpl_item_illustration, tpl_item_icons_3]
+        repeat: "4〜7"
+      - role: "まとめ"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "{ターゲット}あるある {N}選"
+      - "わかる…！ {トピック} あるある"
+      - "{トピック} でよくある {N}シーン"
+    risk_flags:
+      - rule_id: rule_13_photo
+        severity: medium
+    enterprise_caution: caution
+    note: "金融・不動産では自虐・ネガティブあるあるに注意。軽いトーンでも誤解を招かない表現に"
+
+  # =========================================================================
+  - id: f_diagram_summary
+    name: "図解まとめ型"
+    one_liner: "1 投稿でテーマを図解のみで完結"
+    axes:
+      hook: promise
+      tone: neutral
+      structure: deepdive
+    min_slides: 5
+    max_slides: 9
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_pill_title]
+      - role: "全体像"
+        template_options: [tpl_intro_compare_table, tpl_item_cards_2x2]
+      - role: "詳細図解"
+        template_options: [tpl_item_icons_3, tpl_item_cards_3, tpl_step_flow]
+        repeat: "2〜4"
+      - role: "まとめ"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "1 枚でわかる {トピック}"
+      - "図解で理解する {トピック}"
+      - "{トピック} まるわかり図鑑"
+    risk_flags: []
+    enterprise_caution: ok
+
+  # =========================================================================
+  - id: f_news
+    name: "時事ニュース型"
+    one_liner: "制度改正・最新ニュースを解説"
+    axes:
+      hook: category
+      tone: neutral
+      structure: deepdive
+    min_slides: 6
+    max_slides: 10
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_pill_title]
+      - role: "ニュース概要"
+        template_options: [tpl_intro_stat, tpl_intro_quote]
+      - role: "変更点解説"
+        template_options: [tpl_item_beforeafter, tpl_item_cards_2x2]
+        repeat: "2〜4"
+      - role: "影響・対策"
+        template_options: [tpl_summary_recommend, tpl_summary_keypoints]
+    title_templates:
+      - "【{年月}】{トピック} が変わります"
+      - "押さえておきたい {トピック} の最新動向"
+      - "{トピック} 制度改正のポイント"
+    risk_flags:
+      - rule_id: rule_09_institution_check
+        severity: high
+        note: "制度改正ネタは最重要：存続確認・最新内容確認 必須"
+      - rule_id: rule_04_citation
+        severity: high
+      - rule_id: rule_03_source
+        severity: high
+    enterprise_caution: ok
+
+  # =========================================================================
+  - id: f_data_explain
+    name: "データ解説型"
+    one_liner: "統計・割合を起点にテーマを解説"
+    axes:
+      hook: category
+      tone: neutral
+      structure: deepdive
+    min_slides: 5
+    max_slides: 9
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_pill_title, tpl_cover_question]
+      - role: "データ提示"
+        template_options: [tpl_intro_stat]
+      - role: "背景解説"
+        template_options: [tpl_item_icons_3, tpl_item_cards_2x2]
+        repeat: "1〜3"
+      - role: "示唆・対策"
+        template_options: [tpl_summary_keypoints]
+    title_templates:
+      - "データで見る {トピック}"
+      - "{N}% が知らない {トピック} の実態"
+      - "{統計} から読み解く {トピック}"
+    risk_flags:
+      - rule_id: rule_03_source
+        severity: high
+        note: "統計は国・企業データ必須（個人ブログ／非公式集計 NG）"
+      - rule_id: rule_04_citation
+        severity: high
+        note: "出典 URL をキャプションに明示"
+    enterprise_caution: ok

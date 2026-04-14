@@ -1,0 +1,165 @@
+# 制作ルール辞書（14 項目）
+#
+# クライアント（セゾンファンデックス）から提示された制作ルールの機械可読版。
+# formats.yaml の risk_flags から rule_id で参照される。
+# bot の自動チェック項目としても利用。
+#
+# 方針：抵触 0 を強制せず、「違反する可能性」を検知して通知する。
+#
+# severity:
+#   high    … 違反すると確実に問題（必ず要確認）
+#   medium  … 文脈により問題（要レビュー）
+#   low     … 推奨事項（改善の余地あり）
+#
+# detection:
+#   auto    … パターンマッチで自動検出可能
+#   manual  … 人間による確認が必要
+#   mixed   … 自動検出 + 人間判断
+
+rules:
+
+  - id: rule_01_desu_masu
+    category: "文体"
+    content: "基本的に『ですます調』で統一（句読点使用）"
+    severity: medium
+    detection: auto
+    detection_pattern: "文末が『だ』『である』で終わる文（体言止め以外）を検出"
+
+  - id: rule_02_taigen_dome
+    category: "文体"
+    content: "用語説明・要約まとめ箇所では体言止め可。句読点は使用しない"
+    severity: low
+    detection: manual
+    note: "体言止めと『ですます調』の使い分けは意図的に判断"
+
+  - id: rule_03_source
+    category: "情報ソース"
+    content: "データの参考・ソースは国、企業に限る。個人ブログからの引用は NG"
+    severity: high
+    detection: mixed
+    detection_pattern: "引用 URL に blog / ameblo / note.com などの個人ドメインを含む場合に警告"
+    applies_when:
+      - "統計データを提示する時"
+      - "ランキング根拠を示す時"
+      - "『N% が〜』のような数値を使う時"
+
+  - id: rule_04_citation
+    category: "情報ソース"
+    content: "引用する場合は引用元の URL を記載する"
+    severity: high
+    detection: manual
+    applies_when:
+      - "外部データ・記事を引用する時"
+      - "統計数字を示す時"
+
+  - id: rule_05_factcheck_url
+    category: "情報ソース"
+    content: "事実確認に必要な URL は、コメントで入れる"
+    severity: medium
+    detection: manual
+
+  - id: rule_06_unified_notation
+    category: "表記"
+    content: "統一表記ルールは別シート参照（×分かる→〇わかる / ×掛かる→〇かかる / ×業者→〇事業者 / ×不動産事業者→〇不動産会社）"
+    severity: medium
+    detection: auto
+    detection_pattern: "NG 表記ワードリストでマッチ検出"
+    known_pairs:
+      - ng: "分かる"
+        ok: "わかる"
+      - ng: "掛かる"
+        ok: "かかる"
+      - ng: "業者"
+        ok: "事業者"
+      - ng: "不動産事業者"
+        ok: "不動産会社"
+    note: "完全版は先方提供の別シートを読み込む必要あり（TODO）"
+
+  - id: rule_07_no_copy
+    category: "コンプライアンス"
+    content: "図解やテキスト文章のコピペ、盗用 NG"
+    severity: high
+    detection: manual
+    note: "Web 検索結果の直引用は必ずリライト or 出典明示"
+
+  - id: rule_08_saison
+    category: "固有名詞"
+    content: "『セゾンのリースバック』以外で『セゾン』という呼称は NG"
+    severity: high
+    detection: auto
+    detection_pattern: "『セゾン』単体表記（『セゾンのリースバック』『セゾンファンデックス』を除く）を検出"
+    allowed_usages:
+      - "セゾンのリースバック"
+      - "セゾンファンデックス"
+      - "クレディセゾン"
+
+  - id: rule_09_institution_check
+    category: "コンプライアンス"
+    content: |
+      制度等を取り上げる際：
+      ・制度が存続しているか（していない場合は記載しない）
+      ・制度内容に変更はないか（変更がある場合は最新情報を記載）
+      参照元に不備があった場合は SF 側へ周知
+    severity: high
+    detection: manual
+    applies_when:
+      - "税制・補助金・ローン制度などを説明する時"
+      - "法令・規則に言及する時"
+      - "時事ニュース型・ケース分岐型・基礎知識型で制度を扱う時"
+
+  - id: rule_10_supervisor
+    category: "コンプライアンス"
+    content: |
+      『FP 監修』『専門家監修』等を使用する場合は、キャプション内に以下を明示：
+      ・商品問合せ URL
+      ・貸付条件表 URL
+      ・監修者情報 URL（https://www.fundex.co.jp/contents/post/41）
+    severity: high
+    detection: auto
+    detection_pattern: "『FP 監修』『専門家監修』の出現を検出 → キャプションに URL 3 点があるか確認"
+
+  - id: rule_11_stories_no_supervisor
+    category: "媒体別"
+    content: "ストーリーズでは『FP 監修』『専門家監修』等のフレーズ使用 NG"
+    severity: high
+    detection: manual
+    applies_when:
+      - "媒体がストーリーズの時"
+
+  - id: rule_12_recommend_within_2months
+    category: "媒体別"
+    content: |
+      おすすめ投稿として紹介する過去投稿は、投稿日から起算して 2 ヶ月以内のもののみ。
+      紹介時は投稿日の記載を廃止し、サムネイル画像のみ記載。
+    severity: medium
+    detection: auto
+    applies_when:
+      - "過去投稿を引用する時"
+
+  - id: rule_13_photo
+    category: "素材"
+    content: |
+      実写素材：以下のみ可
+      ・風景
+      ・物体＋手元
+      ・人物が写っているが遠景で顔が鮮明でない
+      ・人物の顔が鮮明でない（後ろ姿など）
+      ・悲壮感が強すぎない素材
+      理由：金融関連はデリケートなテーマ。困窮・悲壮感は類似状況のユーザーを傷つけうるため。
+    severity: high
+    detection: manual
+    applies_to_moods: [scenery, object_handheld, person_far, person_back, object_symbolic]
+    ng_moods:
+      - "顔が鮮明な人物"
+      - "悲壮感が強すぎる表情・シチュエーション"
+
+  - id: rule_14_cover_photo_unique
+    category: "素材"
+    content: |
+      フィード投稿の表紙背景画像は、当面は他のフィード投稿と重複しないように選定する。
+      Canva 上でストックが尽きた場合は本ルール再考。
+    severity: medium
+    detection: auto
+    detection_pattern: "表紙背景画像の過去使用履歴と照合"
+    applies_when:
+      - "表紙スライドの背景写真を選定する時"

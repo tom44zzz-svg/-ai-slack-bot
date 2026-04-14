@@ -1,0 +1,168 @@
+# プロット案 品質チェックリスト（16 項目）
+#
+# クライアント提示のプロット案チェック項目を機械可読化。
+# bot の出力直後にこのリストで自動セルフチェック → 不合格項目はユーザーに通知。
+#
+# category:
+#   overall    … 全体の整合性
+#   content    … スライド内容
+#   visual     … ビジュアル面
+#
+# ★ 印はクライアント側で特に重視されている項目
+
+checklist:
+
+  # =========================================================================
+  # 全体の整合性の確認
+  # =========================================================================
+  - id: check_01_cta_match
+    category: overall
+    star: false
+    content: "CTA や投稿の狙いに適した構成になっているか"
+    verify_by: |
+      - formats.yaml で定義されたフォーマットの recipe 通りに構成されている
+      - cta-patterns.yaml の default_combination が適用されている
+
+  - id: check_02_flow_natural
+    category: overall
+    star: false
+    content: "構成の流れが自然か。読み進めやすい流れになっているか"
+    verify_by: |
+      - 表紙 → 導入 → 本文 → まとめ → CTA の順序が守られている
+      - スライド間のフッター誘導（次項予告）が一貫している
+
+  - id: check_03_target_clear
+    category: overall
+    star: false
+    content: "ターゲットに刺さる内容か、誰向けの投稿かが明確になっているか"
+    verify_by: |
+      - ネタ入力時に『ターゲット』が指定されている
+      - タイトル案に『{ターゲット}』が反映されている
+
+  - id: check_04_axis_consistency
+    category: overall
+    star: false
+    content: "構成の軸がずれていないか"
+    verify_by: |
+      - フック・トーン・構造の 3 軸が全スライドで一貫
+
+  # =========================================================================
+  # スライド内容の確認
+  # =========================================================================
+  - id: check_05_interesting_title
+    category: content
+    star: false
+    content: "興味をひくタイトルになっているか"
+    verify_by: |
+      - タイトル 3 案のうち 1 つ以上でフックが効いている
+      - 数字・問いかけ・反転などの要素が含まれる
+
+  - id: check_06_intro_empathy
+    category: content
+    star: false
+    content: "導入として、共感や問題提起を設置するなど、自分ごととしてとらえやすい導入になっているか"
+    verify_by: |
+      - 2 枚目に tpl_intro_quote / tpl_intro_compare_table / tpl_intro_stat のいずれかを配置
+
+  - id: check_07_concrete_examples
+    category: content
+    star: false
+    content: "具体事例などを挙げてわかりやすく説明ができているか"
+    verify_by: |
+      - 本文スライドに writing_element=illustration or diagram=具体例の提示を含む
+
+  - id: check_08_no_misleading_shortening
+    category: content
+    star: true
+    content: "短文にすることを意識しすぎて誤解させる記載になっていないか"
+    verify_by: |
+      - 文字数上限ぎりぎりで情報が削られていないか人間判断
+    severity: high
+
+  - id: check_09_cta_appropriate
+    category: content
+    star: false
+    content: "適切な CTA になっているか。ユーザーにとって受け取りやすい訴求になっているか"
+    verify_by: |
+      - cta-patterns.yaml の default_combination に準拠
+
+  - id: check_10_accuracy_source
+    category: content
+    star: true
+    content: "情報の正確性や根拠があるか。参照元がある場合は出典として記載されているか"
+    verify_by: |
+      - 数値・統計の引用がある場合、出典 URL が付与されている（rule_03 / rule_04 抵触なし）
+    severity: high
+
+  - id: check_11_no_exaggeration
+    category: content
+    star: false
+    content: "誇張やミスリードがないか"
+    verify_by: "人間判断（『必ず』『絶対』『100%』等の断定表現に注意）"
+
+  - id: check_12_corporate_appropriate
+    category: content
+    star: false
+    content: "企業発信する情報として適切な内容になっているか"
+    verify_by: |
+      - enterprise_caution = caution 以上のフォーマットは人間レビュー必須
+      - rule_08_saison / rule_13_photo 抵触なし
+
+  - id: check_13_unified_notation
+    category: content
+    star: true
+    content: "統一表記の通りになっているか（×分かる→〇わかる 等）"
+    verify_by: |
+      - writing-rules.yaml の rule_06_unified_notation known_pairs でマッチ検出
+    severity: high
+    auto: true
+
+  # =========================================================================
+  # ビジュアル面の確認
+  # =========================================================================
+  - id: check_14_visual_not_text_only
+    category: visual
+    star: true
+    content: "テキスト情報のみの説明になっていないか。視覚的にわかりやすくできているか"
+    verify_by: |
+      - 各スライドの zone_middle に diagram / photo / illustration のいずれかが含まれる
+      - テキスト要素のみのスライドが 2 枚以上連続していない
+    severity: high
+    auto: true
+
+  - id: check_15_tone_consistency
+    category: visual
+    star: false
+    content: "過去投稿とトンマナがあっているか（文体：ですます調＋句読点、用語説明・要約：体言止め＋句読点なし）"
+    verify_by: |
+      - rule_01 / rule_02 の検出パターンと整合
+
+  - id: check_16_text_density
+    category: visual
+    star: true
+    content: "改行・文字量は適切か。1 スライドあたりの情報過多になっていないか"
+    verify_by: |
+      - 各要素の text_limit_chars を超えていない
+      - 1 スライドに要素が 5 つ以上入っていない
+    severity: high
+    auto: true
+
+  - id: check_17_heading_design
+    category: visual
+    star: false
+    content: "見出しデザインやポイント記載、その他のまとめ方が適切か"
+    verify_by: "人間判断（クリエイティブチェック時）"
+
+# ---------------------------------------------------------------------------
+# 自動チェック可能な項目
+# ---------------------------------------------------------------------------
+auto_checkable:
+  - check_13_unified_notation
+  - check_14_visual_not_text_only
+  - check_16_text_density
+
+manual_review_required:
+  - check_08_no_misleading_shortening
+  - check_10_accuracy_source
+  - check_11_no_exaggeration
+  - check_17_heading_design

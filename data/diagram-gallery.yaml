@@ -140,14 +140,12 @@ diagrams:
     name: "ツリー関係図"
     category: "階層"
     ascii_preview: |
-             ┌────┐
-             │ 親 │
-             └─┬──┘
-          ┌────┴────┐
-          ↓         ↓
-        ┌──┐      ┌──┐
-        │ A│      │ B│
-        └──┘      └──┘
+      ┌────┐
+      │ 親 │
+      └─┬──┘
+      ┌─┴──┐
+      ↓    ↓
+      A    B
     use_case: "親子関係・分配・分岐を示す"
     text_slots: "可変"
     photo_hint: null
@@ -264,10 +262,10 @@ diagrams:
     name: "大数字強調"
     category: "強調"
     ascii_preview: |
-              ┌─────┐
-              │ 80% │
-              └─────┘
-          ～の人が知らない
+      ┌─────┐
+      │ 80% │
+      └─────┘
+      ～の人が知らない
     use_case: "統計・割合を一枚で強く訴求"
     text_slots: 2
     photo_hint: "背景に薄く関連写真を重ねる"
