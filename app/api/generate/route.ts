@@ -158,6 +158,12 @@ export async function POST(req: Request) {
     const allCitations = slides.flatMap((s: any) => s.sources || []);
     const sourceSummary = {
       total: allCitations.length,
+      preferred: allCitations.filter(
+        (c: any) => c.verdict.classification === "preferred"
+      ).length,
+      official: allCitations.filter(
+        (c: any) => c.verdict.classification === "official"
+      ).length,
       ok: allCitations.filter((c: any) => c.verdict.severity === "ok").length,
       warn: allCitations.filter((c: any) => c.verdict.severity === "warn").length,
       block: allCitations.filter((c: any) => c.verdict.severity === "block").length,
@@ -175,6 +181,12 @@ export async function POST(req: Request) {
       riskNotes.push({
         rule_id: "rule_03_source",
         note: `企業ドメインとして未登録のソースが ${sourceSummary.warn} 件あります。公的ソースか確認してください。`,
+      });
+    }
+    if (sourceSummary.total > 0 && sourceSummary.preferred === 0) {
+      riskNotes.push({
+        rule_id: "fundex_coverage",
+        note: "セゾンファンデックス自社コラム（fundex.co.jp/contents/）のカバレッジがありません。将来のコラム化候補として記録を推奨。",
       });
     }
 

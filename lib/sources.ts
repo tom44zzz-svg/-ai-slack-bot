@@ -3,6 +3,11 @@
  * 制作ルール 3（国・企業に限る、個人ブログ NG）を機械チェック。
  */
 
+// 最優先ソース（セゾンファンデックス 自社コラム）
+const PREFERRED_DOMAINS = ["fundex.co.jp"];
+// fundex.co.jp の中でも特に『/contents/』配下を自社コラムとして最優先
+const PREFERRED_PATH_PREFIXES = ["/contents/"];
+
 // 公的ドメインのホワイトリスト
 const PUBLIC_DOMAIN_SUFFIXES = [
   // 日本の公的機関
@@ -33,7 +38,6 @@ const PERSONAL_BLOG_DOMAINS = [
 
 // 既知の信頼できる企業・メディア（必要に応じて追加）
 const TRUSTED_CORPORATE_DOMAINS = [
-  "fundex.co.jp",     // セゾンファンデックス
   "saisoncard.co.jp", // クレディセゾン
   "reinfolib.mlit.go.jp", // 不動産情報ライブラリ
   "e-gov.go.jp",
@@ -47,15 +51,24 @@ const TRUSTED_CORPORATE_DOMAINS = [
 export type SourceVerdict = {
   url: string;
   domain: string;
-  classification: "official" | "corporate_trusted" | "corporate_unknown" | "personal_blog" | "invalid";
+  classification:
+    | "preferred"
+    | "official"
+    | "corporate_trusted"
+    | "corporate_unknown"
+    | "personal_blog"
+    | "invalid";
   severity: "ok" | "warn" | "block";
   reason: string;
 };
 
 export function verifySource(url: string): SourceVerdict {
   let host = "";
+  let pathname = "";
   try {
-    host = new URL(url).hostname.toLowerCase();
+    const u = new URL(url);
+    host = u.hostname.toLowerCase();
+    pathname = u.pathname;
   } catch {
     return {
       url,
@@ -75,6 +88,24 @@ export function verifySource(url: string): SourceVerdict {
         classification: "personal_blog",
         severity: "block",
         reason: "個人ブログドメイン（制作ルール 3 抵触）",
+      };
+    }
+  }
+
+  // 最優先：セゾンファンデックス 自社コラム（/contents/ 配下を特に優先）
+  for (const d of PREFERRED_DOMAINS) {
+    if (host === d || host.endsWith("." + d)) {
+      const isColumn = PREFERRED_PATH_PREFIXES.some((p) =>
+        pathname.startsWith(p)
+      );
+      return {
+        url,
+        domain: host,
+        classification: "preferred",
+        severity: "ok",
+        reason: isColumn
+          ? "セゾンファンデックス 自社コラム（最優先ソース）"
+          : "セゾンファンデックス 公式サイト",
       };
     }
   }

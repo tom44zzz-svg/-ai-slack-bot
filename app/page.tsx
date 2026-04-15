@@ -18,6 +18,7 @@ type SourceVerdict = {
   url: string;
   domain: string;
   classification:
+    | "preferred"
     | "official"
     | "corporate_trusted"
     | "corporate_unknown"
@@ -26,6 +27,8 @@ type SourceVerdict = {
   severity: "ok" | "warn" | "block";
   reason: string;
 };
+
+type TitleItem = { tone: "positive" | "neutral" | "negative"; text: string };
 type VerifiedCitation = {
   url: string;
   title?: string;
@@ -58,11 +61,18 @@ type Slide = {
 
 type GenerateResult = {
   format: { id: string; name: string; axes: any };
-  titles: string[];
+  titles: TitleItem[] | string[];
   slides: Slide[];
   caption_outline: string[];
   risk_notes: Array<{ rule_id: string; note: string }>;
-  source_summary?: { total: number; ok: number; warn: number; block: number };
+  source_summary?: {
+    total: number;
+    preferred?: number;
+    official?: number;
+    ok: number;
+    warn: number;
+    block: number;
+  };
   web_search?: { used: boolean; queries: string[]; result_count: number };
   cta_default: string[];
 };
@@ -404,7 +414,16 @@ function ResultView({ result }: { result: GenerateResult }) {
       {result.source_summary && result.source_summary.total > 0 && (
         <div className="flex items-center gap-3 text-sm bg-slate-50 border border-slate-200 rounded p-3 flex-wrap">
           <span className="font-medium">🔗 出典チェック</span>
-          <span className="text-emerald-700">公的/信頼 {result.source_summary.ok}</span>
+          {typeof result.source_summary.preferred === "number" && (
+            <span className="text-emerald-900 font-medium">
+              ⭐ 自社コラム {result.source_summary.preferred}
+            </span>
+          )}
+          {typeof result.source_summary.official === "number" && (
+            <span className="text-blue-700">
+              公的 {result.source_summary.official}
+            </span>
+          )}
           <span className="text-amber-700">要確認 {result.source_summary.warn}</span>
           <span className="text-red-700">NG {result.source_summary.block}</span>
           <span className="text-slate-500 text-xs">
@@ -434,12 +453,32 @@ function ResultView({ result }: { result: GenerateResult }) {
       )}
 
       <div>
-        <h3 className="font-medium mb-2">■ タイトル案 3 つ</h3>
-        <ol className="space-y-1 list-decimal list-inside text-sm">
-          {result.titles.map((t, i) => (
-            <li key={i}>{t}</li>
-          ))}
-        </ol>
+        <h3 className="font-medium mb-2">■ タイトル案 3 トーン</h3>
+        <div className="space-y-2 text-sm">
+          {result.titles.map((t, i) => {
+            const isObj = typeof t === "object" && t !== null;
+            const tone = isObj ? (t as TitleItem).tone : undefined;
+            const text = isObj ? (t as TitleItem).text : (t as string);
+            const toneMeta =
+              tone === "positive"
+                ? { label: "ポジ", cls: "bg-emerald-100 text-emerald-800" }
+                : tone === "neutral"
+                ? { label: "普通", cls: "bg-slate-100 text-slate-700" }
+                : tone === "negative"
+                ? { label: "警告", cls: "bg-amber-100 text-amber-800" }
+                : { label: `案${i + 1}`, cls: "bg-slate-100 text-slate-600" };
+            return (
+              <div key={i} className="flex items-start gap-2">
+                <span
+                  className={`inline-block px-2 py-0.5 text-[11px] rounded ${toneMeta.cls} shrink-0 mt-0.5`}
+                >
+                  {toneMeta.label}
+                </span>
+                <span className="flex-1">{text}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div>
@@ -549,13 +588,17 @@ function ResultView({ result }: { result: GenerateResult }) {
 function CitationRow({ c }: { c: VerifiedCitation }) {
   const v = c.verdict;
   const color =
-    v.severity === "ok"
+    v.classification === "preferred"
+      ? "text-emerald-900 bg-emerald-100 border-emerald-300 font-medium"
+      : v.severity === "ok"
       ? "text-emerald-700 bg-emerald-50 border-emerald-200"
       : v.severity === "warn"
       ? "text-amber-800 bg-amber-50 border-amber-200"
       : "text-red-700 bg-red-50 border-red-200";
   const label =
-    v.classification === "official"
+    v.classification === "preferred"
+      ? "⭐ 自社コラム"
+      : v.classification === "official"
       ? "公的"
       : v.classification === "corporate_trusted"
       ? "信頼企業"
