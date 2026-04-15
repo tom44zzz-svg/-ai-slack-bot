@@ -28,7 +28,11 @@ type SourceVerdict = {
   reason: string;
 };
 
-type TitleItem = { tone: "positive" | "neutral" | "negative"; text: string };
+type TitleItem = {
+  approach?: string;
+  tone?: "positive" | "neutral" | "negative";
+  text: string;
+};
 type VerifiedCitation = {
   url: string;
   title?: string;
@@ -56,6 +60,7 @@ type Slide = {
   diagram_info?: DiagramInfo | null;
   canva_search_url?: string;
   sources?: VerifiedCitation[];
+  svg?: string;
   notes?: string;
 };
 
@@ -453,28 +458,26 @@ function ResultView({ result }: { result: GenerateResult }) {
       )}
 
       <div>
-        <h3 className="font-medium mb-2">■ タイトル案 3 トーン</h3>
+        <h3 className="font-medium mb-2">■ タイトル案 3 パターン</h3>
         <div className="space-y-2 text-sm">
           {result.titles.map((t, i) => {
             const isObj = typeof t === "object" && t !== null;
-            const tone = isObj ? (t as TitleItem).tone : undefined;
-            const text = isObj ? (t as TitleItem).text : (t as string);
-            const toneMeta =
-              tone === "positive"
-                ? { label: "ポジ", cls: "bg-emerald-100 text-emerald-800" }
-                : tone === "neutral"
-                ? { label: "普通", cls: "bg-slate-100 text-slate-700" }
-                : tone === "negative"
-                ? { label: "警告", cls: "bg-amber-100 text-amber-800" }
-                : { label: `案${i + 1}`, cls: "bg-slate-100 text-slate-600" };
+            const item = isObj ? (t as TitleItem) : ({ text: t as string } as TitleItem);
+            const label =
+              item.approach ||
+              (item.tone === "positive"
+                ? "ポジ"
+                : item.tone === "neutral"
+                ? "中立"
+                : item.tone === "negative"
+                ? "注意喚起"
+                : `案${i + 1}`);
             return (
               <div key={i} className="flex items-start gap-2">
-                <span
-                  className={`inline-block px-2 py-0.5 text-[11px] rounded ${toneMeta.cls} shrink-0 mt-0.5`}
-                >
-                  {toneMeta.label}
+                <span className="inline-block px-2 py-0.5 text-[11px] rounded bg-blue-50 text-blue-800 border border-blue-200 shrink-0 mt-0.5">
+                  {label}
                 </span>
-                <span className="flex-1">{text}</span>
+                <span className="flex-1">{item.text}</span>
               </div>
             );
           })}
@@ -489,7 +492,7 @@ function ResultView({ result }: { result: GenerateResult }) {
           {result.slides.map((s) => (
             <div
               key={s.index}
-              className="border border-slate-200 rounded p-3 text-sm space-y-1"
+              className="border border-slate-200 rounded p-3 text-sm space-y-2"
             >
               <div className="flex items-center gap-2">
                 <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded">
@@ -500,6 +503,12 @@ function ResultView({ result }: { result: GenerateResult }) {
                   {s.template_id}
                 </span>
               </div>
+              {s.svg && (
+                <div
+                  className="w-full max-w-[240px] aspect-[4/5] border border-slate-200 rounded overflow-hidden bg-slate-50"
+                  dangerouslySetInnerHTML={{ __html: s.svg }}
+                />
+              )}
               <Zone label="上" data={s.zone_top} />
               <Zone label="中" data={s.zone_middle} />
               <Zone label="下" data={s.zone_bottom} />

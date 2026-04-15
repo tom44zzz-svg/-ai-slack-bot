@@ -4,6 +4,7 @@ import { loadAll } from "@/lib/data-loader";
 import { buildPrompt } from "@/lib/prompt";
 import { verifyCitations } from "@/lib/sources";
 import { getCanvaSearchUrl } from "@/lib/canva";
+import { renderSlideSvg } from "@/lib/svg-render";
 
 // web_search tool でブロックする個人ブログ系ドメイン
 const BLOCKED_SEARCH_DOMAINS = [
@@ -212,6 +213,14 @@ export async function POST(req: Request) {
       notes: "CTA 固定（cta_follow + cta_save の default_combination）",
     };
 
+    // 最終スライドリスト（CTA 含む）を作って、SVG を各スライドに埋める
+    const finalSlides = [...slides, ctaSlide];
+    const totalCount = finalSlides.length;
+    const slidesWithSvg = finalSlides.map((s: any) => ({
+      ...s,
+      svg: renderSlideSvg(s, totalCount),
+    }));
+
     return NextResponse.json({
       format: {
         id: format.id,
@@ -219,7 +228,7 @@ export async function POST(req: Request) {
         axes: format.axes,
       },
       titles: parsed.titles || [],
-      slides: [...slides, ctaSlide],
+      slides: slidesWithSvg,
       caption_outline: parsed.caption_outline || [],
       risk_notes: riskNotes,
       source_summary: sourceSummary,
