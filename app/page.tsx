@@ -485,82 +485,15 @@ function ResultView({ result }: { result: GenerateResult }) {
       </div>
 
       <div>
-        <h3 className="font-medium mb-2">
-          ■ スライド構成（全 {result.slides.length} 枚）
-        </h3>
-        <div className="space-y-3">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-medium">
+            ■ スライド構成（全 {result.slides.length} 枚）
+          </h3>
+          <CopyAllCitationsButton slides={result.slides} />
+        </div>
+        <div className="space-y-4">
           {result.slides.map((s) => (
-            <div
-              key={s.index}
-              className="border border-slate-200 rounded p-3 text-sm space-y-2"
-            >
-              <div className="flex items-center gap-2">
-                <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded">
-                  {s.index}
-                </span>
-                <span className="font-semibold">{s.role}</span>
-                <span className="text-xs text-slate-500">
-                  {s.template_id}
-                </span>
-              </div>
-              {s.svg && (
-                <div
-                  className="w-full max-w-[240px] aspect-[4/5] border border-slate-200 rounded overflow-hidden bg-slate-50"
-                  dangerouslySetInnerHTML={{ __html: s.svg }}
-                />
-              )}
-              <Zone label="上" data={s.zone_top} />
-              <Zone label="中" data={s.zone_middle} />
-              <Zone label="下" data={s.zone_bottom} />
-              {s.photo_hint && (
-                <div className="text-xs text-slate-600">
-                  📷 写真: {s.photo_hint}
-                </div>
-              )}
-              {s.diagram && (
-                <div className="text-xs text-slate-600">
-                  📊 図解: {s.diagram_info?.name || s.diagram}
-                  {s.diagram_info?.category && (
-                    <span className="text-slate-400 ml-1">
-                      （{s.diagram_info.category}）
-                    </span>
-                  )}
-                </div>
-              )}
-              {s.diagram_info?.ascii_preview && (
-                <pre className="mt-1 bg-slate-50 border border-slate-200 rounded p-2 text-[11px] leading-[1.3] font-mono overflow-x-auto whitespace-pre">
-{s.diagram_info.ascii_preview}
-                </pre>
-              )}
-              {s.diagram_info?.use_case && (
-                <div className="text-[11px] text-slate-500">
-                  用途: {s.diagram_info.use_case}
-                </div>
-              )}
-              {s.canva_search_url && (
-                <a
-                  href={s.canva_search_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-block text-xs text-blue-700 hover:underline mt-1"
-                >
-                  🎨 Canva で近いテンプレを検索 →
-                </a>
-              )}
-              {s.sources && s.sources.length > 0 && (
-                <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">
-                  <div className="text-xs font-medium text-slate-700">
-                    🔗 出典
-                  </div>
-                  {s.sources.map((src, i) => (
-                    <CitationRow key={i} c={src} />
-                  ))}
-                </div>
-              )}
-              {s.notes && (
-                <div className="text-xs text-slate-400">{s.notes}</div>
-              )}
-            </div>
+            <SlideCard key={s.index} slide={s} />
           ))}
         </div>
       </div>
@@ -592,6 +525,175 @@ function ResultView({ result }: { result: GenerateResult }) {
       )}
     </section>
   );
+}
+
+function SlideCard({ slide: s }: { slide: Slide }) {
+  return (
+    <div className="border border-slate-200 rounded-lg p-3 text-sm">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded">
+          {s.index}
+        </span>
+        <span className="font-semibold">{s.role}</span>
+        <span className="text-xs text-slate-500">{s.template_id}</span>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4">
+        {/* 左：本文・ビジュアル */}
+        <div className="space-y-2">
+          {s.svg && (
+            <div
+              className="w-full max-w-[280px] aspect-[4/5] border border-slate-200 rounded overflow-hidden bg-slate-50"
+              dangerouslySetInnerHTML={{ __html: s.svg }}
+            />
+          )}
+          <div className="space-y-1">
+            <Zone label="上" data={s.zone_top} />
+            <Zone label="中" data={s.zone_middle} />
+            <Zone label="下" data={s.zone_bottom} />
+          </div>
+          {s.photo_hint && (
+            <div className="text-xs text-slate-600">
+              📷 写真: {s.photo_hint}
+            </div>
+          )}
+          {s.diagram && (
+            <div className="text-xs text-slate-600">
+              📊 図解: {s.diagram_info?.name || s.diagram}
+              {s.diagram_info?.category && (
+                <span className="text-slate-400 ml-1">
+                  （{s.diagram_info.category}）
+                </span>
+              )}
+            </div>
+          )}
+          {s.diagram_info?.ascii_preview && (
+            <pre className="mt-1 bg-slate-50 border border-slate-200 rounded p-2 text-[11px] leading-[1.3] font-mono overflow-x-auto whitespace-pre">
+{s.diagram_info.ascii_preview}
+            </pre>
+          )}
+          {s.canva_search_url && (
+            <a
+              href={s.canva_search_url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block text-xs text-blue-700 hover:underline"
+            >
+              🎨 Canva で近いテンプレを検索 →
+            </a>
+          )}
+          {s.notes && (
+            <div className="text-xs text-slate-400">{s.notes}</div>
+          )}
+        </div>
+
+        {/* 右：出典 */}
+        <div>
+          <SourcesPanel slide={s} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SourcesPanel({ slide }: { slide: Slide }) {
+  const cites = slide.sources || [];
+  if (cites.length === 0) {
+    return (
+      <div className="text-xs text-slate-400 border border-dashed border-slate-200 rounded p-3 h-full">
+        このスライドに出典なし
+      </div>
+    );
+  }
+  return (
+    <div className="bg-slate-50 border border-slate-200 rounded p-3 space-y-2 h-full">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-slate-700">
+          🔗 出典 ({cites.length})
+        </span>
+        <CopySlideCitationsButton slide={slide} />
+      </div>
+      <div className="space-y-2">
+        {cites.map((src, i) => (
+          <CitationRow key={i} c={src} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CopySlideCitationsButton({ slide }: { slide: Slide }) {
+  const [copied, setCopied] = useState(false);
+  const handle = async () => {
+    const text = formatSlideCitationsClient(slide);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // フォールバック：選択可能な領域に表示
+      window.prompt("コピーしてください", text);
+    }
+  };
+  return (
+    <button
+      onClick={handle}
+      className="text-[10px] px-2 py-0.5 rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+      title="このスライドの出典を Canva コメント貼付け用テキストとしてコピー"
+    >
+      {copied ? "✅ コピー済" : "📋 Canva 用にコピー"}
+    </button>
+  );
+}
+
+function CopyAllCitationsButton({ slides }: { slides: Slide[] }) {
+  const [copied, setCopied] = useState(false);
+  const total = slides.reduce((acc, s) => acc + (s.sources?.length || 0), 0);
+  const handle = async () => {
+    const text = formatAllCitationsClient(slides);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      window.prompt("コピーしてください", text);
+    }
+  };
+  if (total === 0) return null;
+  return (
+    <button
+      onClick={handle}
+      className="text-xs px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 transition"
+      title="全スライドの出典をまとめて Canva コメント用テキストとしてコピー"
+    >
+      {copied ? "✅ コピー済" : `📋 全出典をコピー (${total} 件)`}
+    </button>
+  );
+}
+
+// クライアント側用の整形（lib/citation-format.ts と同じロジック）
+function formatSlideCitationsClient(slide: Slide): string {
+  const cites = slide.sources || [];
+  if (cites.length === 0) return "";
+  const header = `【参照元】Slide ${slide.index} ${slide.role}`;
+  const body = cites
+    .map((c, i) => {
+      const lines: string[] = [];
+      lines.push(`${i + 1}. ${c.title || "（タイトル未取得）"}`);
+      if (c.page_or_section) lines.push(`   セクション: ${c.page_or_section}`);
+      lines.push(`   URL: ${c.url}`);
+      if (c.quote) lines.push(`   引用: 「${c.quote}」`);
+      return lines.join("\n");
+    })
+    .join("\n\n");
+  return `${header}\n${body}`;
+}
+
+function formatAllCitationsClient(slides: Slide[]): string {
+  const blocks = slides
+    .filter((s) => (s.sources || []).length > 0)
+    .map((s) => formatSlideCitationsClient(s));
+  if (blocks.length === 0) return "";
+  return ["【参照元一覧】", ...blocks].join("\n\n────────\n\n");
 }
 
 function CitationRow({ c }: { c: VerifiedCitation }) {

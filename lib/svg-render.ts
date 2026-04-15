@@ -53,6 +53,34 @@ function wrap(
     .join("");
 }
 
+// 改行を尊重しつつ折り返し（\n も maxChars も両方反映）
+function wrapMulti(
+  text: string,
+  x: number,
+  maxChars: number,
+  lineHeight: number,
+  attrs = ""
+): string {
+  const lines: string[] = [];
+  for (const block of String(text || "").split("\n")) {
+    if (block.length === 0) {
+      lines.push("");
+      continue;
+    }
+    let s = block;
+    while (s.length > 0) {
+      lines.push(s.slice(0, maxChars));
+      s = s.slice(maxChars);
+    }
+  }
+  return lines
+    .map(
+      (l, i) =>
+        `<tspan x="${x}" dy="${i === 0 ? 0 : lineHeight}" ${attrs}>${esc(l)}</tspan>`
+    )
+    .join("");
+}
+
 // =============================================================================
 // 共通装飾
 // =============================================================================
@@ -96,15 +124,20 @@ function highlightBox(
   h: number,
   text: string
 ): string {
+  // 改行と長さからフォントサイズを動的に決定
+  const longest = Math.max(...String(text).split("\n").map((l) => l.length), 1);
+  const fontSize = longest > 22 ? 32 : longest > 16 ? 38 : 44;
+  const lineHeight = fontSize * 1.4;
+  const charsPerLine = longest > 22 ? 22 : 18;
   return `
     <g>
-      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="20"
-        fill="${C.primaryLight}" stroke="${C.primary}" stroke-width="3"/>
-      <circle cx="${x + 50}" cy="${y + 50}" r="30" fill="${C.bulb}"/>
-      <text x="${x + 50}" y="${y + 60}" text-anchor="middle" font-size="32" fill="${C.white}">💡</text>
-      <text x="${x + w / 2}" y="${y + h / 2}" text-anchor="middle"
-        font-size="36" fill="${C.text}" font-family="-apple-system, sans-serif">
-        ${wrap(text, x + w / 2, y + h / 2, 18, 50)}
+      <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="24"
+        fill="${C.primaryLight}" stroke="${C.primary}" stroke-width="4"/>
+      <circle cx="${x + 60}" cy="${y + 60}" r="36" fill="${C.bulb}"/>
+      <text x="${x + 60}" y="${y + 75}" text-anchor="middle" font-size="40" fill="${C.white}">💡</text>
+      <text x="${x + w / 2}" y="${y + h / 2 - lineHeight / 2}" text-anchor="middle"
+        font-size="${fontSize}" font-weight="bold" fill="${C.text}" font-family="-apple-system, sans-serif">
+        ${wrapMulti(text, x + w / 2, charsPerLine, lineHeight)}
       </text>
     </g>
   `;
@@ -117,48 +150,76 @@ function highlightBox(
 function renderCover(slide: any): string {
   const top = slide.zone_top?.content || "";
   const middle = slide.zone_middle?.content || "";
+  // 中身の文字列を分解して階層感を出す
+  // 1 行目を最も大きく、最終行を「強調キーワード」として描画
+  const titleLines = String(middle).split("\n").filter((l) => l.trim().length > 0);
+  const mainTitle = titleLines.join("\n");
+  // タイトル全体の長さからフォントサイズを動的調整
+  const longestLine = Math.max(...mainTitle.split("\n").map((l) => l.length), 1);
+  const fontSize = longestLine > 16 ? 56 : longestLine > 11 ? 68 : 84;
+  const lineHeight = fontSize * 1.25;
   return `
     <!-- 背景写真エリア（プレースホルダ） -->
     <rect x="0" y="0" width="${W}" height="${H}" fill="${C.bg}"/>
     <rect x="0" y="0" width="${W}" height="${H}" fill="${C.primary}" opacity="0.05"/>
+    <!-- 背景の薄い斜め装飾 -->
+    <g opacity="0.08">
+      <polygon points="0,400 ${W},200 ${W},280 0,480" fill="${C.primary}"/>
+    </g>
 
     <!-- カテゴリピル -->
     <g>
-      <rect x="${W / 2 - 250}" y="180" width="500" height="80" rx="40" fill="${C.primary}"/>
-      <text x="${W / 2}" y="232" text-anchor="middle" font-size="36" font-weight="bold" fill="${C.white}" font-family="-apple-system, sans-serif">
+      <rect x="${W / 2 - 290}" y="200" width="580" height="90" rx="45" fill="${C.primary}"/>
+      <text x="${W / 2}" y="258" text-anchor="middle" font-size="40" font-weight="bold" fill="${C.white}" font-family="-apple-system, sans-serif">
         ${esc(top || "カテゴリ")}
       </text>
     </g>
 
-    <!-- メインタイトル -->
+    <!-- メインタイトルカード -->
     <g>
-      <rect x="80" y="380" width="${W - 160}" height="600" rx="20"
-        fill="${C.white}" opacity="0.92" stroke="${C.border}" stroke-width="2"/>
-      <text x="${W / 2}" y="500" text-anchor="middle"
-        font-size="68" font-weight="bold" fill="${C.text}" font-family="-apple-system, sans-serif">
-        ${wrap(middle, W / 2, 500, 11, 90)}
+      <rect x="60" y="370" width="${W - 120}" height="640" rx="24"
+        fill="${C.white}" opacity="0.96" stroke="${C.primary}" stroke-width="3"/>
+      <text x="${W / 2}" y="${370 + 320}" text-anchor="middle"
+        font-size="${fontSize}" font-weight="900" fill="${C.text}" font-family="-apple-system, sans-serif" letter-spacing="-1">
+        ${wrapMulti(mainTitle, W / 2, longestLine > 16 ? 17 : 13, lineHeight)}
       </text>
     </g>
 
-    <!-- ロゴ位置 -->
+    <!-- ロゴカード -->
     <g>
-      <rect x="${W / 2 - 200}" y="${H - 200}" width="400" height="100" rx="50"
-        fill="${C.white}" stroke="${C.primary}" stroke-width="2"/>
-      <text x="${W / 2}" y="${H - 137}" text-anchor="middle"
-        font-size="36" font-weight="bold" fill="${C.primary}" font-family="-apple-system, sans-serif">
+      <rect x="${W / 2 - 220}" y="${H - 200}" width="440" height="110" rx="55"
+        fill="${C.white}" stroke="${C.primary}" stroke-width="3"/>
+      <text x="${W / 2}" y="${H - 130}" text-anchor="middle"
+        font-size="40" font-weight="bold" fill="${C.primary}" font-family="-apple-system, sans-serif">
         セゾンファンデックス
       </text>
     </g>
   `;
 }
 
-function renderHeader(text: string, y: number): string {
+function renderHeader(text: string, y: number, slideIndex?: number): string {
+  const lineCount = Math.ceil(String(text || "").length / 18);
+  const headerH = lineCount > 1 ? 180 : 130;
   return `
     <g>
-      <rect x="80" y="${y}" width="${W - 160}" height="120" rx="16" fill="${C.primary}"/>
-      <text x="${W / 2}" y="${y + 80}" text-anchor="middle"
+      <!-- 左側の番号バッジ -->
+      ${
+        slideIndex && slideIndex > 1
+          ? `
+        <rect x="60" y="${y}" width="120" height="${headerH}" rx="16" fill="${C.accent}"/>
+        <text x="120" y="${y + headerH / 2 + 18}" text-anchor="middle" font-size="56" font-weight="900" fill="${C.text}" font-family="-apple-system, sans-serif">
+          ${esc(String(slideIndex - 1).padStart(2, "0"))}
+        </text>`
+          : ""
+      }
+      <rect x="${slideIndex && slideIndex > 1 ? 200 : 60}" y="${y}" width="${
+        W - (slideIndex && slideIndex > 1 ? 260 : 120)
+      }" height="${headerH}" rx="16" fill="${C.primary}"/>
+      <text x="${
+        slideIndex && slideIndex > 1 ? (W + 200) / 2 : W / 2
+      }" y="${y + (lineCount > 1 ? 75 : 85)}" text-anchor="middle"
         font-size="44" font-weight="bold" fill="${C.white}" font-family="-apple-system, sans-serif">
-        ${wrap(text, W / 2, y + 80, 22, 56)}
+        ${wrap(text, slideIndex && slideIndex > 1 ? (W + 200) / 2 : W / 2, y + 85, 18, 56)}
       </text>
     </g>
   `;
@@ -374,15 +435,19 @@ function renderContent(slide: any): string {
   const diagramFn = slide.diagram ? DIAGRAM_RENDERERS[slide.diagram] : undefined;
 
   return `
-    ${renderHeader(heading, 160)}
-    ${diagramFn ? diagramFn() : `
-      <rect x="120" y="370" width="${W - 240}" height="500" rx="20"
+    ${renderHeader(heading, 160, slide.index)}
+    ${
+      diagramFn
+        ? diagramFn()
+        : `
+      <rect x="120" y="400" width="${W - 240}" height="500" rx="20"
         fill="${C.white}" stroke="${C.border}" stroke-width="3" stroke-dasharray="10,8"/>
-      <text x="${W / 2}" y="620" text-anchor="middle" font-size="40" fill="${C.textMuted}" font-family="-apple-system, sans-serif">
-        ${wrap(middle || "（中央エリア）", W / 2, 620, 24, 60)}
+      <text x="${W / 2}" y="650" text-anchor="middle" font-size="40" fill="${C.textMuted}" font-family="-apple-system, sans-serif">
+        ${wrapMulti(middle || "（中央エリア）", W / 2, 24, 60)}
       </text>
-    `}
-    ${bottom ? highlightBox(120, 1000, W - 240, 220, bottom) : ""}
+    `
+    }
+    ${bottom ? highlightBox(80, 1010, W - 160, 220, bottom) : ""}
   `;
 }
 
