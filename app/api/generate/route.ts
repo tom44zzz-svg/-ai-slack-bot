@@ -71,24 +71,48 @@ export async function POST(req: Request) {
     const client = new Anthropic({ apiKey });
 
     // web_search ツール（Anthropic 提供のサーバーサイドツール）
+    // max_uses は Vercel Hobby 60s 制限に合わせて控えめに。
     const tools: any[] = use_web_search
       ? [
           {
             type: "web_search_20250305",
             name: "web_search",
-            max_uses: 6,
+            max_uses: 3,
             blocked_domains: BLOCKED_SEARCH_DOMAINS,
           },
         ]
       : [];
 
-    const response = await client.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 8192,
-      system,
-      messages: [{ role: "user", content: user }],
-      ...(tools.length > 0 ? { tools } : {}),
-    });
+    let response: any;
+    const t0 = Date.now();
+    try {
+      response = await client.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: 6144,
+        system,
+        messages: [{ role: "user", content: user }],
+        ...(tools.length > 0 ? { tools } : {}),
+      });
+    } catch (err: any) {
+      // Anthropic のエラーをできるだけ詳細に返す
+      const detail = {
+        stage: "anthropic_api_call",
+        elapsed_ms: Date.now() - t0,
+        name: err?.name || "Error",
+        message: err?.message || String(err),
+        status: err?.status,
+        type: err?.error?.type,
+        api_error: err?.error?.message || err?.error || null,
+        request_id: err?.request_id,
+        use_web_search,
+      };
+      console.error("[api/generate] anthropic error", detail);
+      return NextResponse.json(
+        { error: detail.message, detail },
+        { status: err?.status || 502 }
+      );
+    }
+    const elapsedGen = Date.now() - t0;
 
     // 全 text ブロックを連結（web_search を使った場合、tool_use / tool_result
     // ブロックの合間に最終回答 text が分散することがある）
@@ -118,14 +142,31 @@ export async function POST(req: Request) {
     // JSON を抽出（コードフェンス内 or 直 JSON の両方を許容）
     let parsed: any = null;
     const fenced = rawText.match(/```json\s*([\s\S]*?)```/);
-    const jsonText = fenced ? fenced[1] : rawText;
+    // フェンスなしでも最初の { から最後の } までを抽出
+    let jsonText = fenced ? fenced[1] : rawText;
+    if (!fenced) {
+      const first = rawText.indexOf("{");
+      const last = rawText.lastIndexOf("}");
+      if (first >= 0 && last > first) {
+        jsonText = rawText.slice(first, last + 1);
+      }
+    }
     try {
       parsed = JSON.parse(jsonText.trim());
-    } catch (e) {
+    } catch (e: any) {
+      console.error("[api/generate] json parse failed", {
+        raw_preview: rawText.slice(0, 500),
+        parse_error: e?.message,
+      });
       return NextResponse.json(
         {
           error: "LLM 応答の JSON パースに失敗しました",
-          raw: rawText,
+          detail: {
+            stage: "json_parse",
+            parse_error: e?.message,
+            raw_preview: rawText.slice(0, 1500),
+            elapsed_ms: elapsedGen,
+          },
         },
         { status: 502 }
       );
@@ -242,9 +283,16 @@ export async function POST(req: Request) {
         .map((c) => c.copy_options[0]),
     });
   } catch (err: any) {
-    console.error(err);
+    console.error("[api/generate] unhandled", err);
     return NextResponse.json(
-      { error: err?.message || "内部エラーが発生しました" },
+      {
+        error: err?.message || "内部エラーが発生しました",
+        detail: {
+          stage: "unhandled",
+          name: err?.name,
+          stack: err?.stack?.split("\n").slice(0, 5).join("\n"),
+        },
+      },
       { status: 500 }
     );
   }

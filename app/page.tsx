@@ -140,15 +140,54 @@ export default function Home() {
           use_web_search: useWebSearch,
         }),
       });
+
+      // 非 JSON レスポンスの対応（Vercel の 504 タイムアウトは HTML を返す）
+      const ct = res.headers.get("content-type") || "";
+      if (!ct.includes("application/json")) {
+        const text = await res.text();
+        const isTimeout = res.status === 504 || /gateway timeout|FUNCTION_INVOCATION_TIMEOUT/i.test(text);
+        if (isTimeout) {
+          setError(
+            `HTTP ${res.status} タイムアウト\n` +
+              `生成が Vercel の関数実行時間上限を超えました。\n` +
+              `対策: (1) Web 検索を OFF にして再試行、(2) Vercel を Pro プランに上げる（60s→300s）、(3) ネタを簡潔にする。`
+          );
+        } else {
+          setError(
+            `HTTP ${res.status}：サーバーが JSON 以外を返しました。\n` +
+              text.slice(0, 400)
+          );
+        }
+        return;
+      }
+
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "生成に失敗しました");
-        if (data.raw) console.error("Raw LLM output:", data.raw);
+        let msg = data.error || "生成に失敗しました";
+        if (data.detail) {
+          const d = data.detail;
+          const parts: string[] = [];
+          if (d.stage) parts.push(`stage: ${d.stage}`);
+          if (d.status) parts.push(`status: ${d.status}`);
+          if (d.type) parts.push(`type: ${d.type}`);
+          if (d.name && d.name !== "Error") parts.push(`name: ${d.name}`);
+          if (d.api_error) parts.push(`api: ${JSON.stringify(d.api_error)}`);
+          if (d.parse_error) parts.push(`parse: ${d.parse_error}`);
+          if (d.elapsed_ms) parts.push(`elapsed: ${d.elapsed_ms}ms`);
+          if (parts.length > 0) msg += "\n\n[詳細]\n" + parts.join("\n");
+          if (d.raw_preview) msg += "\n\n[LLM 生出力 先頭]\n" + d.raw_preview.slice(0, 600);
+          if (d.stack) msg += "\n\n[stack]\n" + d.stack;
+        }
+        setError(msg);
+        console.error("Generate failed:", data);
       } else {
         setResult(data);
       }
     } catch (e: any) {
-      setError(e?.message || "ネットワークエラー");
+      setError(
+        `ネットワーク/クライアントエラー: ${e?.message || e}\n` +
+          `（接続切れ・タイムアウト・ブラウザの CORS 等の可能性）`
+      );
     } finally {
       setGenerating(false);
     }
@@ -283,9 +322,32 @@ export default function Home() {
             : "構成案を生成"}
         </button>
         {error && (
-          <p className="text-red-600 text-sm mt-2 whitespace-pre-wrap">
-            {error}
-          </p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-2">
+            <p className="text-red-700 text-sm whitespace-pre-wrap font-mono text-xs">
+              {error}
+            </p>
+            <div className="mt-2 pt-2 border-t border-red-200 text-xs text-red-600">
+              トラブルシュート：
+              <a
+                href="/api/health"
+                target="_blank"
+                className="underline mx-1"
+                rel="noreferrer"
+              >
+                /api/health
+              </a>
+              で環境設定を確認、
+              <a
+                href="/api/health?ping=1"
+                target="_blank"
+                className="underline mx-1"
+                rel="noreferrer"
+              >
+                /api/health?ping=1
+              </a>
+              で Anthropic API の疎通確認。
+            </div>
+          </div>
         )}
       </section>
 
