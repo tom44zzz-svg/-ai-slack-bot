@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 
+type ReferenceImage = {
+  filename: string;
+  path: string;
+  category: string;
+};
+
 type AxisOption = { id: string; name: string; example?: string };
 type FormatSummary = {
   id: string;
@@ -104,6 +110,7 @@ export default function Home() {
 
   const [selectedFormatId, setSelectedFormatId] = useState<string>("");
   const [useWebSearch, setUseWebSearch] = useState(true);
+  const [refImages, setRefImages] = useState<ReferenceImage[]>([]);
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [error, setError] = useState<string>("");
@@ -111,6 +118,13 @@ export default function Home() {
   useEffect(() => {
     fetchFormats();
   }, [hook, tone, structure]);
+
+  useEffect(() => {
+    fetch("/references/manifest.json")
+      .then((r) => (r.ok ? r.json() : { images: [] }))
+      .then((d) => setRefImages(Array.isArray(d.images) ? d.images : []))
+      .catch(() => setRefImages([]));
+  }, []);
 
   async function fetchFormats() {
     try {
@@ -373,8 +387,55 @@ export default function Home() {
         )}
       </section>
 
+      {/* ========== 参考画像ギャラリー ========== */}
+      {refImages.length > 0 && (
+        <section className="bg-white rounded-lg border border-slate-200 p-5 space-y-3">
+          <h2 className="font-semibold text-lg">
+            参考画像（{refImages.length} 枚）
+          </h2>
+          <p className="text-xs text-slate-500">
+            public/references/ に配置された画像。各スライドの役割に合う画像が自動で横に表示されます。
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            {refImages.map((img, i) => (
+              <a
+                key={i}
+                href={img.path}
+                target="_blank"
+                rel="noreferrer"
+                className="block w-[100px] aspect-[4/5] border border-slate-200 rounded overflow-hidden hover:ring-2 hover:ring-blue-400 transition group relative"
+              >
+                <img
+                  src={img.path}
+                  alt={img.filename}
+                  className="w-full h-full object-cover"
+                />
+                <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] p-0.5 truncate opacity-0 group-hover:opacity-100 transition">
+                  {img.filename}
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+      {refImages.length === 0 && (
+        <section className="bg-slate-50 rounded-lg border border-dashed border-slate-300 p-5 text-sm text-slate-500">
+          <p className="font-medium mb-1">参考画像を追加する</p>
+          <p className="text-xs">
+            セゾンファンデックスの過去投稿画像を <code className="bg-slate-200 px-1 rounded">public/references/</code> に配置すると、
+            生成結果の各スライド横に参考画像として自動表示されます。
+          </p>
+          <pre className="mt-2 bg-slate-100 rounded p-2 text-[11px] overflow-x-auto">{`# Mac で実行
+cp -r "/Users/tom/Documents/動画編集/02_案件一覧/セゾンファンデックス/"*.{png,jpg} public/references/
+bash scripts/update-manifest.sh
+git add public/references/
+git commit -m "Add reference images"
+git push`}</pre>
+        </section>
+      )}
+
       {/* ========== 結果表示 ========== */}
-      {result && <ResultView result={result} />}
+      {result && <ResultView result={result} refImages={refImages} />}
     </main>
   );
 }
@@ -491,7 +552,7 @@ function FormatList({
   );
 }
 
-function ResultView({ result }: { result: GenerateResult }) {
+function ResultView({ result, refImages }: { result: GenerateResult; refImages: ReferenceImage[] }) {
   return (
     <section className="bg-white rounded-lg border border-slate-200 p-5 space-y-5">
       <h2 className="font-semibold text-lg">生成結果</h2>
@@ -577,7 +638,7 @@ function ResultView({ result }: { result: GenerateResult }) {
         </div>
         <div className="space-y-4">
           {(result.slides || []).map((s) => (
-            <SlideCard key={s.index} slide={s} />
+            <SlideCard key={s.index} slide={s} refImages={refImages} />
           ))}
         </div>
       </div>
@@ -611,7 +672,38 @@ function ResultView({ result }: { result: GenerateResult }) {
   );
 }
 
-function SlideCard({ slide: s }: { slide: Slide }) {
+function getMatchingRefs(slide: Slide, refs: ReferenceImage[]): ReferenceImage[] {
+  if (refs.length === 0) return [];
+  const role = (slide.role || "").toLowerCase();
+  const diagram = (slide.diagram || "").toLowerCase();
+  const tplId = (slide.template_id || "").toLowerCase();
+
+  const roleCategory =
+    role.includes("表紙") || tplId.includes("cover")
+      ? "cover"
+      : role === "cta" || tplId.includes("cta")
+      ? "cta"
+      : role.includes("導入") || role.includes("問題提起") || tplId.includes("intro")
+      ? "intro"
+      : role.includes("まとめ") || tplId.includes("summary")
+      ? "summary"
+      : role.includes("項目") || tplId.includes("item")
+      ? "item"
+      : "general";
+
+  const matched = refs.filter((r) => {
+    const fn = r.filename.toLowerCase();
+    if (diagram && fn.includes(diagram)) return true;
+    if (r.category === roleCategory) return true;
+    if (fn.includes(role)) return true;
+    return false;
+  });
+
+  return matched.length > 0 ? matched.slice(0, 4) : refs.filter((r) => r.category === "general").slice(0, 2);
+}
+
+function SlideCard({ slide: s, refImages }: { slide: Slide; refImages: ReferenceImage[] }) {
+  const matchedRefs = getMatchingRefs(s, refImages);
   return (
     <div className="border border-slate-200 rounded-lg p-3 text-sm">
       <div className="flex items-center gap-2 mb-3">
@@ -624,12 +716,34 @@ function SlideCard({ slide: s }: { slide: Slide }) {
       <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4">
         {/* 左：本文・ビジュアル */}
         <div className="space-y-2">
-          {s.svg && (
-            <div
-              className="w-full max-w-[280px] aspect-[4/5] border border-slate-200 rounded overflow-hidden bg-slate-50"
-              dangerouslySetInnerHTML={{ __html: s.svg }}
-            />
-          )}
+          <div className="flex gap-2 flex-wrap">
+            {s.svg && (
+              <div
+                className="w-[180px] shrink-0 aspect-[4/5] border border-slate-200 rounded overflow-hidden bg-slate-50"
+                dangerouslySetInnerHTML={{ __html: s.svg }}
+              />
+            )}
+            {matchedRefs.length > 0 && (
+              <div className="flex gap-1 flex-wrap">
+                {matchedRefs.map((ref, i) => (
+                  <a
+                    key={i}
+                    href={ref.path}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block w-[120px] aspect-[4/5] border border-blue-200 rounded overflow-hidden bg-blue-50 hover:ring-2 hover:ring-blue-400 transition"
+                    title={ref.filename}
+                  >
+                    <img
+                      src={ref.path}
+                      alt={ref.filename}
+                      className="w-full h-full object-cover"
+                    />
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
           <div className="space-y-1">
             <Zone label="上" data={s.zone_top} />
             <Zone label="中" data={s.zone_middle} />
