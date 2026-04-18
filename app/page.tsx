@@ -113,14 +113,36 @@ export default function Home() {
   }, [hook, tone, structure]);
 
   async function fetchFormats() {
-    const params = new URLSearchParams();
-    if (hook) params.set("hook", hook);
-    if (tone) params.set("tone", tone);
-    if (structure) params.set("structure", structure);
-    const res = await fetch(`/api/formats?${params}`);
-    const data = await res.json();
-    if (!axisOptions) setAxisOptions(data.axis_options);
-    setCandidates({ exact: data.exact, partial: data.partial });
+    try {
+      const params = new URLSearchParams();
+      if (hook) params.set("hook", hook);
+      if (tone) params.set("tone", tone);
+      if (structure) params.set("structure", structure);
+      const res = await fetch(`/api/formats?${params}`);
+      if (!res.ok) {
+        const txt = await res.text();
+        setError(
+          `/api/formats が失敗しました (HTTP ${res.status})\n${txt.slice(0, 400)}`
+        );
+        return;
+      }
+      const ct = res.headers.get("content-type") || "";
+      if (!ct.includes("application/json")) {
+        const txt = await res.text();
+        setError(
+          `/api/formats が JSON を返しませんでした。\n${txt.slice(0, 400)}`
+        );
+        return;
+      }
+      const data = await res.json();
+      if (!axisOptions && data.axis_options) setAxisOptions(data.axis_options);
+      setCandidates({
+        exact: Array.isArray(data.exact) ? data.exact : [],
+        partial: Array.isArray(data.partial) ? data.partial : [],
+      });
+    } catch (e: any) {
+      setError(`/api/formats の読み込みエラー: ${e?.message || e}`);
+    }
   }
 
   async function handleGenerate() {
@@ -502,12 +524,12 @@ function ResultView({ result }: { result: GenerateResult }) {
       {result.web_search && result.web_search.used && (
         <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm">
           <div className="font-medium text-blue-900 mb-1">
-            🔍 Web 検索履歴（{result.web_search.queries.length} 回検索 /{" "}
-            {result.web_search.result_count} 件ヒット）
+            🔍 Web 検索履歴（{(result.web_search.queries || []).length} 回検索 /{" "}
+            {result.web_search.result_count || 0} 件ヒット）
           </div>
-          {result.web_search.queries.length > 0 ? (
+          {(result.web_search.queries || []).length > 0 ? (
             <ul className="list-disc list-inside text-xs text-blue-800 space-y-0.5">
-              {result.web_search.queries.map((q, i) => (
+              {(result.web_search.queries || []).map((q, i) => (
                 <li key={i}>{q}</li>
               ))}
             </ul>
@@ -522,7 +544,7 @@ function ResultView({ result }: { result: GenerateResult }) {
       <div>
         <h3 className="font-medium mb-2">■ タイトル案 3 パターン</h3>
         <div className="space-y-2 text-sm">
-          {result.titles.map((t, i) => {
+          {(result.titles || []).map((t, i) => {
             const isObj = typeof t === "object" && t !== null;
             const item = isObj ? (t as TitleItem) : ({ text: t as string } as TitleItem);
             const label =
@@ -549,35 +571,35 @@ function ResultView({ result }: { result: GenerateResult }) {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-medium">
-            ■ スライド構成（全 {result.slides.length} 枚）
+            ■ スライド構成（全 {(result.slides || []).length} 枚）
           </h3>
-          <CopyAllCitationsButton slides={result.slides} />
+          <CopyAllCitationsButton slides={result.slides || []} />
         </div>
         <div className="space-y-4">
-          {result.slides.map((s) => (
+          {(result.slides || []).map((s) => (
             <SlideCard key={s.index} slide={s} />
           ))}
         </div>
       </div>
 
-      {result.caption_outline.length > 0 && (
+      {(result.caption_outline || []).length > 0 && (
         <div>
           <h3 className="font-medium mb-2">■ キャプション概要</h3>
           <ul className="text-sm list-disc list-inside space-y-0.5 text-slate-700">
-            {result.caption_outline.map((c, i) => (
+            {(result.caption_outline || []).map((c, i) => (
               <li key={i}>{c}</li>
             ))}
           </ul>
         </div>
       )}
 
-      {result.risk_notes.length > 0 && (
+      {(result.risk_notes || []).length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded p-3">
           <h3 className="font-medium mb-2 text-amber-900">
             ⚠ 要確認（リスクフラグ）
           </h3>
           <ul className="text-sm space-y-1 text-amber-900">
-            {result.risk_notes.map((r, i) => (
+            {(result.risk_notes || []).map((r, i) => (
               <li key={i}>
                 <strong>{r.rule_id}</strong>: {r.note}
               </li>
