@@ -336,6 +336,16 @@ export default function Home() {
         />
       </section>
 
+      {/* ========== Step 4: 参考画像アップロード ========== */}
+      <ReferenceImageUploader
+        images={storedImages}
+        addFiles={addFiles}
+        remove={remove}
+        clearAll={clearAll}
+        updateCategory={updateCategory}
+        addTestImage={addTestImage}
+      />
+
       {/* ========== 生成ボタン ========== */}
       <section className="space-y-3">
         <label className="flex items-center gap-2 text-sm bg-white border border-slate-200 rounded-lg p-3 cursor-pointer">
@@ -396,16 +406,6 @@ export default function Home() {
           </div>
         )}
       </section>
-
-      {/* ========== 参考画像アップロード ========== */}
-      <ReferenceImageUploader
-        images={storedImages}
-        addFiles={addFiles}
-        remove={remove}
-        clearAll={clearAll}
-        updateCategory={updateCategory}
-        addTestImage={addTestImage}
-      />
 
       {/* ========== 結果表示 ========== */}
       {result && <ResultView result={result} refImages={storedImages} />}

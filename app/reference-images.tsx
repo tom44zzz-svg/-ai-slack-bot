@@ -286,7 +286,7 @@ export function ReferenceImageUploader({
     <section className="bg-white rounded-lg border border-slate-200 p-5 space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-lg">
-          参考画像（{images.length} 枚）
+          Step 4. 参考画像（任意・{images.length} 枚）
         </h2>
         {images.length > 0 && (
           <button
