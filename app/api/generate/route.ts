@@ -152,17 +152,29 @@ export async function POST(req: Request) {
       }
     }
 
-    // JSON を抽出（コードフェンス内 or 直 JSON の両方を許容）
+    // JSON を抽出：以下の優先順で試みる
+    //   1. 閉じた ```json ... ``` ブロック
+    //   2. 開いた ```json ... （末尾切れ） → ``` 以降の内容を採用
+    //   3. 最初の '{' からテキスト末尾まで（プリアンブルを除去）
     let parsed: any = null;
+    let jsonText = rawText;
     const fenced = rawText.match(/```json\s*([\s\S]*?)```/);
-    let jsonText = fenced ? fenced[1] : rawText;
-    if (!fenced) {
-      const first = rawText.indexOf("{");
-      const last = rawText.lastIndexOf("}");
-      if (first >= 0 && last > first) {
-        jsonText = rawText.slice(first, last + 1);
+    if (fenced) {
+      jsonText = fenced[1];
+    } else {
+      // 未閉じのフェンス
+      const openFence = rawText.match(/```json\s*([\s\S]*)$/);
+      if (openFence) {
+        jsonText = openFence[1];
+      } else {
+        // フェンスなし：最初の '{' 以降
+        const first = rawText.indexOf("{");
+        if (first >= 0) {
+          jsonText = rawText.slice(first);
+        }
       }
     }
+    jsonText = jsonText.trim();
 
     // トランケーション自動修復：max_tokens で途中で切れた JSON を救う。
     // 戦略：文字を舐めて括弧のスタックを追い、最後に「安全にカットして
@@ -246,7 +258,7 @@ export async function POST(req: Request) {
     }
 
     try {
-      parsed = JSON.parse(jsonText.trim());
+      parsed = JSON.parse(jsonText);
     } catch (e: any) {
       // 1 回目失敗：トランケーション修復を試みる
       try {
@@ -269,7 +281,10 @@ export async function POST(req: Request) {
               stage: "json_parse",
               parse_error: e?.message,
               repair_error: e2?.message,
-              raw_preview: rawText.slice(0, 1500),
+              raw_preview: rawText.slice(0, 3000),
+            raw_length: rawText.length,
+            json_extracted_preview: jsonText.slice(0, 1500),
+            json_extracted_length: jsonText.length,
               elapsed_ms: elapsedGen,
             },
           },
