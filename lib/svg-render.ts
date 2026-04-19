@@ -5,7 +5,7 @@
  */
 
 const W = 1080;
-const H = 1350;
+const H = 1080; // Instagram フィード投稿の正方形（1:1）
 
 const C = {
   bg: "#FDF8EE",          // ベージュ
@@ -86,13 +86,13 @@ function wrapMulti(
 // =============================================================================
 function decorations(slideIndex: number, total: number, footer?: string): string {
   return `
-    <!-- 左右の波線/ドット装飾 -->
+    <!-- 左右のドット装飾 -->
     <g opacity="0.18" fill="${C.primary}">
-      ${Array.from({ length: 8 })
-        .map((_, i) => `<circle cx="30" cy="${200 + i * 100}" r="4"/>`)
+      ${Array.from({ length: 6 })
+        .map((_, i) => `<circle cx="30" cy="${180 + i * 110}" r="4"/>`)
         .join("")}
-      ${Array.from({ length: 8 })
-        .map((_, i) => `<circle cx="${W - 30}" cy="${250 + i * 100}" r="4"/>`)
+      ${Array.from({ length: 6 })
+        .map((_, i) => `<circle cx="${W - 30}" cy="${220 + i * 110}" r="4"/>`)
         .join("")}
     </g>
     <!-- 三角アクセント -->
@@ -108,8 +108,8 @@ function decorations(slideIndex: number, total: number, footer?: string): string
     ${
       footer
         ? `<g>
-            <rect x="0" y="${H - 90}" width="${W}" height="90" fill="${C.primary}"/>
-            <text x="${W / 2}" y="${H - 35}" text-anchor="middle" font-size="32" font-weight="bold" fill="${C.white}" font-family="-apple-system, sans-serif">${esc(footer)}</text>
+            <rect x="0" y="${H - 70}" width="${W}" height="70" fill="${C.primary}"/>
+            <text x="${W / 2}" y="${H - 25}" text-anchor="middle" font-size="28" font-weight="bold" fill="${C.white}" font-family="-apple-system, sans-serif">${esc(footer)}</text>
           </g>`
         : ""
     }
@@ -177,9 +177,9 @@ function renderCover(slide: any): string {
 
     <!-- メインタイトルカード -->
     <g>
-      <rect x="60" y="370" width="${W - 120}" height="640" rx="24"
+      <rect x="60" y="340" width="${W - 120}" height="500" rx="24"
         fill="${C.white}" opacity="0.96" stroke="${C.primary}" stroke-width="3"/>
-      <text x="${W / 2}" y="${370 + 320}" text-anchor="middle"
+      <text x="${W / 2}" y="${340 + 240}" text-anchor="middle"
         font-size="${fontSize}" font-weight="900" fill="${C.text}" font-family="-apple-system, sans-serif" letter-spacing="-1">
         ${wrapMulti(mainTitle, W / 2, longestLine > 16 ? 17 : 13, lineHeight)}
       </text>
@@ -187,10 +187,10 @@ function renderCover(slide: any): string {
 
     <!-- ロゴカード -->
     <g>
-      <rect x="${W / 2 - 220}" y="${H - 200}" width="440" height="110" rx="55"
+      <rect x="${W / 2 - 220}" y="${H - 170}" width="440" height="100" rx="50"
         fill="${C.white}" stroke="${C.primary}" stroke-width="3"/>
-      <text x="${W / 2}" y="${H - 130}" text-anchor="middle"
-        font-size="40" font-weight="bold" fill="${C.primary}" font-family="-apple-system, sans-serif">
+      <text x="${W / 2}" y="${H - 105}" text-anchor="middle"
+        font-size="38" font-weight="bold" fill="${C.primary}" font-family="-apple-system, sans-serif">
         セゾンファンデックス
       </text>
     </g>
@@ -227,7 +227,7 @@ function renderHeader(text: string, y: number, slideIndex?: number): string {
 
 // 図解：BeforeAfter
 function diagBeforeAfter(): string {
-  const cy = 800;
+  const cy = 600;
   return `
     <g>
       <rect x="180" y="${cy - 130}" width="280" height="260" rx="16" fill="${C.white}" stroke="${C.border}" stroke-width="3"/>
@@ -245,7 +245,7 @@ function diagBeforeAfter(): string {
 
 // 図解：3 列カード
 function diag3Column(): string {
-  const cy = 800;
+  const cy = 600;
   const cards = ["A", "B", "C"];
   return `
     <g>
@@ -269,7 +269,7 @@ function diag3Column(): string {
 
 // 図解：3 アイコン並列
 function diagIconsRow3(): string {
-  const cy = 800;
+  const cy = 600;
   const icons = ["📈", "💰", "📊"];
   return `
     <g>
@@ -287,7 +287,7 @@ function diagIconsRow3(): string {
 
 // 図解：2x2 カード
 function diagCards2x2(): string {
-  const cy = 750;
+  const cy = 570;
   return `
     <g>
       ${[
@@ -311,7 +311,7 @@ function diagCards2x2(): string {
 
 // 図解：比較表
 function diagTableRow(): string {
-  const cy = 800;
+  const cy = 600;
   return `
     <g stroke="${C.border}" stroke-width="2">
       ${["A", "B", "C", "D"]
@@ -368,7 +368,7 @@ function diagChecklist(): string {
 function diagNumberBig(): string {
   return `
     <g>
-      <circle cx="${W / 2}" cy="800" r="200" fill="${C.accent}" opacity="0.3"/>
+      <circle cx="${W / 2}" cy="600" r="200" fill="${C.accent}" opacity="0.3"/>
       <text x="${W / 2}" y="850" text-anchor="middle"
         font-size="200" font-weight="bold" fill="${C.primary}" font-family="-apple-system, sans-serif">N%</text>
     </g>
@@ -391,7 +391,7 @@ function diagQuote(): string {
 
 // 図解：フロー
 function diagFlow(): string {
-  const cy = 800;
+  const cy = 600;
   return `
     <g>
       ${[0, 1, 2, 3].map((i) => `
@@ -447,7 +447,7 @@ function renderContent(slide: any): string {
       </text>
     `
     }
-    ${bottom ? highlightBox(80, 1010, W - 160, 220, bottom) : ""}
+    ${bottom ? highlightBox(80, 830, W - 160, 180, bottom) : ""}
   `;
 }
 

@@ -29,7 +29,14 @@ export const maxDuration = 120;
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { topic, target, goal, format_id, use_web_search = true } = body;
+    const {
+      topic,
+      target,
+      goal,
+      format_id,
+      use_web_search = true,
+      feedback_history = [],
+    } = body;
 
     if (!topic || !format_id) {
       return NextResponse.json(
@@ -55,6 +62,7 @@ export async function POST(req: Request) {
       templates,
       rules,
       useWebSearch: use_web_search,
+      feedbackHistory: Array.isArray(feedback_history) ? feedback_history : [],
     });
 
     const apiKey = process.env.ANTHROPIC_API_KEY;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 
 type AxisOption = { id: string; name: string; example?: string };
 type FormatSummary = {
@@ -104,37 +104,16 @@ export default function Home() {
 
   const [selectedFormatId, setSelectedFormatId] = useState<string>("");
   const [useWebSearch, setUseWebSearch] = useState(true);
-  const [refImages, setRefImages] = useState<
-    Array<{ id: string; dataUrl: string; name: string; category: string }>
-  >([]);
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [error, setError] = useState<string>("");
+  const [feedbackHistory, setFeedbackHistory] = useState<string[]>([]);
+  const [feedbackDraft, setFeedbackDraft] = useState<string>("");
 
   useEffect(() => {
     fetchFormats();
   }, [hook, tone, structure]);
 
-  const handleImageUpload = useCallback((files: FileList | null) => {
-    if (!files) return;
-    Array.from(files).forEach((file) => {
-      if (!file.type.startsWith("image/")) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
-        setRefImages((prev) => [
-          ...prev,
-          {
-            id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-            dataUrl,
-            name: file.name,
-            category: "general",
-          },
-        ]);
-      };
-      reader.readAsDataURL(file);
-    });
-  }, []);
 
   async function fetchFormats() {
     try {
@@ -169,8 +148,16 @@ export default function Home() {
     }
   }
 
-  async function handleGenerate() {
+  async function handleGenerate(extraFeedback?: string) {
     if (!topic || !selectedFormatId) return;
+    // 追加 FB があれば履歴に積む
+    const fbList = extraFeedback
+      ? [...feedbackHistory, extraFeedback]
+      : feedbackHistory;
+    if (extraFeedback) {
+      setFeedbackHistory(fbList);
+      setFeedbackDraft("");
+    }
     setGenerating(true);
     setError("");
     setResult(null);
@@ -184,6 +171,7 @@ export default function Home() {
           goal,
           format_id: selectedFormatId,
           use_web_search: useWebSearch,
+          feedback_history: fbList,
         }),
       });
 
@@ -345,105 +333,6 @@ export default function Home() {
         />
       </section>
 
-      {/* ========== Step 4: 参考画像 ========== */}
-      <section className="bg-white rounded-lg border border-slate-200 p-5 space-y-3">
-        <h2 className="font-semibold text-lg">
-          Step 4. 参考画像（任意・{refImages.length} 枚）
-        </h2>
-        <p className="text-xs text-slate-500">
-          セゾンファンデックスの過去投稿画像を選択すると、生成結果の該当スライド横に表示されます。
-        </p>
-        <div
-          className="border-2 border-dashed rounded-lg p-6 text-center border-slate-300 bg-slate-50"
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            handleImageUpload(e.dataTransfer.files);
-          }}
-        >
-          <p className="text-sm text-slate-600 mb-2">
-            画像をここにドラッグ＆ドロップ
-          </p>
-          <label className="inline-block px-4 py-1.5 rounded bg-blue-600 text-white text-sm cursor-pointer hover:bg-blue-700">
-            ファイルを選択
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => handleImageUpload(e.target.files)}
-            />
-          </label>
-        </div>
-        {refImages.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-600">
-                {refImages.length} 枚の画像が読み込まれています
-              </span>
-              <button
-                onClick={() => setRefImages([])}
-                className="text-xs text-red-600 hover:underline"
-              >
-                全て削除
-              </button>
-            </div>
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
-              {refImages.map((img) => (
-                <div
-                  key={img.id}
-                  className="relative group border border-slate-200 rounded overflow-hidden"
-                >
-                  <img
-                    src={img.dataUrl}
-                    alt={img.name}
-                    className="w-full aspect-[4/5] object-cover"
-                  />
-                  <select
-                    value={img.category}
-                    onChange={(e) =>
-                      setRefImages((prev) =>
-                        prev.map((i) =>
-                          i.id === img.id
-                            ? { ...i, category: e.target.value }
-                            : i
-                        )
-                      )
-                    }
-                    className="absolute bottom-0 left-0 right-0 text-[9px] bg-black/60 text-white border-0 p-0.5 opacity-0 group-hover:opacity-100 transition"
-                  >
-                    <optgroup label="表紙">
-                      <option value="cover_pill">表紙：カテゴリ＋タイトル</option>
-                      <option value="cover_number">表紙：数字強調</option>
-                      <option value="cover_question">表紙：問いかけ</option>
-                    </optgroup>
-                    <optgroup label="導入">
-                      <option value="intro_quote">問題提起：引用＋写真</option>
-                      <option value="intro_compare">導入：比較表</option>
-                    </optgroup>
-                    <optgroup label="項目">
-                      <option value="item_beforeafter">Before/After対比</option>
-                      <option value="item_icons3">3アイコン並列</option>
-                      <option value="item_cards3">3列カード</option>
-                      <option value="item_photo">写真＋説明</option>
-                      <option value="item_checklist">チェックリスト</option>
-                      <option value="item_table">比較表</option>
-                    </optgroup>
-                    <optgroup label="まとめ / CTA">
-                      <option value="summary_keypoints">要点リスト</option>
-                      <option value="cta_phone">CTA：スマホUI</option>
-                    </optgroup>
-                    <optgroup label="その他">
-                      <option value="general">汎用</option>
-                    </optgroup>
-                  </select>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </section>
-
       {/* ========== 生成ボタン ========== */}
       <section className="space-y-3">
         <label className="flex items-center gap-2 text-sm bg-white border border-slate-200 rounded-lg p-3 cursor-pointer">
@@ -462,7 +351,7 @@ export default function Home() {
         </label>
         <button
           disabled={!topic || !selectedFormatId || generating}
-          onClick={handleGenerate}
+          onClick={() => handleGenerate()}
           className="w-full py-3 rounded-lg bg-blue-600 text-white font-semibold disabled:bg-slate-300 disabled:cursor-not-allowed"
         >
           {generating
@@ -506,7 +395,20 @@ export default function Home() {
       </section>
 
       {/* ========== 結果表示 ========== */}
-      {result && <ResultView result={result} refImages={refImages} />}
+      {result && (
+        <ResultView
+          result={result}
+          feedbackHistory={feedbackHistory}
+          feedbackDraft={feedbackDraft}
+          setFeedbackDraft={setFeedbackDraft}
+          onRegenerate={(fb) => handleGenerate(fb)}
+          onClearFeedback={() => {
+            setFeedbackHistory([]);
+            setFeedbackDraft("");
+          }}
+          generating={generating}
+        />
+      )}
     </main>
   );
 }
@@ -623,15 +525,84 @@ function FormatList({
   );
 }
 
-type RefImg = { id: string; dataUrl: string; name: string; category: string };
-
-function ResultView({ result, refImages }: { result: GenerateResult; refImages: RefImg[] }) {
+function ResultView({
+  result,
+  feedbackHistory,
+  feedbackDraft,
+  setFeedbackDraft,
+  onRegenerate,
+  onClearFeedback,
+  generating,
+}: {
+  result: GenerateResult;
+  feedbackHistory: string[];
+  feedbackDraft: string;
+  setFeedbackDraft: (s: string) => void;
+  onRegenerate: (fb?: string) => void;
+  onClearFeedback: () => void;
+  generating: boolean;
+}) {
   return (
     <section className="bg-white rounded-lg border border-slate-200 p-5 space-y-5">
       <h2 className="font-semibold text-lg">生成結果</h2>
       <div className="text-sm">
         使用フォーマット: <strong>{result.format.name}</strong>（
         {result.format.id}）
+      </div>
+
+      {/* フィードバック積み上げ再生成 */}
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium text-amber-900">
+            💬 フィードバックで再生成（積み上げ学習）
+          </h3>
+          {feedbackHistory.length > 0 && (
+            <button
+              onClick={onClearFeedback}
+              className="text-xs text-amber-700 hover:underline"
+            >
+              FB 履歴をクリア
+            </button>
+          )}
+        </div>
+        {feedbackHistory.length > 0 && (
+          <div className="bg-white border border-amber-200 rounded p-2 space-y-1">
+            <p className="text-[11px] text-amber-800 font-medium">
+              適用中の FB ({feedbackHistory.length} 件) — 次回もすべて累積反映
+            </p>
+            <ol className="text-xs text-slate-700 space-y-0.5 list-decimal list-inside">
+              {feedbackHistory.map((f, i) => (
+                <li key={i} className="break-words">
+                  {f}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+        <textarea
+          value={feedbackDraft}
+          onChange={(e) => setFeedbackDraft(e.target.value)}
+          rows={3}
+          placeholder="例: 見出しをもっと短く／チェックリスト項目を 5 つに減らす／写真をより具体的に／キャプションを簡潔に 等"
+          className="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+        />
+        <div className="flex gap-2">
+          <button
+            onClick={() => onRegenerate(feedbackDraft.trim() || undefined)}
+            disabled={generating || !feedbackDraft.trim()}
+            className="flex-1 py-2 rounded bg-amber-600 text-white font-medium text-sm disabled:bg-slate-300 disabled:cursor-not-allowed hover:bg-amber-700"
+          >
+            {generating ? "再生成中…" : "📝 この FB を追加して再生成"}
+          </button>
+          <button
+            onClick={() => onRegenerate()}
+            disabled={generating || feedbackHistory.length === 0}
+            className="px-4 py-2 rounded border border-amber-600 text-amber-700 font-medium text-sm disabled:opacity-40 hover:bg-amber-100"
+            title="現在の FB 履歴だけで再生成（追加 FB なし）"
+          >
+            🔁 同条件で再生成
+          </button>
+        </div>
       </div>
 
       {result.source_summary && result.source_summary.total > 0 && (
@@ -711,7 +682,7 @@ function ResultView({ result, refImages }: { result: GenerateResult; refImages: 
         </div>
         <div className="space-y-4">
           {(result.slides || []).map((s) => (
-            <SlideCard key={s.index} slide={s} refImages={refImages} />
+            <SlideCard key={s.index} slide={s} />
           ))}
         </div>
       </div>
@@ -745,68 +716,7 @@ function ResultView({ result, refImages }: { result: GenerateResult; refImages: 
   );
 }
 
-// テンプレ/図解 ID から参考画像カテゴリへのマッピング
-const TEMPLATE_TO_IMGCAT: Record<string, string[]> = {
-  tpl_cover_pill_title: ["cover_pill"],
-  tpl_cover_number: ["cover_number", "cover_pill"],
-  tpl_cover_question: ["cover_question", "cover_pill"],
-  tpl_cover_casual_hook: ["cover_pill"],
-  tpl_intro_quote: ["intro_quote"],
-  tpl_intro_compare_table: ["intro_compare", "item_table"],
-  tpl_intro_stat: ["intro_stat", "item_number"],
-  tpl_item_beforeafter: ["item_beforeafter"],
-  tpl_item_icons_3: ["item_icons3"],
-  tpl_item_cards_2x2: ["item_cards2x2"],
-  tpl_item_cards_3: ["item_cards3"],
-  tpl_item_persona_table: ["item_persona", "item_table"],
-  tpl_item_photo: ["item_photo"],
-  tpl_item_illustration: ["item_photo"],
-  tpl_step_flow: ["item_flow"],
-  tpl_item_warning: ["item_warning"],
-  tpl_item_checklist: ["item_checklist"],
-  tpl_qa_pair: ["item_quote"],
-  tpl_quiz_reveal: ["item_checklist"],
-  tpl_summary_recommend: ["summary_recommend"],
-  tpl_summary_keypoints: ["summary_keypoints", "item_checklist"],
-  tpl_cta_phone: ["cta_phone"],
-  tpl_cta_illustration: ["cta_illust"],
-};
-
-function getMatchingRefs(slide: Slide, refs: RefImg[]): RefImg[] {
-  if (refs.length === 0) return [];
-  const tplId = slide.template_id || "";
-
-  // テンプレ ID → 画像カテゴリのマッチ（最も精度が高い）
-  const targetCats = TEMPLATE_TO_IMGCAT[tplId] || [];
-  for (const cat of targetCats) {
-    const matched = refs.filter((r) => r.category === cat);
-    if (matched.length > 0) return matched.slice(0, 3);
-  }
-
-  // フォールバック：broad prefix マッチ
-  const prefix = tplId.startsWith("tpl_cover")
-    ? "cover"
-    : tplId.startsWith("tpl_cta")
-    ? "cta"
-    : tplId.startsWith("tpl_intro")
-    ? "intro"
-    : tplId.startsWith("tpl_summary")
-    ? "summary"
-    : tplId.startsWith("tpl_item") || tplId.startsWith("tpl_step") || tplId.startsWith("tpl_qa") || tplId.startsWith("tpl_quiz")
-    ? "item"
-    : "";
-
-  if (prefix) {
-    const broad = refs.filter((r) => r.category.startsWith(prefix));
-    if (broad.length > 0) return broad.slice(0, 3);
-  }
-
-  // 最終フォールバック
-  return refs.filter((r) => r.category === "general").slice(0, 2);
-}
-
-function SlideCard({ slide: s, refImages }: { slide: Slide; refImages: RefImg[] }) {
-  const matchedRefs = getMatchingRefs(s, refImages);
+function SlideCard({ slide: s }: { slide: Slide }) {
   return (
     <div className="border border-slate-200 rounded-lg p-3 text-sm">
       <div className="flex items-center gap-2 mb-3">
@@ -816,36 +726,20 @@ function SlideCard({ slide: s, refImages }: { slide: Slide; refImages: RefImg[] 
         <span className="font-semibold">{s.role}</span>
         <span className="text-xs text-slate-500">{s.template_id}</span>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4">
-        {/* 左：本文・ビジュアル */}
+      <div className="grid grid-cols-1 md:grid-cols-[auto_minmax(0,1fr)] gap-4">
+        {/* 左：完成イメージ（正方形 SVG プレビュー） */}
+        <div className="space-y-1">
+          {s.svg && (
+            <div
+              className="w-[280px] aspect-square border-2 border-slate-300 rounded-lg overflow-hidden bg-white shadow-sm"
+              dangerouslySetInnerHTML={{ __html: s.svg }}
+            />
+          )}
+          <p className="text-[10px] text-slate-400 text-center">
+            完成イメージ（実装のプレビュー）
+          </p>
+        </div>
         <div className="space-y-2">
-          <div className="flex gap-2 flex-wrap">
-            {s.svg && (
-              <div
-                className="w-[180px] shrink-0 aspect-[4/5] border border-slate-200 rounded overflow-hidden bg-slate-50"
-                dangerouslySetInnerHTML={{ __html: s.svg }}
-              />
-            )}
-            {matchedRefs.length > 0 && (
-              <div className="flex gap-1 flex-wrap">
-                {matchedRefs.map((ref) => (
-                  <div
-                    key={ref.id}
-                    className="w-[120px] aspect-[4/5] border border-blue-200 rounded overflow-hidden bg-blue-50 relative group"
-                  >
-                    <img
-                      src={ref.dataUrl}
-                      alt={ref.name}
-                      className="w-full h-full object-cover"
-                    />
-                    <span className="absolute top-0.5 left-0.5 text-[8px] bg-blue-600/80 text-white px-1 rounded opacity-0 group-hover:opacity-100 transition">
-                      {ref.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
           <div className="space-y-1">
             <Zone label="上" data={s.zone_top} />
             <Zone label="中" data={s.zone_middle} />

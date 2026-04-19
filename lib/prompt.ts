@@ -12,8 +12,9 @@ export function buildPrompt(args: {
   templates: Template[];
   rules: Rule[];
   useWebSearch?: boolean;
+  feedbackHistory?: string[];
 }): { system: string; user: string } {
-  const { topic, target, goal, format, templates, rules, useWebSearch } = args;
+  const { topic, target, goal, format, templates, rules, useWebSearch, feedbackHistory = [] } = args;
 
   const usedTemplateIds = new Set<string>();
   for (const step of format.recipe) {
@@ -186,11 +187,21 @@ ${format.risk_flags.map((r) => `- [${r.rule_id}] ${r.severity}`).join("\n")}`
       : ""
   }`;
 
+  // フィードバック履歴：過去の修正指示を積み上げて反映
+  const feedbackSection =
+    feedbackHistory.length > 0
+      ? `\n\n## 過去のフィードバック（積み上げ反映・必須遵守）\n${feedbackHistory
+          .map((f, i) => `【FB ${i + 1}】${f}`)
+          .join(
+            "\n"
+          )}\n\n上記フィードバックはすべて**累積して反映**すること。古い FB も無視せず、全てを踏まえた上で今回の構成案を作成する。`
+      : "";
+
   const user = `## ネタ
 ${topic}
 ${target ? `\n## ターゲット\n${target}` : ""}${goal ? `\n## ゴール\n${goal}` : ""}
 
-${formatSpec}`;
+${formatSpec}${feedbackSection}`;
 
   return { system, user };
 }
