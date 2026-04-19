@@ -1,11 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  useReferenceImages,
-  ReferenceImageUploader,
-  type StoredImage,
-} from "./reference-images";
+import { useEffect, useState, useCallback } from "react";
 
 type AxisOption = { id: string; name: string; example?: string };
 type FormatSummary = {
@@ -109,14 +104,9 @@ export default function Home() {
 
   const [selectedFormatId, setSelectedFormatId] = useState<string>("");
   const [useWebSearch, setUseWebSearch] = useState(true);
-  const {
-    images: storedImages,
-    addFiles,
-    remove,
-    clearAll,
-    updateCategory,
-    addTestImage,
-  } = useReferenceImages();
+  const [refImages, setRefImages] = useState<
+    Array<{ id: string; dataUrl: string; name: string; category: string }>
+  >([]);
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [error, setError] = useState<string>("");
@@ -125,7 +115,26 @@ export default function Home() {
     fetchFormats();
   }, [hook, tone, structure]);
 
-  // 旧 manifest 不要（IndexedDB に移行）
+  const handleImageUpload = useCallback((files: FileList | null) => {
+    if (!files) return;
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith("image/")) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        setRefImages((prev) => [
+          ...prev,
+          {
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            dataUrl,
+            name: file.name,
+            category: "general",
+          },
+        ]);
+      };
+      reader.readAsDataURL(file);
+    });
+  }, []);
 
   async function fetchFormats() {
     try {
@@ -336,15 +345,104 @@ export default function Home() {
         />
       </section>
 
-      {/* ========== Step 4: 参考画像アップロード ========== */}
-      <ReferenceImageUploader
-        images={storedImages}
-        addFiles={addFiles}
-        remove={remove}
-        clearAll={clearAll}
-        updateCategory={updateCategory}
-        addTestImage={addTestImage}
-      />
+      {/* ========== Step 4: 参考画像 ========== */}
+      <section className="bg-white rounded-lg border border-slate-200 p-5 space-y-3">
+        <h2 className="font-semibold text-lg">
+          Step 4. 参考画像（任意・{refImages.length} 枚）
+        </h2>
+        <p className="text-xs text-slate-500">
+          セゾンファンデックスの過去投稿画像を選択すると、生成結果の該当スライド横に表示されます。
+        </p>
+        <div
+          className="border-2 border-dashed rounded-lg p-6 text-center border-slate-300 bg-slate-50"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            handleImageUpload(e.dataTransfer.files);
+          }}
+        >
+          <p className="text-sm text-slate-600 mb-2">
+            画像をここにドラッグ＆ドロップ
+          </p>
+          <label className="inline-block px-4 py-1.5 rounded bg-blue-600 text-white text-sm cursor-pointer hover:bg-blue-700">
+            ファイルを選択
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleImageUpload(e.target.files)}
+            />
+          </label>
+        </div>
+        {refImages.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-slate-600">
+                {refImages.length} 枚の画像が読み込まれています
+              </span>
+              <button
+                onClick={() => setRefImages([])}
+                className="text-xs text-red-600 hover:underline"
+              >
+                全て削除
+              </button>
+            </div>
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+              {refImages.map((img) => (
+                <div
+                  key={img.id}
+                  className="relative group border border-slate-200 rounded overflow-hidden"
+                >
+                  <img
+                    src={img.dataUrl}
+                    alt={img.name}
+                    className="w-full aspect-[4/5] object-cover"
+                  />
+                  <select
+                    value={img.category}
+                    onChange={(e) =>
+                      setRefImages((prev) =>
+                        prev.map((i) =>
+                          i.id === img.id
+                            ? { ...i, category: e.target.value }
+                            : i
+                        )
+                      )
+                    }
+                    className="absolute bottom-0 left-0 right-0 text-[9px] bg-black/60 text-white border-0 p-0.5 opacity-0 group-hover:opacity-100 transition"
+                  >
+                    <optgroup label="表紙">
+                      <option value="cover_pill">表紙：カテゴリ＋タイトル</option>
+                      <option value="cover_number">表紙：数字強調</option>
+                      <option value="cover_question">表紙：問いかけ</option>
+                    </optgroup>
+                    <optgroup label="導入">
+                      <option value="intro_quote">問題提起：引用＋写真</option>
+                      <option value="intro_compare">導入：比較表</option>
+                    </optgroup>
+                    <optgroup label="項目">
+                      <option value="item_beforeafter">Before/After対比</option>
+                      <option value="item_icons3">3アイコン並列</option>
+                      <option value="item_cards3">3列カード</option>
+                      <option value="item_photo">写真＋説明</option>
+                      <option value="item_checklist">チェックリスト</option>
+                      <option value="item_table">比較表</option>
+                    </optgroup>
+                    <optgroup label="まとめ / CTA">
+                      <option value="summary_keypoints">要点リスト</option>
+                      <option value="cta_phone">CTA：スマホUI</option>
+                    </optgroup>
+                    <optgroup label="その他">
+                      <option value="general">汎用</option>
+                    </optgroup>
+                  </select>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* ========== 生成ボタン ========== */}
       <section className="space-y-3">
@@ -408,7 +506,7 @@ export default function Home() {
       </section>
 
       {/* ========== 結果表示 ========== */}
-      {result && <ResultView result={result} refImages={storedImages} />}
+      {result && <ResultView result={result} refImages={refImages} />}
     </main>
   );
 }
@@ -525,7 +623,9 @@ function FormatList({
   );
 }
 
-function ResultView({ result, refImages }: { result: GenerateResult; refImages: StoredImage[] }) {
+type RefImg = { id: string; dataUrl: string; name: string; category: string };
+
+function ResultView({ result, refImages }: { result: GenerateResult; refImages: RefImg[] }) {
   return (
     <section className="bg-white rounded-lg border border-slate-200 p-5 space-y-5">
       <h2 className="font-semibold text-lg">生成結果</h2>
@@ -672,7 +772,7 @@ const TEMPLATE_TO_IMGCAT: Record<string, string[]> = {
   tpl_cta_illustration: ["cta_illust"],
 };
 
-function getMatchingRefs(slide: Slide, refs: StoredImage[]): StoredImage[] {
+function getMatchingRefs(slide: Slide, refs: RefImg[]): RefImg[] {
   if (refs.length === 0) return [];
   const tplId = slide.template_id || "";
 
@@ -705,7 +805,7 @@ function getMatchingRefs(slide: Slide, refs: StoredImage[]): StoredImage[] {
   return refs.filter((r) => r.category === "general").slice(0, 2);
 }
 
-function SlideCard({ slide: s, refImages }: { slide: Slide; refImages: StoredImage[] }) {
+function SlideCard({ slide: s, refImages }: { slide: Slide; refImages: RefImg[] }) {
   const matchedRefs = getMatchingRefs(s, refImages);
   return (
     <div className="border border-slate-200 rounded-lg p-3 text-sm">
@@ -735,11 +835,11 @@ function SlideCard({ slide: s, refImages }: { slide: Slide; refImages: StoredIma
                   >
                     <img
                       src={ref.dataUrl}
-                      alt={ref.filename}
+                      alt={ref.name}
                       className="w-full h-full object-cover"
                     />
                     <span className="absolute top-0.5 left-0.5 text-[8px] bg-blue-600/80 text-white px-1 rounded opacity-0 group-hover:opacity-100 transition">
-                      {ref.filename}
+                      {ref.name}
                     </span>
                   </div>
                 ))}
