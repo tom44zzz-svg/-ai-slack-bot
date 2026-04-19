@@ -123,3 +123,4 @@ npm run build && npm run start     # 本番ビルド
 
 ⚠ **ブランチ選択**：デフォルトの `main` ではなく `claude/analyze-canva-formats-yqqe4` を Production Branch に設定してください。
 詳細は `docs/deploy.md` 参照。
+
