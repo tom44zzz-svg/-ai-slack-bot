@@ -42,8 +42,24 @@ export function buildPrompt(args: {
 - 悲壮感・困窮感の強い表現は避ける。
 - 口語・造語・俗語 禁止：〜じゃん、めっちゃ、マジで、ガチで、ヤバい、即アウト、詰む、爆上がり、神対応、〜一択、ぶっちゃけ、！！！等。代替：〜とされています / 留意点 / ご存じでしょうか 等の敬体。
 
-## スライド構造
-各スライドは zone_top / zone_middle / zone_bottom の 3 ゾーン。各ゾーンに要素 id と content を入れる。
+## photo_hint の書き方（厳守）
+photo_hint は**デザイナーが Canva のストック素材検索で実際に見つけられるキーワード**に限る。
+Canva の検索窓に打つ想定のシンプルな日本語ワード 2〜4 語で書くこと。
+
+良い例：「家 模型」「書類 手元」「電卓 お金」「住宅 外観」「鍵 テーブル」
+悪い例（見つからない）：「家の模型と鍵が置かれた手元の俯瞰ショット。明るいトーンで清潔感のある背景」
+
+注意点：
+- 「俯瞰」「ボケ味」「自然光」等のカメラ用語は不要（Canva では検索に使えない）
+- 1 つの photo_hint = 2〜4 語の検索キーワード列
+- 写真自体は制作ルール 13 準拠（人物の顔が鮮明でない素材のみ）
+
+## ツールの用途
+このツールの出力は**プロット考案担当者が使い、デザイナーに渡すブリーフ**です。
+デザインの完成指示書ではありません。したがって：
+- photo_hint は「デザイナーが Canva で素材を探すための検索キーワード」
+- 図解の指示は「デザイナーが構成を理解するための概要」
+- テキストは「デザイナーが Canva に流し込む原稿」
 
 ## ソース優先（厳守）
 1. 最優先：fundex.co.jp/contents/ 自社コラム（classification=preferred）
@@ -106,7 +122,7 @@ export function buildPrompt(args: {
       "zone_top": {"element": "category_pill", "content": "..."},
       "zone_middle": {"element": "main_title", "content": "..."},
       "zone_bottom": {"element": "logo", "content": "ロゴ"},
-      "photo_hint": "物体＋手元：家の模型",
+      "photo_hint": "家 模型",
       "diagram": null,
       "sources": []
     },
