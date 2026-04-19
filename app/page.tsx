@@ -1012,87 +1012,62 @@ function SlideCard({
           </span>
         )}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-[auto_minmax(0,1fr)] gap-4">
-        <div className="space-y-2">
-          <div className="flex gap-2 items-start flex-wrap">
-            {safe.svg && (
-              <div className="space-y-1">
-                <div
-                  className="w-[200px] aspect-square border-2 border-slate-300 rounded-lg overflow-hidden bg-white shadow-sm"
-                  dangerouslySetInnerHTML={{ __html: safe.svg }}
-                />
-                <p className="text-[10px] text-slate-400 text-center">
-                  プレビュー（SVG）
-                </p>
-              </div>
-            )}
-            {matchedRefs.length > 0 && safe.pattern && (
-              <div className="space-y-1">
-                <div className="flex gap-1 flex-wrap max-w-[220px]">
-                  {matchedRefs.slice(0, 4).map((ref) => (
-                    <div
-                      key={ref.id}
-                      className="w-[100px] aspect-square border-2 border-blue-300 rounded overflow-hidden"
-                    >
-                      <img
-                        src={ref.dataUrl}
-                        alt={ref.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-                <p className="text-[10px] text-blue-600 text-center">
-                  📎 参考画像（{safe.pattern.id}）
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="space-y-2">
-          <div className="space-y-1">
-            <Zone label="上" data={safe.zone_top} />
-            <Zone label="中" data={safe.zone_middle} />
-            <Zone label="下" data={safe.zone_bottom} />
-          </div>
-          {safe.photo_hint && (
-            <div className="text-xs text-slate-600">
-              📷 写真: {safe.photo_hint}
+      <div className="space-y-3">
+        {/* SVG プレビュー */}
+        {safe.svg && (
+          <div className="flex gap-3 items-start">
+            <div className="shrink-0">
+              <div
+                className="w-[160px] aspect-square border-2 border-slate-300 rounded-lg overflow-hidden bg-white shadow-sm"
+                dangerouslySetInnerHTML={{ __html: safe.svg }}
+              />
+              <p className="text-[10px] text-slate-400 text-center mt-1">プレビュー</p>
             </div>
+            {matchedRefs.length > 0 && safe.pattern && (
+              <div className="flex gap-1 flex-wrap">
+                {matchedRefs.slice(0, 3).map((ref) => (
+                  <div key={ref.id} className="w-[80px] aspect-square border-2 border-blue-300 rounded overflow-hidden">
+                    <img src={ref.dataUrl} alt={ref.name} className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ゾーン情報 */}
+        <div className="space-y-1.5">
+          <Zone label="上" data={safe.zone_top} />
+          <Zone label="中" data={safe.zone_middle} />
+          <Zone label="下" data={safe.zone_bottom} />
+        </div>
+
+        {/* メタ情報 */}
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
+          {safe.photo_hint && (
+            <span className="text-xs text-slate-600">📷 {safe.photo_hint}</span>
           )}
           {safe.diagram && (
-            <div className="text-xs text-slate-600">
-              📊 図解: {safe.diagram_info?.name || safe.diagram}
+            <span className="text-xs text-slate-600">
+              📊 {safe.diagram_info?.name || safe.diagram}
               {safe.diagram_info?.category && (
-                <span className="text-slate-400 ml-1">
-                  （{safe.diagram_info.category}）
-                </span>
+                <span className="text-slate-400 ml-1">（{safe.diagram_info.category}）</span>
               )}
-            </div>
-          )}
-          {safe.diagram_info?.ascii_preview && (
-            <pre className="mt-1 bg-slate-50 border border-slate-200 rounded p-2 text-[11px] leading-[1.3] font-mono overflow-x-auto whitespace-pre">
-{safe.diagram_info.ascii_preview}
-            </pre>
+            </span>
           )}
           {safe.canva_search_url && (
-            <a
-              href={safe.canva_search_url}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-block text-xs text-blue-700 hover:underline"
-            >
-              🎨 Canva で近いテンプレを検索 →
+            <a href={safe.canva_search_url} target="_blank" rel="noreferrer" className="text-xs text-blue-700 hover:underline">
+              🎨 Canva で検索 →
             </a>
-          )}
-          {safe.notes && (
-            <div className="text-xs text-slate-400">{safe.notes}</div>
           )}
         </div>
 
-        <div>
-          <SourcesPanel slide={s} />
-        </div>
+        {safe.notes && (
+          <p className="text-xs text-slate-400">{safe.notes}</p>
+        )}
+
+        {/* 出典 */}
+        <SourcesPanel slide={s} />
       </div>
     </div>
   );
@@ -1253,12 +1228,12 @@ function CitationRow({ c }: { c: VerifiedCitation }) {
 function Zone({ label, data }: { label: string; data: any }) {
   if (!data) return null;
   return (
-    <div className="flex gap-2 text-xs">
-      <span className="text-slate-400 w-6 shrink-0">{label}</span>
-      <span className="text-slate-500 w-28 shrink-0 font-mono">
+    <div className="flex items-start gap-2 text-sm leading-relaxed">
+      <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-xs shrink-0 mt-0.5">{label}</span>
+      <span className="text-slate-500 text-xs shrink-0 w-20 mt-0.5 font-mono">
         {data.element || "-"}
       </span>
-      <span className="flex-1">{data.content || "-"}</span>
+      <span className="flex-1 min-w-0 break-words">{data.content || "-"}</span>
     </div>
   );
 }
