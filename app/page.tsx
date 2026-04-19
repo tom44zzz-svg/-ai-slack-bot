@@ -1,6 +1,46 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+
+const DRIVE_FOLDER_URL =
+  "https://drive.google.com/drive/folders/1Q1vx68G-d3z9HakL54u5jpWR84XCJC5h?usp=sharing";
+
+type RefImage = {
+  id: string;
+  dataUrl: string;
+  name: string;
+  pattern_id: string; // page-patterns.yaml の P01 等
+};
+
+const PATTERN_CHOICES = [
+  { group: "表紙", items: [
+    { id: "P01", label: "P01 大見出し・保存版型" },
+    { id: "P02", label: "P02 カテゴリピル＋タイトル型" },
+    { id: "P03", label: "P03 問いかけ型・背景人物" },
+    { id: "P04", label: "P04 会話フック型" },
+  ]},
+  { group: "導入", items: [
+    { id: "P10", label: "P10 問題提起・引用型" },
+    { id: "P11", label: "P11 比較表・導入型" },
+    { id: "P12", label: "P12 大数字・導入型" },
+  ]},
+  { group: "項目", items: [
+    { id: "P20", label: "P20 before/after 対比型" },
+    { id: "P21", label: "P21 2列VS型" },
+    { id: "P30", label: "P30 3アイコン並列型" },
+    { id: "P31", label: "P31 2×2カード型" },
+    { id: "P32", label: "P32 3列カード＋キャプション誘導型" },
+    { id: "P40", label: "P40 人物＋○×選択型" },
+    { id: "P50", label: "P50 番号＋写真＋💡型" },
+  ]},
+  { group: "まとめ / CTA", items: [
+    { id: "P60", label: "P60 ケース別推薦まとめ" },
+    { id: "P61", label: "P61 要点チェックリストまとめ" },
+    { id: "P90", label: "P90 CTA・家族イラスト型" },
+    { id: "P91", label: "P91 CTA・スマホUI型" },
+  ]},
+  { group: "その他", items: [{ id: "unclassified", label: "未分類" }] },
+];
 
 type AxisOption = { id: string; name: string; example?: string };
 type FormatSummary = {
@@ -118,6 +158,27 @@ export default function Home() {
   const [error, setError] = useState<string>("");
   const [feedbackHistory, setFeedbackHistory] = useState<string[]>([]);
   const [feedbackDraft, setFeedbackDraft] = useState<string>("");
+  const [refImages, setRefImages] = useState<RefImage[]>([]);
+
+  const handleImageUpload = useCallback((files: FileList | null) => {
+    if (!files) return;
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith("image/")) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        setRefImages((prev) => [
+          ...prev,
+          {
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            dataUrl: reader.result as string,
+            name: file.name,
+            pattern_id: "unclassified",
+          },
+        ]);
+      };
+      reader.readAsDataURL(file);
+    });
+  }, []);
 
   useEffect(() => {
     fetchFormats();
@@ -342,6 +403,107 @@ export default function Home() {
         />
       </section>
 
+      {/* ========== Step 4: 参考画像アップロード ========== */}
+      <section className="bg-white rounded-lg border border-slate-200 p-5 space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <h2 className="font-semibold text-lg">
+            Step 4. 参考画像（任意・{refImages.length} 枚）
+          </h2>
+          {refImages.length > 0 && (
+            <button
+              onClick={() => setRefImages([])}
+              className="text-xs text-red-600 hover:underline"
+            >
+              全て削除
+            </button>
+          )}
+        </div>
+        <div className="bg-blue-50 border border-blue-200 rounded p-3 text-xs text-blue-900 space-y-1">
+          <p className="font-medium">📁 セゾンファンデックス 参考画像フォルダ</p>
+          <p>
+            下のリンクから Google Drive フォルダを開き、画像を一括ダウンロード
+            →このページにドラッグ＆ドロップしてください。
+          </p>
+          <a
+            href={DRIVE_FOLDER_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-block mt-1 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            🔗 Google Drive フォルダを開く
+          </a>
+        </div>
+        <div
+          className="border-2 border-dashed rounded-lg p-6 text-center border-slate-300 bg-slate-50"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            handleImageUpload(e.dataTransfer.files);
+          }}
+        >
+          <p className="text-sm text-slate-600 mb-2">
+            画像をここにドラッグ＆ドロップ（複数可）
+          </p>
+          <label className="inline-block px-4 py-1.5 rounded bg-blue-600 text-white text-sm cursor-pointer hover:bg-blue-700">
+            ファイルを選択
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleImageUpload(e.target.files)}
+            />
+          </label>
+        </div>
+        {refImages.length > 0 && (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+            {refImages.map((img) => (
+              <div
+                key={img.id}
+                className="relative border border-slate-200 rounded overflow-hidden"
+              >
+                <img
+                  src={img.dataUrl}
+                  alt={img.name}
+                  className="w-full aspect-square object-cover"
+                />
+                <select
+                  value={img.pattern_id}
+                  onChange={(e) =>
+                    setRefImages((prev) =>
+                      prev.map((i) =>
+                        i.id === img.id
+                          ? { ...i, pattern_id: e.target.value }
+                          : i
+                      )
+                    )
+                  }
+                  className="absolute bottom-0 left-0 right-0 text-[10px] bg-black/70 text-white border-0 p-1"
+                >
+                  {PATTERN_CHOICES.map((g) => (
+                    <optgroup key={g.group} label={g.group}>
+                      {g.items.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <button
+                  onClick={() =>
+                    setRefImages((prev) => prev.filter((i) => i.id !== img.id))
+                  }
+                  className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-600/80 text-white rounded text-[10px] flex items-center justify-center hover:bg-red-700"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
       {/* ========== 生成ボタン ========== */}
       <section className="space-y-3">
         <label className="flex items-center gap-2 text-sm bg-white border border-slate-200 rounded-lg p-3 cursor-pointer">
@@ -407,6 +569,7 @@ export default function Home() {
       {result && (
         <ResultView
           result={result}
+          refImages={refImages}
           feedbackHistory={feedbackHistory}
           feedbackDraft={feedbackDraft}
           setFeedbackDraft={setFeedbackDraft}
@@ -536,6 +699,7 @@ function FormatList({
 
 function ResultView({
   result,
+  refImages,
   feedbackHistory,
   feedbackDraft,
   setFeedbackDraft,
@@ -544,6 +708,7 @@ function ResultView({
   generating,
 }: {
   result: GenerateResult;
+  refImages: RefImage[];
   feedbackHistory: string[];
   feedbackDraft: string;
   setFeedbackDraft: (s: string) => void;
@@ -691,7 +856,7 @@ function ResultView({
         </div>
         <div className="space-y-4">
           {(result.slides || []).map((s) => (
-            <SlideCard key={s.index} slide={s} />
+            <SlideCard key={s.index} slide={s} refImages={refImages} />
           ))}
         </div>
       </div>
@@ -725,7 +890,17 @@ function ResultView({
   );
 }
 
-function SlideCard({ slide: s }: { slide: Slide }) {
+function SlideCard({
+  slide: s,
+  refImages,
+}: {
+  slide: Slide;
+  refImages: RefImage[];
+}) {
+  // このスライドの pattern に対応する参考画像を抽出
+  const matchedRefs = s.pattern
+    ? refImages.filter((r) => r.pattern_id === s.pattern!.id)
+    : [];
   return (
     <div className="border border-slate-200 rounded-lg p-3 text-sm">
       <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -744,17 +919,42 @@ function SlideCard({ slide: s }: { slide: Slide }) {
         )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-[auto_minmax(0,1fr)] gap-4">
-        {/* 左：完成イメージ（正方形 SVG プレビュー） */}
-        <div className="space-y-1">
-          {s.svg && (
-            <div
-              className="w-[280px] aspect-square border-2 border-slate-300 rounded-lg overflow-hidden bg-white shadow-sm"
-              dangerouslySetInnerHTML={{ __html: s.svg }}
-            />
-          )}
-          <p className="text-[10px] text-slate-400 text-center">
-            完成イメージ（実装のプレビュー）
-          </p>
+        {/* 左：完成イメージ（正方形 SVG プレビュー） + 参考画像 */}
+        <div className="space-y-2">
+          <div className="flex gap-2 items-start flex-wrap">
+            {s.svg && (
+              <div className="space-y-1">
+                <div
+                  className="w-[200px] aspect-square border-2 border-slate-300 rounded-lg overflow-hidden bg-white shadow-sm"
+                  dangerouslySetInnerHTML={{ __html: s.svg }}
+                />
+                <p className="text-[10px] text-slate-400 text-center">
+                  プレビュー（SVG）
+                </p>
+              </div>
+            )}
+            {matchedRefs.length > 0 && (
+              <div className="space-y-1">
+                <div className="flex gap-1 flex-wrap max-w-[220px]">
+                  {matchedRefs.slice(0, 4).map((ref) => (
+                    <div
+                      key={ref.id}
+                      className="w-[100px] aspect-square border-2 border-blue-300 rounded overflow-hidden"
+                    >
+                      <img
+                        src={ref.dataUrl}
+                        alt={ref.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] text-blue-600 text-center">
+                  📎 参考画像（{s.pattern!.id}）
+                </p>
+              </div>
+            )}
+          </div>
         </div>
         <div className="space-y-2">
           <div className="space-y-1">
