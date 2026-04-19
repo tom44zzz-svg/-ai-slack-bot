@@ -4,7 +4,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
 }
 
 body {
@@ -12,4 +12,36 @@ body {
   background: var(--background);
   font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP",
     "Yu Gothic UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* 本文の可読性向上 */
+p, li, div, span, label {
+  letter-spacing: 0.01em;
+}
+
+/* 小さすぎる text-xs の読みやすさ改善 */
+.text-xs {
+  line-height: 1.6;
+}
+.text-\[10px\] {
+  line-height: 1.55;
+}
+.text-\[11px\] {
+  line-height: 1.55;
+}
+
+/* コントラスト強化 */
+.text-slate-400 {
+  color: #64748b !important;
+}
+.text-slate-500 {
+  color: #475569 !important;
+}
+.text-slate-600 {
+  color: #334155 !important;
 }
