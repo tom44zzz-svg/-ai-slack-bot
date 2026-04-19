@@ -14,6 +14,8 @@ type RefImage = {
   dataUrl: string;
   name: string;
   pattern_id: string; // page-patterns.yaml の P01 等
+  classifying?: boolean;
+  classify_reason?: string;
 };
 
 const PATTERN_CHOICES = [
@@ -184,6 +186,57 @@ export default function Home() {
     });
   }, []);
 
+  // 1 枚を AI で分類
+  const classifyImage = useCallback(async (id: string) => {
+    setRefImages((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, classifying: true } : i))
+    );
+    const target = refImages.find((i) => i.id === id);
+    if (!target) return;
+    try {
+      const res = await fetch("/api/classify", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ dataUrl: target.dataUrl }),
+      });
+      const data = await res.json();
+      if (res.ok && data.pattern_id) {
+        setRefImages((prev) =>
+          prev.map((i) =>
+            i.id === id
+              ? {
+                  ...i,
+                  pattern_id: data.pattern_id,
+                  classify_reason: data.reason,
+                  classifying: false,
+                }
+              : i
+          )
+        );
+      } else {
+        setRefImages((prev) =>
+          prev.map((i) => (i.id === id ? { ...i, classifying: false } : i))
+        );
+        console.error("classify failed:", data);
+      }
+    } catch (e) {
+      setRefImages((prev) =>
+        prev.map((i) => (i.id === id ? { ...i, classifying: false } : i))
+      );
+      console.error("classify error:", e);
+    }
+  }, [refImages]);
+
+  // 全ての未分類を一括 AI 分類
+  const classifyAllUnclassified = useCallback(async () => {
+    const targets = refImages.filter((i) => i.pattern_id === "unclassified");
+    for (const t of targets) {
+      // 直列実行で API レート制限を回避
+      // eslint-disable-next-line no-await-in-loop
+      await classifyImage(t.id);
+    }
+  }, [refImages, classifyImage]);
+
   useEffect(() => {
     fetchFormats();
   }, [hook, tone, structure]);
@@ -331,14 +384,27 @@ export default function Home() {
           <h2 className="font-bold text-lg text-amber-900">
             📷 参考画像（任意・{refImages.length} 枚）
           </h2>
-          {refImages.length > 0 && (
-            <button
-              onClick={() => setRefImages([])}
-              className="text-xs text-red-600 hover:underline"
-            >
-              全て削除
-            </button>
-          )}
+          <div className="flex gap-2 items-center">
+            {refImages.some((i) => i.pattern_id === "unclassified") && (
+              <button
+                onClick={classifyAllUnclassified}
+                className="text-xs px-3 py-1 rounded bg-purple-600 text-white hover:bg-purple-700"
+                title="未分類の画像を AI Vision で自動カテゴリ判定"
+              >
+                🤖 未分類を AI 分類（
+                {refImages.filter((i) => i.pattern_id === "unclassified").length}
+                 枚）
+              </button>
+            )}
+            {refImages.length > 0 && (
+              <button
+                onClick={() => setRefImages([])}
+                className="text-xs text-red-600 hover:underline"
+              >
+                全て削除
+              </button>
+            )}
+          </div>
         </div>
         <div className="bg-white border border-amber-200 rounded p-3 text-xs text-slate-700 space-y-1">
           <p className="font-medium">📁 セゾンファンデックス 参考画像フォルダ</p>
@@ -416,6 +482,14 @@ export default function Home() {
                   className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-600/80 text-white rounded text-[10px] flex items-center justify-center hover:bg-red-700"
                 >
                   ×
+                </button>
+                <button
+                  onClick={() => classifyImage(img.id)}
+                  disabled={img.classifying}
+                  className="absolute top-0.5 left-0.5 px-1 py-0.5 bg-purple-600/80 text-white rounded text-[9px] hover:bg-purple-700 disabled:opacity-50"
+                  title={img.classify_reason || "AI で自動分類"}
+                >
+                  {img.classifying ? "⏳" : "🤖"}
                 </button>
               </div>
             ))}
