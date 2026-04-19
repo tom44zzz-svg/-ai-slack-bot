@@ -164,29 +164,83 @@ export async function POST(req: Request) {
       }
     }
 
-    // トランケーション自動修復：max_tokens で途中で切れた JSON を救う
+    // トランケーション自動修復：max_tokens で途中で切れた JSON を救う。
+    // 戦略：文字を舐めて括弧のスタックを追い、最後に「安全にカットして
+    // 閉じられる位置」を記憶 → 末尾を切って閉じ括弧を補完する。
     function repairTruncatedJson(text: string): string {
-      let t = text.trim();
-      // コードフェンスの残り ``` を剥がす
-      t = t.replace(/```\s*$/, "").trim();
-      // 未閉じの文字列を閉じる（最後の " が奇数個なら付け足す）
-      const doubleQuoteCount = (t.match(/(?<!\\)"/g) || []).length;
-      if (doubleQuoteCount % 2 === 1) {
-        t = t + '"';
+      let t = text.trim().replace(/```\s*$/, "").trim();
+
+      let lastSafe = -1; // これまで見た「要素終わり（, の直前 or 配列末端）」
+      const stack: string[] = [];
+      let inString = false;
+      let escape = false;
+
+      for (let i = 0; i < t.length; i++) {
+        const c = t[i];
+        if (escape) {
+          escape = false;
+          continue;
+        }
+        if (c === "\\") {
+          escape = true;
+          continue;
+        }
+        if (c === '"') {
+          inString = !inString;
+          // 文字列が閉じた直後、浅い位置なら安全点更新
+          if (!inString && stack.length <= 1) lastSafe = i;
+          continue;
+        }
+        if (inString) continue;
+
+        if (c === "{" || c === "[") {
+          stack.push(c);
+        } else if (c === "}" || c === "]") {
+          stack.pop();
+          // 浅い位置で閉じたら安全点更新
+          if (stack.length <= 1) lastSafe = i;
+        } else if (c === "," && stack.length <= 2) {
+          // カンマ前の "}" か "]" までを安全点として記憶（配列の要素境界）
+          lastSafe = i - 1;
+        }
       }
-      // { と } のバランスを取る
-      const opens = (t.match(/{/g) || []).length;
-      const closes = (t.match(/}/g) || []).length;
-      if (opens > closes) {
-        t = t + "}".repeat(opens - closes);
+
+      // 問題なし（完結している）ならそのまま
+      if (!inString && stack.length === 0) return t;
+
+      // 途中切れ → lastSafe までに切り詰めて、開いた括弧を閉じる
+      if (lastSafe > 0) {
+        t = t.slice(0, lastSafe + 1);
       }
-      // [ と ] のバランスを取る
-      const opensArr = (t.match(/\[/g) || []).length;
-      const closesArr = (t.match(/\]/g) || []).length;
-      if (opensArr > closesArr) {
-        t = t + "]".repeat(opensArr - closesArr);
+
+      // 切り詰めた後のスタック再構築
+      const newStack: string[] = [];
+      let ns = false;
+      let ne = false;
+      for (let i = 0; i < t.length; i++) {
+        const c = t[i];
+        if (ne) {
+          ne = false;
+          continue;
+        }
+        if (c === "\\") {
+          ne = true;
+          continue;
+        }
+        if (c === '"') {
+          ns = !ns;
+          continue;
+        }
+        if (ns) continue;
+        if (c === "{" || c === "[") newStack.push(c);
+        else if (c === "}" || c === "]") newStack.pop();
       }
-      // 末尾のカンマを削除
+      while (newStack.length) {
+        const open = newStack.pop();
+        t += open === "{" ? "}" : "]";
+      }
+
+      // 末尾カンマ除去
       t = t.replace(/,\s*([}\]])/g, "$1");
       return t;
     }
