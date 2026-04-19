@@ -46,6 +46,11 @@ const TRUSTED_CORPORATE_DOMAINS = [
   "nta.go.jp",        // 国税庁
   "fsa.go.jp",        // 金融庁
   "stat.go.jp",       // 総務省統計局
+  "flat35.com",       // 住宅金融支援機構（フラット35）
+  "jhf.go.jp",        // 住宅金融支援機構
+  "jcba.or.jp",       // 全国銀行協会
+  "cic.co.jp",        // 信用情報機関 CIC
+  "jicc.co.jp",       // 日本信用情報機構
 ];
 
 export type SourceVerdict = {

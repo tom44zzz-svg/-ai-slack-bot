@@ -47,6 +47,10 @@ export function buildPrompt(args: {
   補強として公的ソースを添える（逆ではない）。
 - Fundex URL を sources に含めなかった場合、検証ロジックで「カバレッジなし」と
   自動判定されるため、存在を知りながら入れないのはエラー扱い。
+- **ネタ本文自体が Fundex 記事の全文・抜粋である場合**も同様。
+  その記事の URL（例：https://www.fundex.co.jp/contents/post/XXX）を
+  web_search で特定し、記事内の主要セクションを sources に含めること。
+  「ユーザーが貼った入力だから出典不要」とは判断しないこと。
 
 ## 出典（sources[]）
 - 数値・制度・法令・統計を含むスライドには必ず sources[] を添える（概念説明や行動提案は不要、[] で可）。
