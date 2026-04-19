@@ -1,0 +1,262 @@
+# ページパターン辞書
+#
+# 過去に共有されたセゾンファンデックスのクリエイティブ画像から
+# 実際に観察されたページ単位のパターンを命名・言語化したもの。
+# templates.yaml の tpl_xxx と 1:1 または 1:N で紐付き、
+# ユーザーが「このパターンで作って」と明示できるようにする。
+#
+# スキーマ:
+#   patterns:
+#     - id: P01                    # 通し番号（ページパターン）
+#       name: "..."                # 日本語の名前
+#       role: "表紙/本文/まとめ/CTA"
+#       template_ids: [tpl_xxx]    # 対応するテンプレ（formats.yaml の推奨テンプレ）
+#       based_on:                  # 実在する過去投稿の例
+#         - post_id: post_xxx
+#           page: "XX/YY"
+#       summary: "..."             # パターンの特徴を 1 行で
+#       visual_cues:                # ビジュアルの識別特徴
+#         - "..."
+
+patterns:
+
+  # =====================================================================
+  # 表紙
+  # =====================================================================
+  - id: P01
+    name: "大見出し・保存版型"
+    role: "表紙"
+    template_ids: [tpl_cover_pill_title, tpl_cover_number]
+    based_on:
+      - post_id: post_akiya_checklist_7
+        page: "01/10"
+    summary: "【保存版】〇〇 N つのチェックリスト。中央に大きく日本語タイトル。"
+    visual_cues:
+      - "中央に 3〜5 行の大タイトルカード"
+      - "上部に青ピルでカテゴリ表示"
+      - "右下セゾンファンデックスロゴ"
+
+  - id: P02
+    name: "カテゴリピル＋タイトル型"
+    role: "表紙"
+    template_ids: [tpl_cover_pill_title]
+    based_on:
+      - post_id: post_shinsa_5
+        page: "01/09"
+    summary: "上部に青ピルでカテゴリ（例：不動産担保ローン）、下に大タイトル。背景は LOAN 書類等の関連写真。"
+    visual_cues:
+      - "青ピル + キーワードだけ色変えタイトル"
+      - "背景写真は半透明オーバーレイ"
+
+  - id: P03
+    name: "問いかけ型・背景人物"
+    role: "表紙"
+    template_ids: [tpl_cover_question]
+    based_on:
+      - post_id: post_souzoku_bunkatsu
+        page: "01/10"
+    summary: "「〇〇できる？」と問いかけ→下に答え系のタイトル。背景は関連する人物・物の遠景。"
+    visual_cues:
+      - "青ピル内に問いかけ文"
+      - "タイトル部分で強調キーワードを色変え"
+
+  - id: P04
+    name: "会話フック型（あのとき…）"
+    role: "表紙"
+    template_ids: [tpl_cover_casual_hook]
+    summary: "「あのとき、こうしていれば…」省略記号付きの心情型フック。"
+    visual_cues:
+      - "上部に会話風の小文字コピー"
+      - "下に大タイトル（失敗・後悔系テーマに向く）"
+
+  # =====================================================================
+  # 本文・導入
+  # =====================================================================
+  - id: P10
+    name: "問題提起・引用型"
+    role: "導入"
+    template_ids: [tpl_intro_quote]
+    based_on:
+      - post_id: post_shinsa_5
+        page: "02/09"
+    summary: "「〇〇のに…」引用＋写真＋💡まとめで共感を誘発。"
+    visual_cues:
+      - "引用 2 本（「〜のに…」）"
+      - "困っている人物の遠景 or 象徴物写真"
+      - "下部💡ボックスで原因示唆"
+
+  - id: P11
+    name: "比較表・導入型"
+    role: "導入"
+    template_ids: [tpl_intro_compare_table]
+    based_on:
+      - post_id: post_shinsa_5
+        page: "03/09"
+    summary: "通りやすい人／通りにくい人を 3〜4 要素で比較 → 下で「今回は〇〇選をご紹介」と本論へ誘導。"
+    visual_cues:
+      - "2 対象 × 3〜4 要素の表"
+      - "行に色分け（緑/灰、青/灰）"
+
+  - id: P12
+    name: "大数字・導入型"
+    role: "導入"
+    template_ids: [tpl_intro_stat]
+    summary: "「80%」などの大数字でインパクトを与えて導入する。"
+    visual_cues:
+      - "中央に巨大な数字"
+      - "下に短い補足文"
+
+  # =====================================================================
+  # 本文・項目（対比系）
+  # =====================================================================
+  - id: P20
+    name: "番号＋before/after 対比型"
+    role: "項目"
+    template_ids: [tpl_item_beforeafter]
+    based_on:
+      - post_id: post_shinsa_5
+        page: "04/09"
+      - post_id: post_shinsa_5
+        page: "05/09"
+    summary: "対処法 01〜 の番号バッジ＋左右対比イラスト（低い家→高い家、5000万→4000万など）＋💡。"
+    visual_cues:
+      - "左右 2 点のイラスト＋矢印"
+      - "金額ラベルが付くサブパターンあり"
+
+  - id: P21
+    name: "対比・2 列 VS 型"
+    role: "項目"
+    template_ids: [tpl_item_beforeafter]
+    summary: "A 側 / B 側を縦 2 列で並べて特徴を列挙（カードローンと不動産担保ローン等）。"
+    visual_cues:
+      - "左右 2 列のカード"
+      - "各列に 3 特徴"
+
+  # =====================================================================
+  # 本文・項目（並列系）
+  # =====================================================================
+  - id: P30
+    name: "番号＋3 アイコン並列型"
+    role: "項目"
+    template_ids: [tpl_item_icons_3]
+    based_on:
+      - post_id: post_shinsa_5
+        page: "06/09"
+    summary: "番号バッジ＋タイトル＋横並び 3 アイコン（収入増／支出見直し／借入改善等）＋💡。"
+    visual_cues:
+      - "横 3 アイコン＋ラベル"
+      - "下に💡ボックス"
+
+  - id: P31
+    name: "2×2 カード（4 選択肢）型"
+    role: "項目"
+    template_ids: [tpl_item_cards_2x2]
+    based_on:
+      - post_id: post_souzoku_bunkatsu
+        page: "07/10"
+    summary: "「〇〇の場合」のリード＋4 選択肢（自己資金／生命保険／融資／遺産分割ローン等）。"
+    visual_cues:
+      - "2×2 のカードグリッド"
+      - "黄色ハイライトの重要ワード"
+
+  - id: P32
+    name: "3 列カード＋キャプション誘導型"
+    role: "項目"
+    template_ids: [tpl_item_cards_3]
+    based_on:
+      - post_id: post_shinsa_5
+        page: "08/09"
+    summary: "3 選択肢カード（リースバック / ABL / 公的融資）＋「詳しくはキャプションに」誘導。"
+    visual_cues:
+      - "横 3 カード（アイコン＋ラベル）"
+      - "『詳しくはキャプションに記載』の文言"
+
+  # =====================================================================
+  # 本文・項目（人物・判定系）
+  # =====================================================================
+  - id: P40
+    name: "人物＋丸抜き選択（○×）型"
+    role: "項目"
+    template_ids: [tpl_item_persona_table]
+    based_on:
+      - post_id: post_shinsa_5
+        page: "07/09"
+    summary: "人物 → A社× B社× C社○ の判定＋下に特徴表（メガバンク／地銀／信金／ノンバンク）。"
+    visual_cues:
+      - "左に人物アイコン＋右に選択肢"
+      - "×/○ で判定を明示"
+      - "下に 4 行の特徴表"
+
+  # =====================================================================
+  # 本文・項目（写真系）
+  # =====================================================================
+  - id: P50
+    name: "番号＋写真＋💡型（チェックリスト本文）"
+    role: "項目"
+    template_ids: [tpl_item_photo]
+    based_on:
+      - post_id: post_akiya_checklist_7
+        page: "07/10"
+      - post_id: post_akiya_checklist_7
+        page: "08/10"
+      - post_id: post_akiya_checklist_7
+        page: "09/10"
+    summary: "番号バッジ＋タイトル＋関連物の写真＋💡ハイライトボックス。チェックリスト型の定番。"
+    visual_cues:
+      - "タイトル上に 01〜07 バッジ"
+      - "中央に物体写真（家の模型／電卓／契約書等）"
+      - "下に💡で要点まとめ"
+
+  # =====================================================================
+  # まとめ・提案
+  # =====================================================================
+  - id: P60
+    name: "ケース別推薦まとめ型"
+    role: "まとめ"
+    template_ids: [tpl_summary_recommend]
+    based_on:
+      - post_id: post_souzoku_bunkatsu
+        page: "09/10"
+    summary: "ケース①「手放す」→ 解決策A ／ ケース②「受け継ぐ」→ 解決策B①②。"
+    visual_cues:
+      - "ケース名（点リスト）"
+      - "解決策カード＋ bullet 2〜3"
+
+  - id: P61
+    name: "要点チェックリストまとめ型"
+    role: "まとめ"
+    template_ids: [tpl_summary_keypoints, tpl_item_checklist]
+    summary: "本文 N 項目を ☑ チェックリストで再掲。保存誘導との相性◎。"
+    visual_cues:
+      - "☑ アイコン付き 5〜7 項目"
+      - "下に『保存して振り返ろう』等の誘導"
+
+  # =====================================================================
+  # CTA
+  # =====================================================================
+  - id: P90
+    name: "CTA・家族イラスト型"
+    role: "CTA"
+    template_ids: [tpl_cta_illustration]
+    based_on:
+      - post_id: post_akiya_checklist_7
+        page: "10/10"
+    summary: "「〇〇のお悩みは〇〇が解決します！」＋家族＋家のイラスト＋フォローボタン。"
+    visual_cues:
+      - "家族と家のフラットイラスト"
+      - "青ボタン『フォローお願いします！』"
+
+  - id: P91
+    name: "CTA・スマホ UI 型"
+    role: "CTA"
+    template_ids: [tpl_cta_phone]
+    based_on:
+      - post_id: post_shinsa_5
+        page: "09/09"
+      - post_id: post_souzoku_bunkatsu
+        page: "10/10"
+    summary: "Instagram プロフィール画面モック＋黄色アクセントの『フォローして最新情報を GET！』。"
+    visual_cues:
+      - "スマホ枠のプロフィール UI モック"
+      - "右側に黄色フォロー誘導カード"
+      - "下に『いつでも見返せるように保存！』"

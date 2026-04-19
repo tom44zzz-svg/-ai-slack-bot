@@ -71,12 +71,23 @@ export type CtaPattern = {
   default?: boolean;
 };
 
+export type PagePattern = {
+  id: string;
+  name: string;
+  role: string;
+  template_ids: string[];
+  based_on?: Array<{ post_id: string; page: string }>;
+  summary: string;
+  visual_cues?: string[];
+};
+
 let cache: {
   formats: Format[];
   templates: Template[];
   diagrams: Diagram[];
   rules: Rule[];
   cta_patterns: CtaPattern[];
+  page_patterns: PagePattern[];
   elements: any;
   checklist: any;
 } | null = null;
@@ -89,6 +100,7 @@ export function loadAll() {
     diagrams: (load("diagram-gallery.yaml") as any).diagrams,
     rules: (load("writing-rules.yaml") as any).rules,
     cta_patterns: (load("cta-patterns.yaml") as any).cta_patterns,
+    page_patterns: (load("page-patterns.yaml") as any).patterns,
     elements: load("elements.yaml"),
     checklist: (load("quality-checklist.yaml") as any).checklist,
   };

@@ -45,7 +45,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const { formats, templates, rules, cta_patterns, diagrams } = loadAll();
+    const { formats, templates, rules, cta_patterns, diagrams, page_patterns } =
+      loadAll();
     const format = formats.find((f) => f.id === format_id);
     if (!format) {
       return NextResponse.json(
@@ -63,6 +64,7 @@ export async function POST(req: Request) {
       rules,
       useWebSearch: use_web_search,
       feedbackHistory: Array.isArray(feedback_history) ? feedback_history : [],
+      pagePatterns: page_patterns,
     });
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -184,11 +186,25 @@ export async function POST(req: Request) {
       );
     }
 
-    // 各スライドの出典を検証 + 図解プレビュー + Canva 検索 URL を付与
+    // 各スライドの出典を検証 + 図解プレビュー + Canva 検索 URL を付与 + ページパターン推定
     const diagramById = new Map(diagrams.map((d: any) => [d.id, d]));
+    // template_id → 該当 PagePattern[]
+    const patternsByTpl = new Map<string, any[]>();
+    for (const p of page_patterns) {
+      for (const tid of p.template_ids || []) {
+        if (!patternsByTpl.has(tid)) patternsByTpl.set(tid, []);
+        patternsByTpl.get(tid)!.push(p);
+      }
+    }
+    const patternById = new Map(page_patterns.map((p: any) => [p.id, p]));
     const slides = (parsed.slides || []).map((s: any) => {
       const verified = verifyCitations(s.sources || []);
       const diagramInfo = s.diagram ? diagramById.get(s.diagram) : undefined;
+      const matchedPatterns = patternsByTpl.get(s.template_id) || [];
+      // LLM が明示的に pattern_id を返したらそれを優先、
+      // 返さなかった場合は template_id からマッチした先頭を使う
+      const mainPattern =
+        (s.pattern_id && patternById.get(s.pattern_id)) || matchedPatterns[0];
       return {
         ...s,
         sources: verified,
@@ -199,6 +215,15 @@ export async function POST(req: Request) {
               category: diagramInfo.category,
               ascii_preview: diagramInfo.ascii_preview,
               use_case: diagramInfo.use_case,
+            }
+          : null,
+        pattern: mainPattern
+          ? {
+              id: mainPattern.id,
+              name: mainPattern.name,
+              role: mainPattern.role,
+              summary: mainPattern.summary,
+              based_on: mainPattern.based_on || [],
             }
           : null,
         canva_search_url: getCanvaSearchUrl({

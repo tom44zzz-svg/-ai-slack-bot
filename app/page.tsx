@@ -48,10 +48,19 @@ type DiagramInfo = {
   use_case: string;
 };
 
+type PatternInfo = {
+  id: string;
+  name: string;
+  role: string;
+  summary: string;
+  based_on?: Array<{ post_id: string; page: string }>;
+};
+
 type Slide = {
   index: number;
   role: string;
   template_id: string;
+  pattern?: PatternInfo | null;
   zone_top: any;
   zone_middle: any;
   zone_bottom: any;
@@ -719,12 +728,20 @@ function ResultView({
 function SlideCard({ slide: s }: { slide: Slide }) {
   return (
     <div className="border border-slate-200 rounded-lg p-3 text-sm">
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
         <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded">
           {s.index}
         </span>
         <span className="font-semibold">{s.role}</span>
         <span className="text-xs text-slate-500">{s.template_id}</span>
+        {s.pattern && (
+          <span
+            className="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-200"
+            title={s.pattern.summary}
+          >
+            📐 {s.pattern.id} {s.pattern.name}
+          </span>
+        )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-[auto_minmax(0,1fr)] gap-4">
         {/* 左：完成イメージ（正方形 SVG プレビュー） */}
