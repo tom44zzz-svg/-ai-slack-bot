@@ -99,11 +99,10 @@ export async function POST(req: Request) {
       response = await client.messages.create({
         model: "claude-sonnet-4-6",
         max_tokens: 4096,
-        // system プロンプトをキャッシュすることで、後続リクエストの
-        // 入力トークン課金を大幅削減。
-        system: [
-          { type: "text", text: system, cache_control: { type: "ephemeral" } },
-        ] as any,
+        // 注意：以前 cache_control を付けていたが、web_search のツール結果が
+        // 空テキストブロックを生成するケースで Anthropic 側が
+        // "cache_control cannot be set for empty text blocks" を返したため除去。
+        system,
         messages: [{ role: "user", content: user }],
         ...(tools.length > 0 ? { tools } : {}),
       });
