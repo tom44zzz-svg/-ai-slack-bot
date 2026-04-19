@@ -724,8 +724,8 @@ function ResultView({
     <section className="bg-white rounded-lg border border-slate-200 p-5 space-y-5">
       <h2 className="font-semibold text-lg">生成結果</h2>
       <div className="text-sm">
-        使用フォーマット: <strong>{result.format.name}</strong>（
-        {result.format.id}）
+        使用フォーマット: <strong>{result.format?.name || "(未指定)"}</strong>
+        {result.format?.id && <>（{result.format.id}）</>}
       </div>
 
       {/* フィードバック積み上げ再生成 */}
@@ -901,43 +901,58 @@ function SlideCard({
   slide: Slide;
   refImages: RefImage[];
 }) {
-  // このスライドの pattern に対応する参考画像を抽出
-  const matchedRefs = s.pattern
-    ? refImages.filter((r) => r.pattern_id === s.pattern!.id)
+  // すべて防御的に評価
+  const safe = {
+    index: s?.index ?? "?",
+    role: s?.role || "",
+    template_id: s?.template_id || "",
+    pattern: s?.pattern || null,
+    zone_top: s?.zone_top || null,
+    zone_middle: s?.zone_middle || null,
+    zone_bottom: s?.zone_bottom || null,
+    photo_hint: s?.photo_hint || null,
+    diagram: s?.diagram || null,
+    diagram_info: s?.diagram_info || null,
+    canva_search_url: s?.canva_search_url || null,
+    sources: Array.isArray(s?.sources) ? s.sources : [],
+    svg: typeof s?.svg === "string" ? s.svg : null,
+    notes: s?.notes || null,
+  };
+  const matchedRefs = safe.pattern
+    ? refImages.filter((r) => r.pattern_id === safe.pattern!.id)
     : [];
   return (
     <div className="border border-slate-200 rounded-lg p-3 text-sm">
       <div className="flex items-center gap-2 mb-3 flex-wrap">
         <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded">
-          {s.index}
+          {safe.index}
         </span>
-        <span className="font-semibold">{s.role}</span>
-        <span className="text-xs text-slate-500">{s.template_id}</span>
-        {s.pattern && (
+        <span className="font-semibold">{safe.role}</span>
+        <span className="text-xs text-slate-500">{safe.template_id}</span>
+        {safe.pattern && (
           <span
             className="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-200"
-            title={s.pattern.summary}
+            title={safe.pattern.summary || ""}
           >
-            📐 {s.pattern.id} {s.pattern.name}
+            📐 {safe.pattern.id} {safe.pattern.name}
           </span>
         )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-[auto_minmax(0,1fr)] gap-4">
-        {/* 左：完成イメージ（正方形 SVG プレビュー） + 参考画像 */}
         <div className="space-y-2">
           <div className="flex gap-2 items-start flex-wrap">
-            {s.svg && (
+            {safe.svg && (
               <div className="space-y-1">
                 <div
                   className="w-[200px] aspect-square border-2 border-slate-300 rounded-lg overflow-hidden bg-white shadow-sm"
-                  dangerouslySetInnerHTML={{ __html: s.svg }}
+                  dangerouslySetInnerHTML={{ __html: safe.svg }}
                 />
                 <p className="text-[10px] text-slate-400 text-center">
                   プレビュー（SVG）
                 </p>
               </div>
             )}
-            {matchedRefs.length > 0 && (
+            {matchedRefs.length > 0 && safe.pattern && (
               <div className="space-y-1">
                 <div className="flex gap-1 flex-wrap max-w-[220px]">
                   {matchedRefs.slice(0, 4).map((ref) => (
@@ -954,7 +969,7 @@ function SlideCard({
                   ))}
                 </div>
                 <p className="text-[10px] text-blue-600 text-center">
-                  📎 参考画像（{s.pattern!.id}）
+                  📎 参考画像（{safe.pattern.id}）
                 </p>
               </div>
             )}
@@ -962,33 +977,33 @@ function SlideCard({
         </div>
         <div className="space-y-2">
           <div className="space-y-1">
-            <Zone label="上" data={s.zone_top} />
-            <Zone label="中" data={s.zone_middle} />
-            <Zone label="下" data={s.zone_bottom} />
+            <Zone label="上" data={safe.zone_top} />
+            <Zone label="中" data={safe.zone_middle} />
+            <Zone label="下" data={safe.zone_bottom} />
           </div>
-          {s.photo_hint && (
+          {safe.photo_hint && (
             <div className="text-xs text-slate-600">
-              📷 写真: {s.photo_hint}
+              📷 写真: {safe.photo_hint}
             </div>
           )}
-          {s.diagram && (
+          {safe.diagram && (
             <div className="text-xs text-slate-600">
-              📊 図解: {s.diagram_info?.name || s.diagram}
-              {s.diagram_info?.category && (
+              📊 図解: {safe.diagram_info?.name || safe.diagram}
+              {safe.diagram_info?.category && (
                 <span className="text-slate-400 ml-1">
-                  （{s.diagram_info.category}）
+                  （{safe.diagram_info.category}）
                 </span>
               )}
             </div>
           )}
-          {s.diagram_info?.ascii_preview && (
+          {safe.diagram_info?.ascii_preview && (
             <pre className="mt-1 bg-slate-50 border border-slate-200 rounded p-2 text-[11px] leading-[1.3] font-mono overflow-x-auto whitespace-pre">
-{s.diagram_info.ascii_preview}
+{safe.diagram_info.ascii_preview}
             </pre>
           )}
-          {s.canva_search_url && (
+          {safe.canva_search_url && (
             <a
-              href={s.canva_search_url}
+              href={safe.canva_search_url}
               target="_blank"
               rel="noreferrer"
               className="inline-block text-xs text-blue-700 hover:underline"
@@ -996,12 +1011,11 @@ function SlideCard({
               🎨 Canva で近いテンプレを検索 →
             </a>
           )}
-          {s.notes && (
-            <div className="text-xs text-slate-400">{s.notes}</div>
+          {safe.notes && (
+            <div className="text-xs text-slate-400">{safe.notes}</div>
           )}
         </div>
 
-        {/* 右：出典 */}
         <div>
           <SourcesPanel slide={s} />
         </div>
