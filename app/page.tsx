@@ -201,8 +201,17 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) {
         let msg = data.error || "生成に失敗しました";
-        if (data.detail) {
-          const d = data.detail;
+        const d = data.detail;
+        // レート制限は専用の説明を先頭に
+        if (d?.type === "rate_limit_error" || d?.status === 429) {
+          msg =
+            "⏱ Anthropic API のレート制限に達しました（30,000 input tokens / 分が上限）。\n\n" +
+            "対策：\n" +
+            "・1〜2 分待って再試行\n" +
+            "・Web 検索を OFF にする（ページ取得で大量のトークンを消費するため）\n" +
+            "・Anthropic のプランを Tier 2 以上に上げる → https://console.anthropic.com/settings/limits\n\n" +
+            "(元のエラー: " + (data.error || "") + ")";
+        } else if (d) {
           const parts: string[] = [];
           if (d.stage) parts.push(`stage: ${d.stage}`);
           if (d.status) parts.push(`status: ${d.status}`);

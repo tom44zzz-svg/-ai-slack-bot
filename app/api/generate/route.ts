@@ -71,13 +71,13 @@ export async function POST(req: Request) {
     const client = new Anthropic({ apiKey });
 
     // web_search ツール（Anthropic 提供のサーバーサイドツール）
-    // max_uses は Vercel Hobby 60s 制限に合わせて控えめに。
+    // max_uses は Tier 1 の 30k tokens/min を超えないよう控えめに。
     const tools: any[] = use_web_search
       ? [
           {
             type: "web_search_20250305",
             name: "web_search",
-            max_uses: 3,
+            max_uses: 2,
             blocked_domains: BLOCKED_SEARCH_DOMAINS,
           },
         ]
@@ -88,8 +88,12 @@ export async function POST(req: Request) {
     try {
       response = await client.messages.create({
         model: "claude-sonnet-4-6",
-        max_tokens: 6144,
-        system,
+        max_tokens: 4096,
+        // system プロンプトをキャッシュすることで、後続リクエストの
+        // 入力トークン課金を大幅削減。
+        system: [
+          { type: "text", text: system, cache_control: { type: "ephemeral" } },
+        ] as any,
         messages: [{ role: "user", content: user }],
         ...(tools.length > 0 ? { tools } : {}),
       });
