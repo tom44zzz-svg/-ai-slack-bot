@@ -5,6 +5,10 @@ import { useEffect, useState, useCallback } from "react";
 const DRIVE_FOLDER_URL =
   "https://drive.google.com/drive/folders/1Q1vx68G-d3z9HakL54u5jpWR84XCJC5h?usp=sharing";
 
+// ビルド時の固定値。Vercel が再デプロイすればこの文字列が変わる。
+// ユーザーがキャッシュ vs 最新版を判定する手がかり。
+const BUILD_ID = "build-2026-04-19-step4-fix";
+
 type RefImage = {
   id: string;
   dataUrl: string;
@@ -316,7 +320,108 @@ export default function Home() {
           ネタを入れて 3 軸で絞り込み →
           フォーマットを選ぶと、構成案とタイトル案が自動で出ます。
         </p>
+        <p className="text-[10px] text-slate-400">
+          {BUILD_ID}（このIDが古いままならハードリフレッシュ Cmd+Shift+R）
+        </p>
       </header>
+
+      {/* ========== 参考画像（最上部・目立つ場所に配置） ========== */}
+      <section className="bg-amber-50 rounded-lg border-4 border-amber-400 p-5 space-y-3 shadow-md">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <h2 className="font-bold text-lg text-amber-900">
+            📷 参考画像（任意・{refImages.length} 枚）
+          </h2>
+          {refImages.length > 0 && (
+            <button
+              onClick={() => setRefImages([])}
+              className="text-xs text-red-600 hover:underline"
+            >
+              全て削除
+            </button>
+          )}
+        </div>
+        <div className="bg-white border border-amber-200 rounded p-3 text-xs text-slate-700 space-y-1">
+          <p className="font-medium">📁 セゾンファンデックス 参考画像フォルダ</p>
+          <p>Drive を開いて画像をダウンロード → ここにドラッグ＆ドロップ。</p>
+          <a
+            href={DRIVE_FOLDER_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-block mt-1 px-3 py-1 bg-amber-600 text-white rounded hover:bg-amber-700"
+          >
+            🔗 Google Drive フォルダを開く
+          </a>
+        </div>
+        <div
+          className="border-2 border-dashed rounded-lg p-6 text-center border-amber-400 bg-white"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            handleImageUpload(e.dataTransfer.files);
+          }}
+        >
+          <p className="text-sm text-slate-700 mb-2">
+            画像をここにドラッグ＆ドロップ（複数可）
+          </p>
+          <label className="inline-block px-4 py-1.5 rounded bg-amber-600 text-white text-sm cursor-pointer hover:bg-amber-700">
+            ファイルを選択
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleImageUpload(e.target.files)}
+            />
+          </label>
+        </div>
+        {refImages.length > 0 && (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+            {refImages.map((img) => (
+              <div
+                key={img.id}
+                className="relative border border-slate-200 rounded overflow-hidden"
+              >
+                <img
+                  src={img.dataUrl}
+                  alt={img.name}
+                  className="w-full aspect-square object-cover"
+                />
+                <select
+                  value={img.pattern_id}
+                  onChange={(e) =>
+                    setRefImages((prev) =>
+                      prev.map((i) =>
+                        i.id === img.id
+                          ? { ...i, pattern_id: e.target.value }
+                          : i
+                      )
+                    )
+                  }
+                  className="absolute bottom-0 left-0 right-0 text-[10px] bg-black/70 text-white border-0 p-1"
+                >
+                  {PATTERN_CHOICES.map((g) => (
+                    <optgroup key={g.group} label={g.group}>
+                      {g.items.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <button
+                  onClick={() =>
+                    setRefImages((prev) => prev.filter((i) => i.id !== img.id))
+                  }
+                  className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-600/80 text-white rounded text-[10px] flex items-center justify-center hover:bg-red-700"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* ========== Step 1: ネタ入力 ========== */}
       <section className="bg-white rounded-lg border border-slate-200 p-5 space-y-3">
@@ -401,107 +506,6 @@ export default function Home() {
           selected={selectedFormatId}
           onSelect={setSelectedFormatId}
         />
-      </section>
-
-      {/* ========== Step 4: 参考画像アップロード ========== */}
-      <section className="bg-white rounded-lg border border-slate-200 p-5 space-y-3">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <h2 className="font-semibold text-lg">
-            Step 4. 参考画像（任意・{refImages.length} 枚）
-          </h2>
-          {refImages.length > 0 && (
-            <button
-              onClick={() => setRefImages([])}
-              className="text-xs text-red-600 hover:underline"
-            >
-              全て削除
-            </button>
-          )}
-        </div>
-        <div className="bg-blue-50 border border-blue-200 rounded p-3 text-xs text-blue-900 space-y-1">
-          <p className="font-medium">📁 セゾンファンデックス 参考画像フォルダ</p>
-          <p>
-            下のリンクから Google Drive フォルダを開き、画像を一括ダウンロード
-            →このページにドラッグ＆ドロップしてください。
-          </p>
-          <a
-            href={DRIVE_FOLDER_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-block mt-1 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            🔗 Google Drive フォルダを開く
-          </a>
-        </div>
-        <div
-          className="border-2 border-dashed rounded-lg p-6 text-center border-slate-300 bg-slate-50"
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            handleImageUpload(e.dataTransfer.files);
-          }}
-        >
-          <p className="text-sm text-slate-600 mb-2">
-            画像をここにドラッグ＆ドロップ（複数可）
-          </p>
-          <label className="inline-block px-4 py-1.5 rounded bg-blue-600 text-white text-sm cursor-pointer hover:bg-blue-700">
-            ファイルを選択
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => handleImageUpload(e.target.files)}
-            />
-          </label>
-        </div>
-        {refImages.length > 0 && (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-            {refImages.map((img) => (
-              <div
-                key={img.id}
-                className="relative border border-slate-200 rounded overflow-hidden"
-              >
-                <img
-                  src={img.dataUrl}
-                  alt={img.name}
-                  className="w-full aspect-square object-cover"
-                />
-                <select
-                  value={img.pattern_id}
-                  onChange={(e) =>
-                    setRefImages((prev) =>
-                      prev.map((i) =>
-                        i.id === img.id
-                          ? { ...i, pattern_id: e.target.value }
-                          : i
-                      )
-                    )
-                  }
-                  className="absolute bottom-0 left-0 right-0 text-[10px] bg-black/70 text-white border-0 p-1"
-                >
-                  {PATTERN_CHOICES.map((g) => (
-                    <optgroup key={g.group} label={g.group}>
-                      {g.items.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.label}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-                <button
-                  onClick={() =>
-                    setRefImages((prev) => prev.filter((i) => i.id !== img.id))
-                  }
-                  className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-600/80 text-white rounded text-[10px] flex items-center justify-center hover:bg-red-700"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
       </section>
 
       {/* ========== 生成ボタン ========== */}

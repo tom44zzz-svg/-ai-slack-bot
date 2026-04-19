@@ -248,8 +248,34 @@ export async function POST(req: Request) {
       block: allCitations.filter((c: any) => c.verdict.severity === "block").length,
     };
 
+    // 空ゾーン検証：上または下のテキストが空のスライドを検出
+    const emptySlides = slides
+      .filter((s: any) => {
+        const isCta = s.role === "CTA";
+        if (isCta) return false;
+        const topEmpty =
+          !s.zone_top?.content || String(s.zone_top.content).trim() === "" ||
+          String(s.zone_top.content).trim() === "-";
+        const botEmpty =
+          !s.zone_bottom?.content || String(s.zone_bottom.content).trim() === "" ||
+          String(s.zone_bottom.content).trim() === "-";
+        const hasMiddleVisual =
+          s.zone_middle?.element === "photo" ||
+          s.zone_middle?.element === "diagram" ||
+          s.zone_middle?.element === "illustration_single";
+        // 写真／図解スライドで上下とも空 = NG
+        return hasMiddleVisual && (topEmpty || botEmpty);
+      })
+      .map((s: any) => s.index);
+
     // ブロック級違反を risk_notes に自動追加
     const riskNotes = [...(parsed.risk_notes || [])];
+    if (emptySlides.length > 0) {
+      riskNotes.push({
+        rule_id: "empty_zone",
+        note: `スライド ${emptySlides.join(", ")} の上または下のテキストが空です。写真／図解だけのスライドは過去投稿のスタイルに反します。手動で見出し or キャプションを追加してください。`,
+      });
+    }
     if (sourceSummary.block > 0) {
       riskNotes.push({
         rule_id: "rule_03_source",
