@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-type ReferenceImage = {
-  filename: string;
-  path: string;
-  category: string;
-};
+import {
+  useReferenceImages,
+  ReferenceImageUploader,
+  type StoredImage,
+} from "./reference-images";
 
 type AxisOption = { id: string; name: string; example?: string };
 type FormatSummary = {
@@ -110,7 +109,8 @@ export default function Home() {
 
   const [selectedFormatId, setSelectedFormatId] = useState<string>("");
   const [useWebSearch, setUseWebSearch] = useState(true);
-  const [refImages, setRefImages] = useState<ReferenceImage[]>([]);
+  const { images: storedImages, addFiles, remove, clearAll, updateCategory } =
+    useReferenceImages();
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [error, setError] = useState<string>("");
@@ -119,12 +119,7 @@ export default function Home() {
     fetchFormats();
   }, [hook, tone, structure]);
 
-  useEffect(() => {
-    fetch("/references/manifest.json")
-      .then((r) => (r.ok ? r.json() : { images: [] }))
-      .then((d) => setRefImages(Array.isArray(d.images) ? d.images : []))
-      .catch(() => setRefImages([]));
-  }, []);
+  // 旧 manifest 不要（IndexedDB に移行）
 
   async function fetchFormats() {
     try {
@@ -387,55 +382,17 @@ export default function Home() {
         )}
       </section>
 
-      {/* ========== 参考画像ギャラリー ========== */}
-      {refImages.length > 0 && (
-        <section className="bg-white rounded-lg border border-slate-200 p-5 space-y-3">
-          <h2 className="font-semibold text-lg">
-            参考画像（{refImages.length} 枚）
-          </h2>
-          <p className="text-xs text-slate-500">
-            public/references/ に配置された画像。各スライドの役割に合う画像が自動で横に表示されます。
-          </p>
-          <div className="flex gap-2 flex-wrap">
-            {refImages.map((img, i) => (
-              <a
-                key={i}
-                href={img.path}
-                target="_blank"
-                rel="noreferrer"
-                className="block w-[100px] aspect-[4/5] border border-slate-200 rounded overflow-hidden hover:ring-2 hover:ring-blue-400 transition group relative"
-              >
-                <img
-                  src={img.path}
-                  alt={img.filename}
-                  className="w-full h-full object-cover"
-                />
-                <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] p-0.5 truncate opacity-0 group-hover:opacity-100 transition">
-                  {img.filename}
-                </span>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-      {refImages.length === 0 && (
-        <section className="bg-slate-50 rounded-lg border border-dashed border-slate-300 p-5 text-sm text-slate-500">
-          <p className="font-medium mb-1">参考画像を追加する</p>
-          <p className="text-xs">
-            セゾンファンデックスの過去投稿画像を <code className="bg-slate-200 px-1 rounded">public/references/</code> に配置すると、
-            生成結果の各スライド横に参考画像として自動表示されます。
-          </p>
-          <pre className="mt-2 bg-slate-100 rounded p-2 text-[11px] overflow-x-auto">{`# Mac で実行
-cp -r "/Users/tom/Documents/動画編集/02_案件一覧/セゾンファンデックス/"*.{png,jpg} public/references/
-bash scripts/update-manifest.sh
-git add public/references/
-git commit -m "Add reference images"
-git push`}</pre>
-        </section>
-      )}
+      {/* ========== 参考画像アップロード ========== */}
+      <ReferenceImageUploader
+        images={storedImages}
+        addFiles={addFiles}
+        remove={remove}
+        clearAll={clearAll}
+        updateCategory={updateCategory}
+      />
 
       {/* ========== 結果表示 ========== */}
-      {result && <ResultView result={result} refImages={refImages} />}
+      {result && <ResultView result={result} refImages={storedImages} />}
     </main>
   );
 }
@@ -552,7 +509,7 @@ function FormatList({
   );
 }
 
-function ResultView({ result, refImages }: { result: GenerateResult; refImages: ReferenceImage[] }) {
+function ResultView({ result, refImages }: { result: GenerateResult; refImages: StoredImage[] }) {
   return (
     <section className="bg-white rounded-lg border border-slate-200 p-5 space-y-5">
       <h2 className="font-semibold text-lg">生成結果</h2>
@@ -672,10 +629,9 @@ function ResultView({ result, refImages }: { result: GenerateResult; refImages: 
   );
 }
 
-function getMatchingRefs(slide: Slide, refs: ReferenceImage[]): ReferenceImage[] {
+function getMatchingRefs(slide: Slide, refs: StoredImage[]): StoredImage[] {
   if (refs.length === 0) return [];
   const role = (slide.role || "").toLowerCase();
-  const diagram = (slide.diagram || "").toLowerCase();
   const tplId = (slide.template_id || "").toLowerCase();
 
   const roleCategory =
@@ -691,18 +647,11 @@ function getMatchingRefs(slide: Slide, refs: ReferenceImage[]): ReferenceImage[]
       ? "item"
       : "general";
 
-  const matched = refs.filter((r) => {
-    const fn = r.filename.toLowerCase();
-    if (diagram && fn.includes(diagram)) return true;
-    if (r.category === roleCategory) return true;
-    if (fn.includes(role)) return true;
-    return false;
-  });
-
+  const matched = refs.filter((r) => r.category === roleCategory);
   return matched.length > 0 ? matched.slice(0, 4) : refs.filter((r) => r.category === "general").slice(0, 2);
 }
 
-function SlideCard({ slide: s, refImages }: { slide: Slide; refImages: ReferenceImage[] }) {
+function SlideCard({ slide: s, refImages }: { slide: Slide; refImages: StoredImage[] }) {
   const matchedRefs = getMatchingRefs(s, refImages);
   return (
     <div className="border border-slate-200 rounded-lg p-3 text-sm">
@@ -725,21 +674,20 @@ function SlideCard({ slide: s, refImages }: { slide: Slide; refImages: Reference
             )}
             {matchedRefs.length > 0 && (
               <div className="flex gap-1 flex-wrap">
-                {matchedRefs.map((ref, i) => (
-                  <a
-                    key={i}
-                    href={ref.path}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block w-[120px] aspect-[4/5] border border-blue-200 rounded overflow-hidden bg-blue-50 hover:ring-2 hover:ring-blue-400 transition"
-                    title={ref.filename}
+                {matchedRefs.map((ref) => (
+                  <div
+                    key={ref.id}
+                    className="w-[120px] aspect-[4/5] border border-blue-200 rounded overflow-hidden bg-blue-50 relative group"
                   >
                     <img
-                      src={ref.path}
+                      src={ref.dataUrl}
                       alt={ref.filename}
                       className="w-full h-full object-cover"
                     />
-                  </a>
+                    <span className="absolute top-0.5 left-0.5 text-[8px] bg-blue-600/80 text-white px-1 rounded opacity-0 group-hover:opacity-100 transition">
+                      {ref.filename}
+                    </span>
+                  </div>
                 ))}
               </div>
             )}
