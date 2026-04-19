@@ -85,24 +85,17 @@ function inferCategory(filename: string): string {
   return "general";
 }
 
-function fileToDataUrl(file: File, maxWidth = 600): Promise<string> {
+function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const scale = Math.min(1, maxWidth / img.width);
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-        const ctx = canvas.getContext("2d")!;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.75));
-      };
-      img.onerror = reject;
-      img.src = reader.result as string;
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("FileReader result is not a string"));
+      }
     };
-    reader.onerror = reject;
+    reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(file);
   });
 }
@@ -261,16 +254,32 @@ export function ReferenceImageUploader({
   addTestImage: () => Promise<void>;
 }) {
   const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [lastError, setLastError] = useState<string>("");
+
+  const handleUpload = useCallback(
+    async (files: FileList | File[]) => {
+      setUploading(true);
+      setLastError("");
+      try {
+        await addFiles(files);
+      } catch (e: any) {
+        setLastError(e?.message || "アップロードに失敗しました");
+      }
+      setUploading(false);
+    },
+    [addFiles]
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setDragging(false);
       if (e.dataTransfer.files.length > 0) {
-        addFiles(e.dataTransfer.files);
+        handleUpload(e.dataTransfer.files);
       }
     },
-    [addFiles]
+    [handleUpload]
   );
 
   return (
@@ -309,8 +318,15 @@ export function ReferenceImageUploader({
         }`}
       >
         <p className="text-sm text-slate-600 mb-2">
-          画像をここにドラッグ＆ドロップ
+          {uploading
+            ? "⏳ アップロード中…"
+            : dragging
+            ? "ここにドロップ！"
+            : "画像をここにドラッグ＆ドロップ"}
         </p>
+        {lastError && (
+          <p className="text-xs text-red-600 mb-2">{lastError}</p>
+        )}
         <div className="flex gap-2 justify-center">
           <label className="inline-block px-4 py-1.5 rounded bg-blue-600 text-white text-sm cursor-pointer hover:bg-blue-700">
             ファイルを選択
@@ -320,7 +336,7 @@ export function ReferenceImageUploader({
               accept="image/*"
               className="hidden"
               onChange={(e) => {
-                if (e.target.files) addFiles(e.target.files);
+                if (e.target.files) handleUpload(e.target.files);
                 e.target.value = "";
               }}
             />
