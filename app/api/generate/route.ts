@@ -98,7 +98,7 @@ export async function POST(req: Request) {
     try {
       response = await client.messages.create({
         model: "claude-sonnet-4-6",
-        max_tokens: 4096,
+        max_tokens: 8192,
         // 注意：以前 cache_control を付けていたが、web_search のツール結果が
         // 空テキストブロックを生成するケースで Anthropic 側が
         // "cache_control cannot be set for empty text blocks" を返したため除去。
@@ -155,7 +155,6 @@ export async function POST(req: Request) {
     // JSON を抽出（コードフェンス内 or 直 JSON の両方を許容）
     let parsed: any = null;
     const fenced = rawText.match(/```json\s*([\s\S]*?)```/);
-    // フェンスなしでも最初の { から最後の } までを抽出
     let jsonText = fenced ? fenced[1] : rawText;
     if (!fenced) {
       const first = rawText.indexOf("{");
@@ -164,25 +163,65 @@ export async function POST(req: Request) {
         jsonText = rawText.slice(first, last + 1);
       }
     }
+
+    // トランケーション自動修復：max_tokens で途中で切れた JSON を救う
+    function repairTruncatedJson(text: string): string {
+      let t = text.trim();
+      // コードフェンスの残り ``` を剥がす
+      t = t.replace(/```\s*$/, "").trim();
+      // 未閉じの文字列を閉じる（最後の " が奇数個なら付け足す）
+      const doubleQuoteCount = (t.match(/(?<!\\)"/g) || []).length;
+      if (doubleQuoteCount % 2 === 1) {
+        t = t + '"';
+      }
+      // { と } のバランスを取る
+      const opens = (t.match(/{/g) || []).length;
+      const closes = (t.match(/}/g) || []).length;
+      if (opens > closes) {
+        t = t + "}".repeat(opens - closes);
+      }
+      // [ と ] のバランスを取る
+      const opensArr = (t.match(/\[/g) || []).length;
+      const closesArr = (t.match(/\]/g) || []).length;
+      if (opensArr > closesArr) {
+        t = t + "]".repeat(opensArr - closesArr);
+      }
+      // 末尾のカンマを削除
+      t = t.replace(/,\s*([}\]])/g, "$1");
+      return t;
+    }
+
     try {
       parsed = JSON.parse(jsonText.trim());
     } catch (e: any) {
-      console.error("[api/generate] json parse failed", {
-        raw_preview: rawText.slice(0, 500),
-        parse_error: e?.message,
-      });
-      return NextResponse.json(
-        {
-          error: "LLM 応答の JSON パースに失敗しました",
-          detail: {
-            stage: "json_parse",
-            parse_error: e?.message,
-            raw_preview: rawText.slice(0, 1500),
-            elapsed_ms: elapsedGen,
+      // 1 回目失敗：トランケーション修復を試みる
+      try {
+        const repaired = repairTruncatedJson(jsonText);
+        parsed = JSON.parse(repaired);
+        console.warn(
+          "[api/generate] JSON was truncated but repaired successfully"
+        );
+      } catch (e2: any) {
+        console.error("[api/generate] json parse failed", {
+          raw_preview: rawText.slice(0, 500),
+          parse_error: e?.message,
+          repair_error: e2?.message,
+        });
+        return NextResponse.json(
+          {
+            error:
+              "LLM 応答の JSON パースに失敗しました（トランケーション修復も失敗）",
+            detail: {
+              stage: "json_parse",
+              parse_error: e?.message,
+              repair_error: e2?.message,
+              raw_preview: rawText.slice(0, 1500),
+              elapsed_ms: elapsedGen,
+            },
           },
-        },
-        { status: 502 }
-      );
+          { status: 502 }
+        );
+      }
     }
 
     // 各スライドの出典を検証 + 図解プレビュー + Canva 検索 URL を付与 + ページパターン推定
