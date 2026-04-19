@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       target,
       goal,
       format_id,
-      use_web_search = true,
+      use_web_search = false,
       feedback_history = [],
     } = body;
 

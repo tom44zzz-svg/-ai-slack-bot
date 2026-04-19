@@ -158,7 +158,7 @@ export default function Home() {
   }>({ exact: [], partial: [] });
 
   const [selectedFormatId, setSelectedFormatId] = useState<string>("");
-  const [useWebSearch, setUseWebSearch] = useState(true);
+  const [useWebSearch, setUseWebSearch] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [error, setError] = useState<string>("");
@@ -594,7 +594,7 @@ export default function Home() {
           <span>
             <strong>Web 検索で出典を裏取りする</strong>
             <span className="text-slate-500 text-xs ml-2">
-              （ON 推奨。遅くなるが公的ソースの URL が入る）
+              （⚠ Hobby プランでは 60 秒制限のためタイムアウトする場合があります）
             </span>
           </span>
         </label>
