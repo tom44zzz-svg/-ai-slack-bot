@@ -109,8 +109,14 @@ export default function Home() {
 
   const [selectedFormatId, setSelectedFormatId] = useState<string>("");
   const [useWebSearch, setUseWebSearch] = useState(true);
-  const { images: storedImages, addFiles, remove, clearAll, updateCategory } =
-    useReferenceImages();
+  const {
+    images: storedImages,
+    addFiles,
+    remove,
+    clearAll,
+    updateCategory,
+    addTestImage,
+  } = useReferenceImages();
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [error, setError] = useState<string>("");
@@ -389,6 +395,7 @@ export default function Home() {
         remove={remove}
         clearAll={clearAll}
         updateCategory={updateCategory}
+        addTestImage={addTestImage}
       />
 
       {/* ========== 結果表示 ========== */}
@@ -629,26 +636,64 @@ function ResultView({ result, refImages }: { result: GenerateResult; refImages: 
   );
 }
 
+// テンプレ/図解 ID から参考画像カテゴリへのマッピング
+const TEMPLATE_TO_IMGCAT: Record<string, string[]> = {
+  tpl_cover_pill_title: ["cover_pill"],
+  tpl_cover_number: ["cover_number", "cover_pill"],
+  tpl_cover_question: ["cover_question", "cover_pill"],
+  tpl_cover_casual_hook: ["cover_pill"],
+  tpl_intro_quote: ["intro_quote"],
+  tpl_intro_compare_table: ["intro_compare", "item_table"],
+  tpl_intro_stat: ["intro_stat", "item_number"],
+  tpl_item_beforeafter: ["item_beforeafter"],
+  tpl_item_icons_3: ["item_icons3"],
+  tpl_item_cards_2x2: ["item_cards2x2"],
+  tpl_item_cards_3: ["item_cards3"],
+  tpl_item_persona_table: ["item_persona", "item_table"],
+  tpl_item_photo: ["item_photo"],
+  tpl_item_illustration: ["item_photo"],
+  tpl_step_flow: ["item_flow"],
+  tpl_item_warning: ["item_warning"],
+  tpl_item_checklist: ["item_checklist"],
+  tpl_qa_pair: ["item_quote"],
+  tpl_quiz_reveal: ["item_checklist"],
+  tpl_summary_recommend: ["summary_recommend"],
+  tpl_summary_keypoints: ["summary_keypoints", "item_checklist"],
+  tpl_cta_phone: ["cta_phone"],
+  tpl_cta_illustration: ["cta_illust"],
+};
+
 function getMatchingRefs(slide: Slide, refs: StoredImage[]): StoredImage[] {
   if (refs.length === 0) return [];
-  const role = (slide.role || "").toLowerCase();
-  const tplId = (slide.template_id || "").toLowerCase();
+  const tplId = slide.template_id || "";
 
-  const roleCategory =
-    role.includes("表紙") || tplId.includes("cover")
-      ? "cover"
-      : role === "cta" || tplId.includes("cta")
-      ? "cta"
-      : role.includes("導入") || role.includes("問題提起") || tplId.includes("intro")
-      ? "intro"
-      : role.includes("まとめ") || tplId.includes("summary")
-      ? "summary"
-      : role.includes("項目") || tplId.includes("item")
-      ? "item"
-      : "general";
+  // テンプレ ID → 画像カテゴリのマッチ（最も精度が高い）
+  const targetCats = TEMPLATE_TO_IMGCAT[tplId] || [];
+  for (const cat of targetCats) {
+    const matched = refs.filter((r) => r.category === cat);
+    if (matched.length > 0) return matched.slice(0, 3);
+  }
 
-  const matched = refs.filter((r) => r.category === roleCategory);
-  return matched.length > 0 ? matched.slice(0, 4) : refs.filter((r) => r.category === "general").slice(0, 2);
+  // フォールバック：broad prefix マッチ
+  const prefix = tplId.startsWith("tpl_cover")
+    ? "cover"
+    : tplId.startsWith("tpl_cta")
+    ? "cta"
+    : tplId.startsWith("tpl_intro")
+    ? "intro"
+    : tplId.startsWith("tpl_summary")
+    ? "summary"
+    : tplId.startsWith("tpl_item") || tplId.startsWith("tpl_step") || tplId.startsWith("tpl_qa") || tplId.startsWith("tpl_quiz")
+    ? "item"
+    : "";
+
+  if (prefix) {
+    const broad = refs.filter((r) => r.category.startsWith(prefix));
+    if (broad.length > 0) return broad.slice(0, 3);
+  }
+
+  // 最終フォールバック
+  return refs.filter((r) => r.category === "general").slice(0, 2);
 }
 
 function SlideCard({ slide: s, refImages }: { slide: Slide; refImages: StoredImage[] }) {

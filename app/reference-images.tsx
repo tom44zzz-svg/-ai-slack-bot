@@ -173,18 +173,77 @@ export function useReferenceImages() {
     [images, reload]
   );
 
-  return { images, loading, addFiles, remove, clearAll, updateCategory };
+  const addTestImage = useCallback(async () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 400;
+    canvas.height = 500;
+    const ctx = canvas.getContext("2d")!;
+    const colors = ["#174A9A", "#3B6FB8", "#FFD93D", "#FDF8EE"];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, 400, 500);
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 32px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("テスト参考画像", 200, 240);
+    ctx.font = "20px sans-serif";
+    ctx.fillText(new Date().toLocaleTimeString(), 200, 280);
+    const dataUrl = canvas.toDataURL("image/png");
+    const img: StoredImage = {
+      id: `test-${Date.now()}`,
+      filename: `test_${Date.now()}.png`,
+      category: ["cover", "item", "diagram", "intro"][Math.floor(Math.random() * 4)],
+      dataUrl,
+      width: 400,
+      height: 500,
+      addedAt: Date.now(),
+    };
+    await saveImage(img);
+    await reload();
+  }, [reload]);
+
+  return { images, loading, addFiles, remove, clearAll, updateCategory, addTestImage };
 }
 
 const CATEGORIES = [
-  { id: "cover", label: "表紙" },
-  { id: "intro", label: "導入" },
-  { id: "item", label: "項目" },
-  { id: "diagram", label: "図解" },
-  { id: "summary", label: "まとめ" },
-  { id: "cta", label: "CTA" },
-  { id: "general", label: "汎用" },
+  { group: "表紙", items: [
+    { id: "cover_pill", label: "表紙：カテゴリ＋タイトル" },
+    { id: "cover_number", label: "表紙：数字強調" },
+    { id: "cover_question", label: "表紙：問いかけ" },
+  ]},
+  { group: "導入", items: [
+    { id: "intro_quote", label: "問題提起：引用＋写真" },
+    { id: "intro_compare", label: "導入：比較表" },
+    { id: "intro_stat", label: "導入：大数字" },
+  ]},
+  { group: "項目（図解別）", items: [
+    { id: "item_beforeafter", label: "項目：Before/After 対比" },
+    { id: "item_icons3", label: "項目：3アイコン並列" },
+    { id: "item_cards3", label: "項目：3列カード" },
+    { id: "item_cards2x2", label: "項目：2×2 グリッド" },
+    { id: "item_photo", label: "項目：写真＋説明" },
+    { id: "item_persona", label: "項目：人物＋○×選択" },
+    { id: "item_flow", label: "項目：矢印ステップ" },
+    { id: "item_warning", label: "項目：警告ボックス" },
+    { id: "item_checklist", label: "項目：チェックリスト" },
+    { id: "item_table", label: "項目：比較表（複数行）" },
+    { id: "item_ranking", label: "項目：ランキング" },
+    { id: "item_graph", label: "項目：グラフ" },
+    { id: "item_number", label: "項目：大数字強調" },
+    { id: "item_quote", label: "項目：引用吹き出し" },
+  ]},
+  { group: "まとめ / CTA", items: [
+    { id: "summary_recommend", label: "まとめ：ケース別推薦" },
+    { id: "summary_keypoints", label: "まとめ：要点リスト" },
+    { id: "cta_phone", label: "CTA：スマホUI型" },
+    { id: "cta_illust", label: "CTA：イラスト型" },
+  ]},
+  { group: "その他", items: [
+    { id: "general", label: "汎用（分類なし）" },
+  ]},
 ];
+
+const ALL_CATEGORY_ITEMS = CATEGORIES.flatMap((g) => g.items);
 
 export function ReferenceImageUploader({
   images,
@@ -192,12 +251,14 @@ export function ReferenceImageUploader({
   remove,
   clearAll,
   updateCategory,
+  addTestImage,
 }: {
   images: StoredImage[];
   addFiles: (files: FileList | File[]) => Promise<void>;
   remove: (id: string) => Promise<void>;
   clearAll: () => Promise<void>;
   updateCategory: (id: string, category: string) => Promise<void>;
+  addTestImage: () => Promise<void>;
 }) {
   const [dragging, setDragging] = useState(false);
 
@@ -250,19 +311,27 @@ export function ReferenceImageUploader({
         <p className="text-sm text-slate-600 mb-2">
           画像をここにドラッグ＆ドロップ
         </p>
-        <label className="inline-block px-4 py-1.5 rounded bg-blue-600 text-white text-sm cursor-pointer hover:bg-blue-700">
-          ファイルを選択
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files) addFiles(e.target.files);
-              e.target.value = "";
-            }}
-          />
-        </label>
+        <div className="flex gap-2 justify-center">
+          <label className="inline-block px-4 py-1.5 rounded bg-blue-600 text-white text-sm cursor-pointer hover:bg-blue-700">
+            ファイルを選択
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files) addFiles(e.target.files);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          <button
+            onClick={addTestImage}
+            className="px-4 py-1.5 rounded border border-slate-300 text-slate-600 text-sm hover:bg-slate-100"
+          >
+            テスト画像を追加
+          </button>
+        </div>
       </div>
 
       {/* 画像一覧 */}
@@ -285,10 +354,14 @@ export function ReferenceImageUploader({
                     onChange={(e) => updateCategory(img.id, e.target.value)}
                     className="w-full text-[10px] rounded px-1 py-0.5 bg-white/90"
                   >
-                    {CATEGORIES.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.label}
-                      </option>
+                    {CATEGORIES.map((g) => (
+                      <optgroup key={g.group} label={g.group}>
+                        {g.items.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.label}
+                          </option>
+                        ))}
+                      </optgroup>
                     ))}
                   </select>
                   <button
@@ -299,8 +372,8 @@ export function ReferenceImageUploader({
                   </button>
                 </div>
               </div>
-              <span className="absolute top-0.5 left-0.5 text-[9px] bg-blue-600/80 text-white px-1 rounded">
-                {CATEGORIES.find((c) => c.id === img.category)?.label ||
+              <span className="absolute top-0.5 left-0.5 text-[9px] bg-blue-600/80 text-white px-1 rounded max-w-[90%] truncate">
+                {ALL_CATEGORY_ITEMS.find((c) => c.id === img.category)?.label ||
                   img.category}
               </span>
             </div>
