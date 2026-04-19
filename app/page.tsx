@@ -364,7 +364,7 @@ export default function Home() {
   }
 
   return (
-    <main className="max-w-4xl mx-auto p-6 space-y-8">
+    <main className="max-w-5xl mx-auto p-4 md:p-6 space-y-6">
       <header className="space-y-2">
         <h1 className="text-2xl font-bold">
           フィード投稿 構成案ジェネレーター
@@ -1228,12 +1228,18 @@ function CitationRow({ c }: { c: VerifiedCitation }) {
 function Zone({ label, data }: { label: string; data: any }) {
   if (!data) return null;
   return (
-    <div className="flex items-start gap-2 text-sm leading-relaxed">
-      <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-xs shrink-0 mt-0.5">{label}</span>
-      <span className="text-slate-500 text-xs shrink-0 w-20 mt-0.5 font-mono">
-        {data.element || "-"}
-      </span>
-      <span className="flex-1 min-w-0 break-words">{data.content || "-"}</span>
+    <div className="border-l-4 border-blue-200 pl-3 py-1 space-y-0.5">
+      <div className="flex items-center gap-2 text-xs">
+        <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold">
+          {label}
+        </span>
+        <span className="text-slate-400 font-mono">
+          {data.element || "-"}
+        </span>
+      </div>
+      <div className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap break-words">
+        {data.content || "-"}
+      </div>
     </div>
   );
 }
