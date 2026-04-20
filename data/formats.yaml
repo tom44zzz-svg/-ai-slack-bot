@@ -679,8 +679,8 @@ formats:
       hook: number
       tone: neutral
       structure: list
-    min_slides: 7
-    max_slides: 9
+    min_slides: 8
+    max_slides: 10
     recipe:
       - role: "表紙"
         template_options: [tpl_cover_number, tpl_cover_pill_title]
