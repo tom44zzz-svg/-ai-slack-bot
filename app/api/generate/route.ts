@@ -438,6 +438,7 @@ export async function POST(req: Request) {
         name: format.name,
         axes: format.axes,
       },
+      core_message: parsed.core_message || "",
       titles: parsed.titles || [],
       slides: slidesWithSvg,
       caption_outline: parsed.caption_outline || [],

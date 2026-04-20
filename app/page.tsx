@@ -1,6 +1,13 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import {
+  saveHistory,
+  getAllHistory,
+  deleteHistory,
+  clearAllHistory,
+  type HistoryEntry,
+} from "@/lib/history";
 
 const DRIVE_FOLDER_URL =
   "https://drive.google.com/drive/folders/1Q1vx68G-d3z9HakL54u5jpWR84XCJC5h?usp=sharing";
@@ -121,6 +128,7 @@ type Slide = {
 
 type GenerateResult = {
   format: { id: string; name: string; axes: any };
+  core_message?: string;
   titles: TitleItem[] | string[];
   slides: Slide[];
   caption_outline: string[];
@@ -165,6 +173,27 @@ export default function Home() {
   const [feedbackHistory, setFeedbackHistory] = useState<string[]>([]);
   const [feedbackDraft, setFeedbackDraft] = useState<string>("");
   const [refImages, setRefImages] = useState<RefImage[]>([]);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  const reloadHistory = useCallback(async () => {
+    const items = await getAllHistory();
+    setHistory(items);
+  }, []);
+
+  useEffect(() => {
+    reloadHistory();
+  }, [reloadHistory]);
+
+  const loadFromHistory = useCallback((entry: HistoryEntry) => {
+    setTopic(entry.topic);
+    setTarget(entry.target || "");
+    setGoal(entry.goal || "");
+    setSelectedFormatId(entry.format_id);
+    setFeedbackHistory(entry.feedback_history || []);
+    setResult(entry.result);
+    setHistoryOpen(false);
+  }, []);
 
   const handleImageUpload = useCallback((files: FileList | null) => {
     if (!files) return;
@@ -352,6 +381,21 @@ export default function Home() {
         console.error("Generate failed:", data);
       } else {
         setResult(data);
+        // 履歴に自動保存（30件まで保持）
+        const selectedFmt = [...candidates.exact, ...candidates.partial].find(
+          (f) => f.id === selectedFormatId
+        );
+        saveHistory({
+          topic,
+          target,
+          goal,
+          format_id: selectedFormatId,
+          format_name: selectedFmt?.name || data.format?.name || selectedFormatId,
+          feedback_history: fbList,
+          result: data,
+        })
+          .then(() => reloadHistory())
+          .catch(() => {});
       }
     } catch (e: any) {
       setError(
@@ -366,17 +410,46 @@ export default function Home() {
   return (
     <main className="max-w-5xl mx-auto p-4 md:p-6 space-y-6">
       <header className="space-y-2">
-        <h1 className="text-2xl font-bold">
-          フィード投稿 構成案ジェネレーター
-        </h1>
-        <p className="text-sm text-slate-600">
-          ネタを入れて 3 軸で絞り込み →
-          フォーマットを選ぶと、構成案とタイトル案が自動で出ます。
-        </p>
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-bold">
+              フィード投稿 構成案ジェネレーター
+            </h1>
+            <p className="text-sm text-slate-600 mt-1">
+              ネタを入れて 3 軸で絞り込み →
+              フォーマットを選ぶと、構成案とタイトル案が自動で出ます。
+            </p>
+          </div>
+          <button
+            onClick={() => setHistoryOpen(true)}
+            className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm text-slate-700 hover:bg-slate-50 shrink-0"
+            title="過去の生成履歴（最大 30 件）を表示"
+          >
+            🕘 履歴（{history.length}）
+          </button>
+        </div>
         <p className="text-[10px] text-slate-400">
           {BUILD_ID}（このIDが古いままならハードリフレッシュ Cmd+Shift+R）
         </p>
       </header>
+
+      {historyOpen && (
+        <HistoryPanel
+          items={history}
+          onClose={() => setHistoryOpen(false)}
+          onLoad={loadFromHistory}
+          onDelete={async (id) => {
+            await deleteHistory(id);
+            reloadHistory();
+          }}
+          onClearAll={async () => {
+            if (confirm("全ての履歴を削除しますか？")) {
+              await clearAllHistory();
+              reloadHistory();
+            }
+          }}
+        />
+      )}
 
       {/* ========== 参考画像（最上部・目立つ場所に配置） ========== */}
       <section className="bg-amber-50 rounded-lg border-4 border-amber-400 p-5 space-y-3 shadow-md">
@@ -801,6 +874,20 @@ function ResultView({
         使用フォーマット: <strong>{result.format?.name || "(未指定)"}</strong>
         {result.format?.id && <>（{result.format.id}）</>}
       </div>
+
+      {result.core_message && (
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+          <div className="flex items-start gap-2">
+            <span className="text-xs font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded shrink-0 mt-0.5">
+              🎯 Core Message
+            </span>
+            <p className="flex-1 text-sm text-slate-800 leading-relaxed">
+              {result.core_message}
+            </p>
+            <CopyButton text={result.core_message} />
+          </div>
+        </div>
+      )}
 
       {/* フィードバック積み上げ再生成 */}
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3">
@@ -1315,6 +1402,111 @@ function Zone({ label, data }: { label: string; data: any }) {
       </div>
     </div>
   );
+}
+
+function HistoryPanel({
+  items,
+  onClose,
+  onLoad,
+  onDelete,
+  onClearAll,
+}: {
+  items: HistoryEntry[];
+  onClose: () => void;
+  onLoad: (e: HistoryEntry) => void;
+  onDelete: (id: string) => void;
+  onClearAll: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 bg-black/40 z-50 flex items-start justify-center p-4 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg shadow-2xl max-w-3xl w-full my-8 p-5 space-y-3"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold">🕘 生成履歴（最新 {items.length} 件）</h2>
+          <div className="flex gap-2">
+            {items.length > 0 && (
+              <button
+                onClick={onClearAll}
+                className="text-xs text-red-600 hover:underline"
+              >
+                全削除
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200"
+            >
+              閉じる
+            </button>
+          </div>
+        </div>
+        {items.length === 0 ? (
+          <p className="text-sm text-slate-500 py-8 text-center">
+            履歴がまだありません。生成すると自動的にここに保存されます（最大 30 件）。
+          </p>
+        ) : (
+          <div className="space-y-2 max-h-[70vh] overflow-y-auto">
+            {items.map((entry) => (
+              <div
+                key={entry.id}
+                className="border border-slate-200 rounded-lg p-3 hover:border-blue-400 transition cursor-pointer"
+                onClick={() => onLoad(entry)}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 text-xs text-slate-500 mb-1 flex-wrap">
+                      <span>{formatDateTime(entry.createdAt)}</span>
+                      <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-medium">
+                        {entry.format_name}
+                      </span>
+                      {(entry.feedback_history?.length || 0) > 0 && (
+                        <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">
+                          FB {entry.feedback_history!.length} 件
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-slate-800 line-clamp-2 break-words">
+                      {entry.topic.slice(0, 120)}
+                      {entry.topic.length > 120 && "…"}
+                    </p>
+                    {entry.target && (
+                      <p className="text-xs text-slate-500 mt-1">
+                        👤 {entry.target}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm("この履歴を削除しますか？")) onDelete(entry.id);
+                    }}
+                    className="text-slate-400 hover:text-red-600 text-xs px-2 py-1 shrink-0"
+                    title="削除"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <p className="text-[11px] text-slate-400 pt-2 border-t">
+          履歴はこのブラウザ内（IndexedDB）に保存されます。30 件超過分は自動削除。
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function formatDateTime(ts: number): string {
+  const d = new Date(ts);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 function CopyButton({ text, label = "📋", showLabel = false, size = "sm" }: { text: string; label?: string; showLabel?: boolean; size?: "sm" | "md" }) {
