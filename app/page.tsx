@@ -970,6 +970,7 @@ function ResultView({
                   {label}
                 </span>
                 <span className="flex-1">{item.text}</span>
+                <CopyButton text={item.text} />
               </div>
             );
           })}
@@ -992,10 +993,22 @@ function ResultView({
 
       {(result.caption_outline || []).length > 0 && (
         <div>
-          <h3 className="font-medium mb-2">■ キャプション概要</h3>
-          <ul className="text-sm list-disc list-inside space-y-0.5 text-slate-700">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-medium">■ キャプション概要</h3>
+            <CopyButton
+              text={(result.caption_outline || []).join("\n")}
+              label="📋 全行コピー"
+              showLabel
+              size="md"
+            />
+          </div>
+          <ul className="text-sm space-y-1 text-slate-700">
             {(result.caption_outline || []).map((c, i) => (
-              <li key={i}>{c}</li>
+              <li key={i} className="flex items-start gap-2">
+                <span className="text-slate-400">・</span>
+                <span className="flex-1">{c}</span>
+                <CopyButton text={c} />
+              </li>
             ))}
           </ul>
         </div>
@@ -1008,8 +1021,11 @@ function ResultView({
           </h3>
           <ul className="text-sm space-y-1 text-amber-900">
             {(result.risk_notes || []).map((r, i) => (
-              <li key={i}>
-                <strong>{r.rule_id}</strong>: {r.note}
+              <li key={i} className="flex items-start gap-2">
+                <span className="flex-1">
+                  <strong>{r.rule_id}</strong>: {r.note}
+                </span>
+                <CopyButton text={`${r.rule_id}: ${r.note}`} />
               </li>
             ))}
           </ul>
@@ -1096,14 +1112,18 @@ function SlideCard({
         {/* メタ情報 */}
         <div className="flex flex-wrap gap-x-4 gap-y-1">
           {safe.photo_hint && (
-            <span className="text-xs text-slate-600">📷 {safe.photo_hint}</span>
+            <span className="text-xs text-slate-600 inline-flex items-center gap-1">
+              📷 {safe.photo_hint}
+              <CopyButton text={safe.photo_hint} />
+            </span>
           )}
           {safe.diagram && (
-            <span className="text-xs text-slate-600">
+            <span className="text-xs text-slate-600 inline-flex items-center gap-1">
               📊 {safe.diagram_info?.name || safe.diagram}
               {safe.diagram_info?.category && (
                 <span className="text-slate-400 ml-1">（{safe.diagram_info.category}）</span>
               )}
+              <CopyButton text={safe.diagram_info?.name || safe.diagram} />
             </span>
           )}
           {safe.canva_search_url && (
@@ -1278,6 +1298,7 @@ function CitationRow({ c }: { c: VerifiedCitation }) {
 
 function Zone({ label, data }: { label: string; data: any }) {
   if (!data) return null;
+  const content = data.content || "-";
   return (
     <div className="border-l-4 border-blue-200 pl-3 py-1 space-y-0.5">
       <div className="flex items-center gap-2 text-xs">
@@ -1287,10 +1308,37 @@ function Zone({ label, data }: { label: string; data: any }) {
         <span className="text-slate-400 font-mono">
           {data.element || "-"}
         </span>
+        <CopyButton text={content} />
       </div>
       <div className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap break-words">
-        {data.content || "-"}
+        {content}
       </div>
     </div>
+  );
+}
+
+function CopyButton({ text, label = "📋", showLabel = false, size = "sm" }: { text: string; label?: string; showLabel?: boolean; size?: "sm" | "md" }) {
+  const [copied, setCopied] = useState(false);
+  const handle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      window.prompt("コピーしてください", text);
+    }
+  };
+  const cls = size === "md"
+    ? "text-xs px-2 py-0.5 rounded bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-700 border border-slate-200 transition"
+    : "text-[10px] px-1.5 py-0.5 rounded bg-slate-100 hover:bg-blue-100 text-slate-500 hover:text-blue-700 border border-slate-200 transition";
+  return (
+    <button
+      onClick={handle}
+      className={cls}
+      title={`コピー：${text.slice(0, 30)}${text.length > 30 ? "..." : ""}`}
+    >
+      {copied ? "✅" : label}{showLabel && (copied ? " コピー済" : " コピー")}
+    </button>
   );
 }

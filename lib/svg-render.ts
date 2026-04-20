@@ -428,27 +428,208 @@ const DIAGRAM_RENDERERS: Record<string, () => string> = {
   persona_pass_fail: diagIconsRow3,
 };
 
+// 中段のテキストから 2〜4 個のラベル候補を抽出
+function extractLabels(text: string, max = 4): string[] {
+  if (!text) return [];
+  // 区切り候補：／ / 、 ， → ➡ ▶ | ｜ ・ ※ 改行
+  const parts = text
+    .split(/[／\/、，→➡▶|｜・※\n]+/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0 && p.length < 30);
+  return parts.slice(0, max);
+}
+
+// 中段のテキストから最初の数値を抽出
+function extractNumber(text: string): string {
+  if (!text) return "—";
+  const m = text.match(/(\d+(?:\.\d+)?(?:[%％円万千]|歳|年|月|日|倍|件|社)?)/);
+  return m ? m[1] : "—";
+}
+
 function renderContent(slide: any): string {
   const heading = slide.zone_top?.content || "";
   const middle = slide.zone_middle?.content || "";
   const bottom = slide.zone_bottom?.content || "";
-  const diagramFn = slide.diagram ? DIAGRAM_RENDERERS[slide.diagram] : undefined;
+  const diagramId = slide.diagram;
+  const labels = extractLabels(middle, 4);
+  const num = extractNumber(middle);
+
+  let middleSvg = "";
+  if (diagramId) {
+    middleSvg = renderDiagramWithContent(diagramId, labels, num, middle);
+  } else if (middle) {
+    middleSvg = `
+      <rect x="120" y="400" width="${W - 240}" height="380" rx="20"
+        fill="${C.white}" stroke="${C.border}" stroke-width="3" stroke-dasharray="10,8"/>
+      <text x="${W / 2}" y="${400 + 60}" text-anchor="middle"
+        font-size="32" fill="${C.text}" font-family="-apple-system, sans-serif">
+        ${wrapMulti(middle, W / 2, 26, 48)}
+      </text>
+    `;
+  }
 
   return `
     ${renderHeader(heading, 160, slide.index)}
-    ${
-      diagramFn
-        ? diagramFn()
-        : `
-      <rect x="120" y="400" width="${W - 240}" height="500" rx="20"
-        fill="${C.white}" stroke="${C.border}" stroke-width="3" stroke-dasharray="10,8"/>
-      <text x="${W / 2}" y="650" text-anchor="middle" font-size="40" fill="${C.textMuted}" font-family="-apple-system, sans-serif">
-        ${wrapMulti(middle || "（中央エリア）", W / 2, 24, 60)}
-      </text>
-    `
-    }
+    ${middleSvg}
     ${bottom ? highlightBox(80, 830, W - 160, 180, bottom) : ""}
   `;
+}
+
+// 図解 id とコンテンツから SVG を生成（実ラベル使用）
+function renderDiagramWithContent(
+  id: string,
+  labels: string[],
+  num: string,
+  raw: string
+): string {
+  const cy = 600;
+  const e = (s: string | undefined) => esc((s || "").slice(0, 14));
+
+  switch (id) {
+    case "compare_before_after":
+    case "compare_pros_cons":
+    case "compare_do_dont": {
+      const left = e(labels[0] || "Before");
+      const right = e(labels[1] || "After");
+      return `
+        <g>
+          <rect x="180" y="${cy - 130}" width="280" height="260" rx="16" fill="${C.white}" stroke="${C.border}" stroke-width="3"/>
+          <text x="320" y="${cy + 20}" text-anchor="middle" font-size="32" fill="${C.textMuted}" font-family="-apple-system, sans-serif">${left}</text>
+          <text x="${W / 2}" y="${cy + 15}" text-anchor="middle" font-size="80" fill="${C.primary}">→</text>
+          <rect x="620" y="${cy - 130}" width="280" height="260" rx="16" fill="${C.primaryLight}" stroke="${C.primary}" stroke-width="3"/>
+          <text x="760" y="${cy + 20}" text-anchor="middle" font-size="32" fill="${C.primary}" font-weight="bold" font-family="-apple-system, sans-serif">${right}</text>
+        </g>`;
+    }
+    case "compare_vs_2col":
+    case "compare_3_column":
+    case "tree_relation": {
+      const cards = labels.slice(0, 3).length > 0 ? labels.slice(0, 3) : ["A", "B", "C"];
+      const w = 260;
+      const startX = (W - (w * cards.length + 40 * (cards.length - 1))) / 2;
+      return `<g>${cards
+        .map(
+          (lbl, i) => `
+        <rect x="${startX + i * (w + 40)}" y="${cy - 150}" width="${w}" height="300" rx="16"
+          fill="${C.white}" stroke="${C.primary}" stroke-width="3"/>
+        <text x="${startX + i * (w + 40) + w / 2}" y="${cy}" text-anchor="middle"
+          font-size="28" font-weight="bold" fill="${C.primary}" font-family="-apple-system, sans-serif">${e(lbl)}</text>`
+        )
+        .join("")}</g>`;
+    }
+    case "icons_row_3":
+    case "persona_pass_fail": {
+      const items = labels.slice(0, 3).length > 0 ? labels.slice(0, 3) : ["要素1", "要素2", "要素3"];
+      const icons = ["📈", "💰", "📊"];
+      return `<g>${items
+        .map(
+          (lbl, i) => `
+        <circle cx="${230 + i * 290}" cy="${cy - 50}" r="80" fill="${C.primaryLight}" stroke="${C.primary}" stroke-width="3"/>
+        <text x="${230 + i * 290}" y="${cy - 30}" text-anchor="middle" font-size="60">${icons[i] || "●"}</text>
+        <text x="${230 + i * 290}" y="${cy + 90}" text-anchor="middle" font-size="22" fill="${C.text}" font-family="-apple-system, sans-serif">${e(lbl)}</text>`
+        )
+        .join("")}</g>`;
+    }
+    case "cards_2x2": {
+      const items = labels.slice(0, 4).length > 0 ? labels.slice(0, 4) : ["1", "2", "3", "4"];
+      const positions: [number, number][] = [
+        [120, cy - 180],
+        [560, cy - 180],
+        [120, cy + 20],
+        [560, cy + 20],
+      ];
+      return `<g>${items
+        .map(
+          (lbl, i) => `
+        <rect x="${positions[i][0]}" y="${positions[i][1]}" width="400" height="170" rx="16"
+          fill="${C.white}" stroke="${C.primary}" stroke-width="3"/>
+        <text x="${positions[i][0] + 200}" y="${positions[i][1] + 100}" text-anchor="middle"
+          font-size="26" font-weight="bold" fill="${C.primary}" font-family="-apple-system, sans-serif">${e(lbl)}</text>`
+        )
+        .join("")}</g>`;
+    }
+    case "compare_table_row": {
+      // ラベル不在時はスケルトン
+      const rows = ["A", "B", "C", "D"];
+      return `
+        <g stroke="${C.border}" stroke-width="2">
+          ${rows
+            .map(
+              (_, r) => `
+            <rect x="120" y="${cy - 200 + r * 100}" width="${W - 240}" height="100"
+              fill="${r % 2 === 0 ? C.white : C.primaryLight}"/>
+            ${[0, 1, 2, 3]
+              .map(
+                (col) => `
+              <text x="${250 + col * 200}" y="${cy - 140 + r * 100}" text-anchor="middle"
+                font-size="32" fill="${C.text}" font-family="-apple-system, sans-serif">●</text>`
+              )
+              .join("")}`
+            )
+            .join("")}
+        </g>`;
+    }
+    case "warning_callout": {
+      return `
+        <g>
+          <rect x="120" y="${cy - 100}" width="${W - 240}" height="200" rx="20"
+            fill="#FFF4E6" stroke="#F59E0B" stroke-width="4"/>
+          <text x="180" y="${cy + 20}" font-size="80">⚠</text>
+          <text x="290" y="${cy + 20}" font-size="32" fill="#92400E" font-weight="bold" font-family="-apple-system, sans-serif">
+            ${wrap(labels[0] || "注意ポイント", 290, cy + 20, 24, 50)}
+          </text>
+        </g>`;
+    }
+    case "checkmark_list":
+    case "recommend_by_case":
+    case "ranking_top_n": {
+      const items = labels.length > 0 ? labels.slice(0, 5) : ["項目1", "項目2", "項目3", "項目4"];
+      return `<g>${items
+        .map(
+          (item, i) => `
+        <rect x="120" y="${500 + i * 80}" width="${W - 240}" height="64" rx="12"
+          fill="${C.white}" stroke="${C.border}" stroke-width="2"/>
+        <text x="170" y="${544 + i * 80}" font-size="36" fill="${C.primary}">☑</text>
+        <text x="240" y="${544 + i * 80}" font-size="24" fill="${C.text}" font-family="-apple-system, sans-serif">${e(item)}</text>`
+        )
+        .join("")}</g>`;
+    }
+    case "number_highlight": {
+      return `
+        <g>
+          <circle cx="${W / 2}" cy="${cy}" r="200" fill="${C.accent}" opacity="0.3"/>
+          <text x="${W / 2}" y="${cy + 50}" text-anchor="middle"
+            font-size="${num.length > 5 ? 120 : 180}" font-weight="bold" fill="${C.primary}" font-family="-apple-system, sans-serif">${esc(num)}</text>
+        </g>`;
+    }
+    case "quote_callout": {
+      return `
+        <g>
+          <rect x="120" y="${cy - 130}" width="${W - 240}" height="260" rx="20"
+            fill="${C.white}" stroke="${C.primary}" stroke-width="3"/>
+          <text x="${W / 2}" y="${cy}" text-anchor="middle"
+            font-size="32" fill="${C.text}" font-family="-apple-system, sans-serif">
+            ${wrapMulti(raw, W / 2, 22, 50)}
+          </text>
+        </g>`;
+    }
+    case "flow_arrow_steps":
+    case "flow_cycle":
+    case "graph_bar":
+    case "graph_line":
+    default: {
+      const items = labels.slice(0, 4).length > 0 ? labels.slice(0, 4) : ["1", "2", "3", "4"];
+      return `<g>${items
+        .map(
+          (lbl, i) => `
+        <rect x="${100 + i * 220}" y="${cy - 80}" width="180" height="160" rx="16"
+          fill="${C.white}" stroke="${C.primary}" stroke-width="3"/>
+        <text x="${190 + i * 220}" y="${cy + 5}" text-anchor="middle"
+          font-size="22" fill="${C.text}" font-family="-apple-system, sans-serif">${e(lbl)}</text>
+        ${i < items.length - 1 ? `<text x="${290 + i * 220}" y="${cy + 5}" text-anchor="middle" font-size="40" fill="${C.primary}">→</text>` : ""}`
+        )
+        .join("")}</g>`;
+    }
+  }
 }
 
 function renderCta(slide: any): string {
