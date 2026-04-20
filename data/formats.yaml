@@ -670,3 +670,49 @@ formats:
         severity: high
         note: "出典 URL をキャプションに明示"
     enterprise_caution: ok
+
+  # =========================================================================
+  - id: f_five_numbers
+    name: "5 つの数字型（知らない真実）"
+    one_liner: "テーマにまつわる意外な数字を 5 つ、各スライドで大きく見せる"
+    axes:
+      hook: number
+      tone: neutral
+      structure: list
+    min_slides: 7
+    max_slides: 9
+    recipe:
+      - role: "表紙"
+        template_options: [tpl_cover_number, tpl_cover_pill_title]
+        note: "「5 つの数字で見る 〇〇」「知らない真実 5 選」等"
+      - role: "導入"
+        template_options: [tpl_intro_quote, tpl_intro_stat]
+        optional: true
+        note: "なぜこのテーマで数字を見るのか、短く導入"
+      - role: "数字①〜⑤"
+        template_options: [tpl_intro_stat]
+        repeat: "5"
+        note: |
+          各スライドで number_highlight 図解を使用。
+          中央に大きな数字（%・円・年・倍・件 等）、
+          下に 20〜40 字の解説。
+          数字には必ず国・企業ソースの出典を付ける。
+      - role: "まとめ"
+        template_options: [tpl_summary_keypoints]
+        note: "5 つの数字を並べて一覧表示、行動喚起につなげる"
+    title_templates:
+      - "知らない真実 {トピック} 5 つの数字"
+      - "5 つの数字で見る {トピック} の本当"
+      - "{トピック} 意外と知らない 5 つのデータ"
+    risk_flags:
+      - rule_id: rule_03_source
+        severity: high
+        note: "各数字は国・企業データ必須。推測・概算は NG"
+      - rule_id: rule_04_citation
+        severity: high
+        note: "各数字の出典 URL を必ず記載"
+    enterprise_caution: ok
+    example_topics:
+      - "リースバックにまつわる 5 つの数字"
+      - "住宅ローン審査の知らない真実 5 つの数字"
+      - "相続不動産の 5 つの数字"

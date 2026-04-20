@@ -855,6 +855,57 @@ function ResultView({
             🔁 同条件で再生成
           </button>
         </div>
+
+        {/* クイック文字量調整ボタン */}
+        <div className="flex gap-2 flex-wrap pt-2 border-t border-amber-200">
+          <span className="text-xs text-amber-900 self-center mr-1">
+            ⚡ クイック調整：
+          </span>
+          <button
+            onClick={() =>
+              onRegenerate(
+                "各スライドのテキスト量を全体的に 30% 減らして、より簡潔にしてください。本文は 20 字以内、見出しは 15 字以内を目安に。"
+              )
+            }
+            disabled={generating}
+            className="text-xs px-3 py-1 rounded border border-blue-400 text-blue-700 hover:bg-blue-50 disabled:opacity-40"
+          >
+            📉 もっと短く
+          </button>
+          <button
+            onClick={() =>
+              onRegenerate(
+                "各スライドのテキスト量を増やして、より詳しく解説してください。本文は 50〜70 字、見出しも説明的に。ただし冗長にならないよう注意。"
+              )
+            }
+            disabled={generating}
+            className="text-xs px-3 py-1 rounded border border-blue-400 text-blue-700 hover:bg-blue-50 disabled:opacity-40"
+          >
+            📈 もっと長く
+          </button>
+          <button
+            onClick={() =>
+              onRegenerate(
+                "各スライドの図解・イラスト指示をもっと具体的にしてください。どこに何を配置するか、色・形・サイズまで詳細に。"
+              )
+            }
+            disabled={generating}
+            className="text-xs px-3 py-1 rounded border border-blue-400 text-blue-700 hover:bg-blue-50 disabled:opacity-40"
+          >
+            🎨 図解を詳しく
+          </button>
+          <button
+            onClick={() =>
+              onRegenerate(
+                "SNS で読まれやすい表現に見直してください。キャッチーな見出し、スクロールを止める要素、保存したくなるポイントを意識。"
+              )
+            }
+            disabled={generating}
+            className="text-xs px-3 py-1 rounded border border-blue-400 text-blue-700 hover:bg-blue-50 disabled:opacity-40"
+          >
+            🔥 SNS 映え改善
+          </button>
+        </div>
       </div>
 
       {result.source_summary && result.source_summary.total > 0 && (
