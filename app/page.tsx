@@ -1000,7 +1000,7 @@ function ResultView({
           <span className="font-medium">🔗 出典チェック</span>
           {typeof result.source_summary.preferred === "number" && (
             <span className="text-emerald-900 font-medium">
-              ⭐ 自社コラム {result.source_summary.preferred}
+              自社コラム {result.source_summary.preferred}
             </span>
           )}
           {typeof result.source_summary.official === "number" && (
@@ -1149,6 +1149,18 @@ function SlideCard({
   const matchedRefs = safe.pattern
     ? refImages.filter((r) => r.pattern_id === safe.pattern!.id)
     : [];
+  // CTA スライドは固定のため簡略表示
+  if (safe.role === "CTA") {
+    return (
+      <div className="border border-slate-200 rounded-lg p-3 text-sm bg-slate-50">
+        <div className="flex items-center gap-2">
+          <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded">{safe.index}</span>
+          <span className="font-semibold">CTA（固定・編集不要）</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="border border-slate-200 rounded-lg p-3 text-sm">
       <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -1344,7 +1356,7 @@ function CitationRow({ c }: { c: VerifiedCitation }) {
       : "text-red-700 bg-red-50 border-red-200";
   const label =
     v.classification === "preferred"
-      ? "⭐ 自社コラム"
+      ? "自社コラム"
       : v.classification === "official"
       ? "公的"
       : v.classification === "corporate_trusted"
@@ -1369,9 +1381,9 @@ function CitationRow({ c }: { c: VerifiedCitation }) {
           {c.url}
         </a>
       </div>
-      {c.title && <div className="text-slate-700">📄 {c.title}</div>}
+      {c.title && <div className="text-slate-700">{c.title}</div>}
       {c.page_or_section && (
-        <div className="text-slate-600">📍 {c.page_or_section}</div>
+        <div className="text-slate-600">参照箇所: {c.page_or_section}</div>
       )}
       {c.quote && (
         <div className="text-slate-500 italic">「{c.quote}」</div>
