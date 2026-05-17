@@ -1413,9 +1413,9 @@ function Zone({ label, data }: { label: string; data: any }) {
           <CopyButton text={content} />
         </div>
       </div>
-      {/* 内容（大きく・読みやすく・**強調**は特大表示） */}
+      {/* 内容 */}
       <div className="px-3 py-2 text-[15px] text-slate-900 leading-relaxed whitespace-pre-wrap break-words bg-white">
-        <EmphasisText text={content} />
+        {content}
       </div>
     </div>
   );
