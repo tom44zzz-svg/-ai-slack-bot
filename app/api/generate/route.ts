@@ -402,30 +402,26 @@ export async function POST(req: Request) {
       });
     }
 
-    // CTA スライドを固定追加
+    // CTA スライド：LLM が返した分を除去 → 固定 1 枚だけ追加（二重防止）
+    const contentSlides = slides.filter(
+      (s: any) => s.role !== "CTA" && s.template_id !== "tpl_cta_phone"
+    );
     const ctaSlide = {
-      index: slides.length + 1,
+      index: contentSlides.length + 1,
       role: "CTA",
       template_id: "tpl_cta_phone",
-      zone_top: { element: "heading", content: "不動産やお金に関するお役立ち情報を発信中！" },
-      zone_middle: {
-        element: "phone_mockup",
-        content: "Instagram プロフィール画面 + 黄色アクセントの『フォローして最新情報を GET！』",
-      },
-      zone_bottom: {
-        element: "caption",
-        content: "いつでも見返せるように保存！",
-      },
+      zone_top: null,
+      zone_middle: null,
+      zone_bottom: null,
       photo_hint: null,
       diagram: null,
       diagram_info: null,
       sources: [],
-      canva_search_url: getCanvaSearchUrl({ role: "CTA" }),
-      notes: "CTA 固定（cta_follow + cta_save の default_combination）",
+      canva_search_url: null,
+      notes: null,
     };
 
-    // 最終スライドリスト（CTA 含む）を作って、SVG を各スライドに埋める
-    const finalSlides = [...slides, ctaSlide];
+    const finalSlides = [...contentSlides, ctaSlide];
     const totalCount = finalSlides.length;
     const slidesWithSvg = finalSlides.map((s: any) => ({
       ...s,
