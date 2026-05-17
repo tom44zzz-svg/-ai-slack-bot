@@ -1386,18 +1386,23 @@ function CitationRow({ c }: { c: VerifiedCitation }) {
 function Zone({ label, data }: { label: string; data: any }) {
   if (!data) return null;
   const content = data.content || "-";
+  const element = data.element || "";
   return (
-    <div className="border-l-4 border-blue-200 pl-3 py-1 space-y-0.5">
-      <div className="flex items-center gap-2 text-xs">
-        <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold">
+    <div className="rounded-lg overflow-hidden border border-slate-200">
+      {/* 指示行（メタデータ・小さく） */}
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border-b border-slate-200">
+        <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px] font-bold shrink-0">
           {label}
         </span>
-        <span className="text-slate-400 font-mono">
-          {data.element || "-"}
+        <span className="text-[11px] text-slate-400 font-mono">
+          {element}
         </span>
-        <CopyButton text={content} />
+        <div className="ml-auto">
+          <CopyButton text={content} />
+        </div>
       </div>
-      <div className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap break-words">
+      {/* 内容（大きく・読みやすく） */}
+      <div className="px-3 py-2 text-[15px] text-slate-900 leading-relaxed whitespace-pre-wrap break-words bg-white">
         {content}
       </div>
     </div>
