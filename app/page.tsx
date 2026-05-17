@@ -1401,9 +1401,9 @@ function Zone({ label, data }: { label: string; data: any }) {
           <CopyButton text={content} />
         </div>
       </div>
-      {/* 内容（大きく・読みやすく） */}
+      {/* 内容（大きく・読みやすく・**強調**は特大表示） */}
       <div className="px-3 py-2 text-[15px] text-slate-900 leading-relaxed whitespace-pre-wrap break-words bg-white">
-        {content}
+        <EmphasisText text={content} />
       </div>
     </div>
   );
@@ -1512,6 +1512,29 @@ function formatDateTime(ts: number): string {
   const d = new Date(ts);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function EmphasisText({ text }: { text: string }) {
+  // **テキスト** を大きなフォントで表示、それ以外は通常サイズ
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+          const inner = part.slice(2, -2);
+          return (
+            <span
+              key={i}
+              className="text-[22px] font-bold text-blue-800 leading-tight"
+            >
+              {inner}
+            </span>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </>
+  );
 }
 
 function CopyButton({ text, label = "📋", showLabel = false, size = "sm" }: { text: string; label?: string; showLabel?: boolean; size?: "sm" | "md" }) {
