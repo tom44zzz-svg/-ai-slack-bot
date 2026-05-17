@@ -44,7 +44,7 @@ const PATTERN_CHOICES = [
     { id: "P31", label: "P31 2×2カード型" },
     { id: "P32", label: "P32 3列カード＋キャプション誘導型" },
     { id: "P40", label: "P40 人物＋○×選択型" },
-    { id: "P50", label: "P50 番号＋写真＋💡型" },
+    { id: "P50", label: "P50 番号＋写真型" },
   ]},
   { group: "まとめ / CTA", items: [
     { id: "P60", label: "P60 ケース別推薦まとめ" },
@@ -425,7 +425,7 @@ export default function Home() {
             className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm text-slate-700 hover:bg-slate-50 shrink-0"
             title="過去の生成履歴（最大 30 件）を表示"
           >
-            🕘 履歴（{history.length}）
+            履歴（{history.length}）
           </button>
         </div>
         <p className="text-[10px] text-slate-400">
@@ -464,7 +464,7 @@ export default function Home() {
                 className="text-xs px-3 py-1 rounded bg-purple-600 text-white hover:bg-purple-700"
                 title="未分類の画像を AI Vision で自動カテゴリ判定"
               >
-                🤖 未分類を AI 分類（
+                未分類を AI 分類（
                 {refImages.filter((i) => i.pattern_id === "unclassified").length}
                  枚）
               </button>
@@ -488,7 +488,7 @@ export default function Home() {
             rel="noreferrer"
             className="inline-block mt-1 px-3 py-1 bg-amber-600 text-white rounded hover:bg-amber-700"
           >
-            🔗 Google Drive フォルダを開く
+            Google Drive フォルダを開く
           </a>
         </div>
         <div
@@ -562,7 +562,7 @@ export default function Home() {
                   className="absolute top-0.5 left-0.5 px-1 py-0.5 bg-purple-600/80 text-white rounded text-[9px] hover:bg-purple-700 disabled:opacity-50"
                   title={img.classify_reason || "AI で自動分類"}
                 >
-                  {img.classifying ? "⏳" : "🤖"}
+                  {img.classifying ? "..." : "AI"}
                 </button>
               </div>
             ))}
@@ -667,7 +667,7 @@ export default function Home() {
           <span>
             <strong>Web 検索で出典を裏取りする</strong>
             <span className="text-slate-500 text-xs ml-2">
-              （⚠ Hobby プランでは 60 秒制限のためタイムアウトする場合があります）
+              （Hobby プランでは 60 秒制限のためタイムアウトする場合があります）
             </span>
           </span>
         </label>
@@ -879,7 +879,7 @@ function ResultView({
         <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
           <div className="flex items-start gap-2">
             <span className="text-xs font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded shrink-0 mt-0.5">
-              🎯 Core Message
+              Core Message
             </span>
             <p className="flex-1 text-sm text-slate-800 leading-relaxed">
               {result.core_message}
@@ -893,7 +893,7 @@ function ResultView({
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="font-medium text-amber-900">
-            💬 フィードバックで再生成（積み上げ学習）
+            フィードバックで再生成（積み上げ学習）
           </h3>
           {feedbackHistory.length > 0 && (
             <button
@@ -946,7 +946,7 @@ function ResultView({
         {/* クイック文字量調整ボタン */}
         <div className="flex gap-2 flex-wrap pt-2 border-t border-amber-200">
           <span className="text-xs text-amber-900 self-center mr-1">
-            ⚡ クイック調整：
+            クイック調整：
           </span>
           <button
             onClick={() =>
@@ -957,7 +957,7 @@ function ResultView({
             disabled={generating}
             className="text-xs px-3 py-1 rounded border border-blue-400 text-blue-700 hover:bg-blue-50 disabled:opacity-40"
           >
-            📉 もっと短く
+            もっと短く
           </button>
           <button
             onClick={() =>
@@ -968,7 +968,7 @@ function ResultView({
             disabled={generating}
             className="text-xs px-3 py-1 rounded border border-blue-400 text-blue-700 hover:bg-blue-50 disabled:opacity-40"
           >
-            📈 もっと長く
+            もっと長く
           </button>
           <button
             onClick={() =>
@@ -979,7 +979,7 @@ function ResultView({
             disabled={generating}
             className="text-xs px-3 py-1 rounded border border-blue-400 text-blue-700 hover:bg-blue-50 disabled:opacity-40"
           >
-            🎨 図解を詳しく
+            図解を詳しく
           </button>
           <button
             onClick={() =>
@@ -990,14 +990,14 @@ function ResultView({
             disabled={generating}
             className="text-xs px-3 py-1 rounded border border-blue-400 text-blue-700 hover:bg-blue-50 disabled:opacity-40"
           >
-            🔥 SNS 映え改善
+            SNS 映え改善
           </button>
         </div>
       </div>
 
       {result.source_summary && result.source_summary.total > 0 && (
         <div className="flex items-center gap-3 text-sm bg-slate-50 border border-slate-200 rounded p-3 flex-wrap">
-          <span className="font-medium">🔗 出典チェック</span>
+          <span className="font-medium">出典チェック</span>
           {typeof result.source_summary.preferred === "number" && (
             <span className="text-emerald-900 font-medium">
               自社コラム {result.source_summary.preferred}
@@ -1019,7 +1019,7 @@ function ResultView({
       {result.web_search && result.web_search.used && (
         <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm">
           <div className="font-medium text-blue-900 mb-1">
-            🔍 Web 検索履歴（{(result.web_search.queries || []).length} 回検索 /{" "}
+            Web 検索履歴（{(result.web_search.queries || []).length} 回検索 /{" "}
             {result.web_search.result_count || 0} 件ヒット）
           </div>
           {(result.web_search.queries || []).length > 0 ? (
@@ -1084,7 +1084,7 @@ function ResultView({
             <h3 className="font-medium">■ キャプション概要</h3>
             <CopyButton
               text={(result.caption_outline || []).join("\n")}
-              label="📋 全行コピー"
+              label="全行コピー"
               showLabel
               size="md"
             />
@@ -1104,7 +1104,7 @@ function ResultView({
       {(result.risk_notes || []).length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded p-3">
           <h3 className="font-medium mb-2 text-amber-900">
-            ⚠ 要確認（リスクフラグ）
+            要確認（リスクフラグ）
           </h3>
           <ul className="text-sm space-y-1 text-amber-900">
             {(result.risk_notes || []).map((r, i) => (
@@ -1174,7 +1174,7 @@ function SlideCard({
             className="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-200"
             title={safe.pattern.summary || ""}
           >
-            📐 {safe.pattern.id} {safe.pattern.name}
+            P{safe.pattern.id} {safe.pattern.name}
           </span>
         )}
       </div>
@@ -1227,7 +1227,7 @@ function SlideCard({
           )}
           {safe.canva_search_url && (
             <a href={safe.canva_search_url} target="_blank" rel="noreferrer" className="text-xs text-blue-700 hover:underline">
-              🎨 Canva で検索 →
+              Canva で検索 →
             </a>
           )}
         </div>
@@ -1256,7 +1256,7 @@ function SourcesPanel({ slide }: { slide: Slide }) {
     <div className="bg-slate-50 border border-slate-200 rounded p-3 space-y-2 h-full">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-slate-700">
-          🔗 出典 ({cites.length})
+          出典 ({cites.length})
         </span>
         <CopySlideCitationsButton slide={slide} />
       </div>
@@ -1288,7 +1288,7 @@ function CopySlideCitationsButton({ slide }: { slide: Slide }) {
       className="text-[10px] px-2 py-0.5 rounded bg-blue-600 text-white hover:bg-blue-700 transition"
       title="このスライドの出典を Canva コメント貼付け用テキストとしてコピー"
     >
-      {copied ? "✅ コピー済" : "📋 Canva 用にコピー"}
+      {copied ? "コピー済" : "Canva 用にコピー"}
     </button>
   );
 }
@@ -1313,7 +1313,7 @@ function CopyAllCitationsButton({ slides }: { slides: Slide[] }) {
       className="text-xs px-3 py-1.5 rounded bg-emerald-600 text-white hover:bg-emerald-700 transition"
       title="全スライドの出典をまとめて Canva コメント用テキストとしてコピー"
     >
-      {copied ? "✅ コピー済" : `📋 全出典をコピー (${total} 件)`}
+      {copied ? "コピー済" : `全出典をコピー (${total} 件)`}
     </button>
   );
 }
@@ -1444,7 +1444,7 @@ function HistoryPanel({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">🕘 生成履歴（最新 {items.length} 件）</h2>
+          <h2 className="text-lg font-bold">生成履歴（最新 {items.length} 件）</h2>
           <div className="flex gap-2">
             {items.length > 0 && (
               <button
@@ -1549,7 +1549,7 @@ function EmphasisText({ text }: { text: string }) {
   );
 }
 
-function CopyButton({ text, label = "📋", showLabel = false, size = "sm" }: { text: string; label?: string; showLabel?: boolean; size?: "sm" | "md" }) {
+function CopyButton({ text, label = "コピー", showLabel = false, size = "sm" }: { text: string; label?: string; showLabel?: boolean; size?: "sm" | "md" }) {
   const [copied, setCopied] = useState(false);
   const handle = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -1570,7 +1570,7 @@ function CopyButton({ text, label = "📋", showLabel = false, size = "sm" }: { 
       className={cls}
       title={`コピー：${text.slice(0, 30)}${text.length > 30 ? "..." : ""}`}
     >
-      {copied ? "✅" : label}{showLabel && (copied ? " コピー済" : " コピー")}
+      {copied ? "OK" : label}{showLabel && (copied ? " コピー済" : " コピー")}
     </button>
   );
 }
