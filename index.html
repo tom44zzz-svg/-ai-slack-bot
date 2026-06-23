@@ -499,7 +499,7 @@ function buildResult(){
     nomad:"一つの場所に縛られず、土地から土地へ軽やかに移り住みながら暮らす——"
   }[placeType];
   sum+=placeText;
-  sum+= housing<0 ? "自然や静けさに包まれた住まいが、心の土台になります。"
+  sum+= housing>0 ? "自然や静けさに包まれた住まいが、心の土台になります。"
                   : "刺激と文化に触れられる環境が、あなたを満たします。";
 
   const passionText={
@@ -545,7 +545,7 @@ function buildResult(){
     : "日中は、予定に追われず、その時の気分に沿って流れていく“余白の時間”が中心。";
   timeText += (s.T.create>=2||passion==="create")
     ? "手を動かし、何かを生み出す時間をたっぷり確保します。\n"
-    : (passion==="nature"||housing<0)
+    : (passion==="nature"||housing>0)
       ? "外に出て自然に触れ、身体を動かす時間を大切にします。\n"
       : "人と会い、語り合う時間を豊かに織り込みます。\n";
   timeText += "\n【1週間の理想】\n";
