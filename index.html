@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>理想未来診断 — 制約のない、本当のあなたへ</title>
+<style>
+  :root{
+    --bg:#F2EBDD;
+    --bg2:#EDE4D2;
+    --ink:#3A352C;
+    --ink-soft:#6B6354;
+    --line:#D8CDB6;
+    --accent:#9A8C6A;
+    --accent-deep:#776B4E;
+    --card:#FBF7EE;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    min-height:100dvh;
+  }
+  .serif{
+    font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho",Georgia,"Times New Roman",serif;
+    font-weight:400;
+    letter-spacing:.04em;
+  }
+  .wrap{
+    max-width:560px;
+    margin:0 auto;
+    padding:0 22px;
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ---------- progress ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:10;
+    background:linear-gradient(var(--bg) 70%,rgba(242,235,221,0));
+    padding:18px 0 10px;
+  }
+  .progress-row{display:flex;align-items:center;gap:12px;}
+  .back-btn{
+    border:none;background:none;color:var(--ink-soft);
+    font-size:14px;padding:6px 4px;cursor:pointer;
+    opacity:0;pointer-events:none;transition:opacity .25s;
+    white-space:nowrap;
+  }
+  .back-btn.show{opacity:1;pointer-events:auto;}
+  .progress-track{
+    flex:1;height:3px;background:var(--line);border-radius:3px;overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;width:0;background:var(--accent-deep);
+    border-radius:3px;transition:width .35s ease;
+  }
+  .progress-num{
+    font-size:12px;color:var(--ink-soft);letter-spacing:.08em;
+    min-width:54px;text-align:right;font-variant-numeric:tabular-nums;
+  }
+
+  /* ---------- intro ---------- */
+  .center-screen{flex:1;display:flex;flex-direction:column;justify-content:center;padding:40px 0;}
+  .eyebrow{font-size:12px;letter-spacing:.32em;color:var(--accent-deep);text-transform:uppercase;margin-bottom:22px;}
+  h1.title{font-size:30px;line-height:1.5;margin:0 0 26px;}
+  .lead{color:var(--ink-soft);font-size:15.5px;margin-bottom:14px;}
+  .lead.small{font-size:13.5px;}
+
+  /* ---------- question ---------- */
+  .q-stage{flex:1;display:flex;flex-direction:column;justify-content:center;padding:14px 0 30px;}
+  .q-genre{font-size:12px;letter-spacing:.18em;color:var(--accent-deep);margin-bottom:18px;}
+  .q-text{font-size:21px;line-height:1.7;margin:0 0 30px;}
+  .q-free{display:inline-block;font-size:11px;color:var(--accent-deep);border:1px solid var(--line);
+    border-radius:20px;padding:2px 10px;margin-left:8px;vertical-align:middle;letter-spacing:.06em;}
+
+  .opts{display:flex;flex-direction:column;gap:11px;}
+  .opt{
+    width:100%;text-align:left;
+    background:var(--card);border:1px solid var(--line);
+    color:var(--ink);border-radius:14px;
+    padding:16px 18px;font-size:16px;line-height:1.55;cursor:pointer;
+    font-family:inherit;transition:transform .08s ease,background .15s,border-color .15s;
+    display:flex;align-items:center;gap:12px;
+  }
+  .opt:active{transform:scale(.985);}
+  .opt .mk{
+    font-size:13px;color:var(--accent-deep);min-width:34px;
+    letter-spacing:.02em;font-weight:600;
+  }
+  .opt.flash{background:var(--accent-deep);border-color:var(--accent-deep);color:#fff;}
+  .opt.flash .mk{color:#fff;}
+
+  .binary-labels{display:flex;justify-content:space-between;margin:0 2px 6px;font-size:12px;color:var(--ink-soft);}
+
+  /* ---------- result ---------- */
+  .result{padding:26px 0 60px;}
+  .result h2.title{font-size:26px;margin:8px 0 6px;}
+  .result .sub{color:var(--ink-soft);font-size:13.5px;margin-bottom:26px;}
+  .block{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:20px 20px 22px;margin-bottom:16px;
+  }
+  .block h3{
+    font-size:13px;letter-spacing:.14em;color:var(--accent-deep);
+    margin:0 0 14px;font-weight:600;
+  }
+  .block p{margin:0;font-size:15px;line-height:1.85;white-space:pre-wrap;}
+  .kw{display:flex;flex-wrap:wrap;gap:9px;}
+  .kw span{
+    background:var(--bg2);border:1px solid var(--line);border-radius:20px;
+    padding:7px 14px;font-size:14px;
+  }
+  .prompt{
+    background:#F4EEE0;border:1px solid var(--line);border-radius:12px;
+    padding:14px 15px;margin-top:12px;
+  }
+  .prompt .ptag{font-size:11px;letter-spacing:.1em;color:var(--accent-deep);margin-bottom:7px;}
+  .prompt code{
+    font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;
+    line-height:1.7;color:var(--ink);white-space:pre-wrap;word-break:break-word;display:block;
+  }
+
+  /* ---------- buttons ---------- */
+  .btn{
+    display:block;width:100%;text-align:center;
+    border:none;border-radius:30px;padding:17px;
+    font-size:16px;font-family:inherit;cursor:pointer;letter-spacing:.04em;
+    transition:transform .08s,opacity .2s;
+  }
+  .btn:active{transform:scale(.985);}
+  .btn-primary{background:var(--accent-deep);color:#fff;}
+  .btn-ghost{background:none;color:var(--ink-soft);border:1px solid var(--line);margin-top:12px;}
+  .copy-wrap{position:sticky;bottom:0;padding:16px 0 22px;
+    background:linear-gradient(rgba(242,235,221,0),var(--bg) 40%);}
+  .copied-note{text-align:center;font-size:13px;color:var(--accent-deep);height:18px;margin-bottom:6px;transition:opacity .3s;opacity:0;}
+  .copied-note.show{opacity:1;}
+
+  .hidden{display:none !important;}
+  .fade{animation:fade .32s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- progress -->
+  <div class="topbar hidden" id="topbar">
+    <div class="progress-row">
+      <button class="back-btn" id="backBtn">‹ 戻る</button>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-num" id="progressNum">0 / 100</div>
+    </div>
+  </div>
+
+  <!-- intro -->
+  <section class="center-screen" id="intro">
+    <div class="eyebrow">Ideal Future Diagnostic</div>
+    <h1 class="title serif">制約が、ぜんぶ無かったら。<br>本当はどう在りたい?</h1>
+    <p class="lead">お金・時間・能力・場所——あらゆる制約が無いとしたら、<br>あなたは本当はどんな人生を望むでしょう。</p>
+    <p class="lead">100の問いに、直感で1タップ。<br>選んだ瞬間に次へ進みます。3〜5分で終わります。</p>
+    <p class="lead small">※ 正解はありません。「好き」「惹かれる」で選んでください。</p>
+    <div style="height:30px"></div>
+    <button class="btn btn-primary" id="startBtn">はじめる</button>
+  </section>
+
+  <!-- question -->
+  <section class="q-stage hidden" id="stage"></section>
+
+  <!-- result -->
+  <section class="result hidden" id="result"></section>
+
+  <div class="copy-wrap hidden" id="copyWrap">
+    <div class="copied-note" id="copiedNote">コピーしました</div>
+    <button class="btn btn-primary" id="copyBtn">結果を全文コピー</button>
+    <button class="btn btn-ghost" id="restartBtn">最初からやり直す</button>
+  </div>
+
+</div>
+
+<script>
+/* =====================================================================
+   理想未来診断 — 100問
+   回答はJS変数のみで保持(localStorage等は不使用)
+   ===================================================================== */
+
+const GENRES = {
+  1:"時間の使い方", 2:"住まい・場所", 3:"家族・パートナー",
+  4:"人間関係", 5:"好き・情熱", 6:"在り方",
+  7:"遊び・体験", 8:"学び・成長", 9:"心・健康"
+};
+
+/* binary: 左=能動/挑戦/外向/構築 → 右=受容/穏やか/内向/味わい
+   b(genre, text, leftLabel, rightLabel, free?) */
+function b(g,t,l,r,free){return{g,type:"b",t,l,r,free:!!free};}
+/* quad: m(genre, text, [[label,tag],...], free?) */
+function m(g,t,opts,free){return{g,type:"m",t,opts,free:!!free};}
+
+const Q = [
+/* ===== 1. 時間の使い方 (15) ===== */
+b(1,"朝、目が覚めて——理想はどっち?","予定が何もない、余白の日","わくわくする予定が詰まった日"),
+b(1,"1日のリズム、心地いいのは?","早起きして朝の静けさを味わう","夜更けに自分の世界に没頭する"),
+b(1,"時間は——","分刻みで計画して動く","気分のままに流れていく"),
+m(1,"もし収入が一生保証されていたら、平日の昼間は何をして過ごす?",[
+  ["自然の中を歩く・体を動かす","nature"],["何かを作る・表現する","create"],
+  ["大切な人と過ごす","people"],["知らないことを学ぶ・調べる","explore"]],true),
+b(1,"1日のなかで多くしたいのは?","一人で静かに過ごす時間","誰かと笑い合う時間"),
+b(1,"理想の働き方は?","短時間で集中して終わらせる","好きだから一日中没頭する"),
+b(1,"予定が空いたとき、自分らしいのは?","すぐに何か始める","ぼーっと休む"),
+b(1,"1週間として惹かれるのは?","毎日違う刺激","同じルーティンの安心感"),
+b(1,"時間が無限にあるなら——","色々なことに次々手を出す","一つのことをじっくり極める",true),
+b(1,"夕方の理想は?","外に出かけて人や街と関わる","家でゆっくり料理して過ごす"),
+b(1,"締め切りは——","あった方が燃える","ない方がのびのびできる"),
+b(1,"午後の理想の過ごし方は?","夢中になれる作業","昼寝やうたた寝の贅沢"),
+b(1,"移動は——","効率よくサッと済ませる","ゆっくり歩いて景色を味わう"),
+m(1,"“やらなきゃいけないこと”がゼロの一日。何をする?",[
+  ["旅に出る","travel"],["創作・趣味に没頭","create"],
+  ["大切な人とのんびり","people"],["ずっと寝て休む","rest"]],true),
+b(1,"時間の使い方で大事なのは?","生産性・前に進む感覚","味わい・今を感じる感覚"),
+
+/* ===== 2. 住まい・場所 (12) ===== */
+b(2,"住むなら?","便利で刺激のある街","自然に囲まれた静かな場所"),
+b(2,"家は?","広くて開放的な空間","小さくても心地よく整った空間"),
+m(2,"お金の制約がないとして、理想の住まいは?",[
+  ["海の見える家","sea"],["山や森の中の家","mountain"],
+  ["都会の上質なマンション","city"],["各地を移動する暮らし","nomad"]],true),
+b(2,"暮らしは?","あちこち移り住む","一つの場所に根を張る"),
+b(2,"部屋は?","好きな物に囲まれた空間","物が少ないミニマルな空間"),
+b(2,"窓の外に見たいのは?","街の灯りや人の営み","緑や水のある景色"),
+b(2,"住む地域は?","海外の異なる文化の中","慣れ親しんだ日本"),
+b(2,"家で過ごすなら?","光がたっぷり入る昼","間接照明の落ち着く夜"),
+b(2,"理想の気候は?","四季がはっきりある場所","一年中あたたかい場所"),
+b(2,"住空間に欲しいのは?","広い庭やテラス","こもれる書斎やアトリエ"),
+b(2,"瞬間移動できるなら——","複数の家を行き来する","拠点は一つで旅に出る",true),
+b(2,"暮らしの音は?","音楽や人の賑わい","波・風・鳥などの自然音"),
+
+/* ===== 3. 家族・パートナー (12) ===== */
+b(3,"パートナーとは?","いつも一緒に過ごす濃い時間","お互い自立した心地よい距離"),
+b(3,"家族との理想は?","毎日同じ食卓を囲む","それぞれ自由でたまに深く繋がる"),
+m(3,"制約がないとして、家族との理想の過ごし方は?",[
+  ["一緒に旅をする","travel"],["同じ家で日常を重ねる","home"],
+  ["一緒に何かを創る・育てる","create"],["それぞれの世界を尊重し合う","freedom"]],true),
+b(3,"パートナーと共有したいのは?","同じ夢や目標","同じ穏やかな日常"),
+b(3,"子供や次世代とは?","たくさん時間をかけて関わる","背中を見せて見守る"),
+b(3,"大切な人と過ごすなら?","特別な体験を一緒に","何でもない日常を一緒に"),
+b(3,"家族の理想は?","賑やかで人がよく集まる","静かで落ち着いている"),
+b(3,"パートナーシップで大事なのは?","深く理解し合うこと","自由でいさせてくれること"),
+b(3,"思い通りに関係を築けるなら?","大きな家族的コミュニティ","少人数と深く",true),
+b(3,"愛する人に向けたいのは?","言葉でしっかり伝える","行動や雰囲気で示す"),
+b(3,"一緒にいたい人は?","自分を成長させてくれる人","ありのままを受け入れてくれる人"),
+b(3,"家族との時間は?","外で一緒に活動する","家でまったり過ごす"),
+
+/* ===== 4. 人間関係 (12) ===== */
+b(4,"人付き合いは?","広く色々な人と","狭く深い少人数と"),
+m(4,"制約なく付き合う人を選べるなら、周りにいてほしいのは?",[
+  ["刺激をくれる挑戦者","challenge"],["一緒に創れる仲間","create"],
+  ["尊敬できる先を行く人","mentor"],["安心できる癒やし系","comfort"]],true),
+b(4,"理想の集まりは?","大人数の賑やかなパーティ","数人の深い語らい"),
+b(4,"人と会うのは?","予定して定期的に","会いたいときに自然に"),
+b(4,"関わりたいのは?","違う世界を見せてくれる人","同じ価値観で安心できる人"),
+b(4,"コミュニティでは?","中心になって引っ張る","フラットに溶け込む"),
+b(4,"人との時間は?","何かを一緒にやる","ただ一緒に過ごす"),
+b(4,"出会いは?","どんどん広げたい","今ある縁を大切にしたい"),
+b(4,"誰とでも繋がれるなら、多く過ごすのは?","憧れ・先を行く人","気心の知れた仲間",true),
+b(4,"人に対して心地いいのは?","与える・支える側","受け取る・甘える側"),
+b(4,"会話は?","深いテーマをじっくり","軽やかに笑い合う"),
+b(4,"エネルギーが湧くのは?","人といる時間","一人の時間"),
+
+/* ===== 5. 好き・情熱 (15) ===== */
+b(5,"夢中になるのは?","手や体を動かして作ること","頭で考え組み立てること"),
+m(5,"一生お金に困らないとして、毎日続けたい“好き”は?",[
+  ["表現・創作(書く/描く/作る)","create"],["体や自然との関わり","nature"],
+  ["人を導く・育てる・繋ぐ","people"],["探究・学び・研究","explore"]],true),
+b(5,"惹かれるのは?","美しいものを生み出す","仕組みや問題を解き明かす"),
+b(5,"情熱が向くのは?","形に残るもの(作品・建物)","心に残るもの(体験・感動)"),
+b(5,"没頭したいのは?","仲間とワイワイ作る","一人で静かに作業"),
+b(5,"創るなら?","ゼロから新しいものを生む","あるものを磨き上げる"),
+m(5,"時間も能力も無限なら、極めてみたいのは?",[
+  ["アート・音楽・文章","art"],["料理・暮らしの手仕事","craft"],
+  ["スポーツ・身体表現","body"],["思想・哲学・サイエンス","thought"]],true),
+b(5,"わくわくするのは?","未知の世界に飛び込む","好きな世界を掘り下げる"),
+b(5,"夢中の対象は?","人や社会に関わること","自然や生き物に関わること"),
+b(5,"表現したいのは?","言葉で伝える","映像・絵・音で伝える"),
+b(5,"好きなことは?","人に見せて反応をもらう","自分だけで静かに味わう"),
+b(5,"惹かれる活動は?","体を大きく動かすもの","細やかに手を使うもの"),
+b(5,"マスターできるなら?","何でもこなす万能人","一つの道を究める職人",true),
+b(5,"創作の喜びは?","完成した達成感","作っている過程そのもの"),
+b(5,"情熱を注ぐのは?","世の中に求められるテーマ","自分の内側から湧くテーマ"),
+
+/* ===== 6. 在り方 (12) ===== */
+b(6,"在りたいのは?","挑戦して成長し続ける自分","満たされて穏やかにいる自分"),
+m(6,"何者にでもなれるなら、どんな存在でいたい?",[
+  ["道を切り拓く先駆者","pioneer"],["美を生み出す表現者","creator"],
+  ["自由気ままな探検者","explorer"],["人を癒やし支える存在","healer"]],true),
+b(6,"嬉しいのは?","すごいと尊敬される","一緒にいて安心と思われる"),
+b(6,"大事にしたいのは?","自分らしさを貫く","周りと調和する"),
+b(6,"理想の自分は?","目立って影響力がある","目立たず自由でいる"),
+b(6,"生き方は?","太く濃く燃える","細く長く穏やかに続く"),
+b(6,"評価を気にしなくていいなら?","大きなことを成す","小さな幸せを味わう",true),
+b(6,"自分の軸は?","信念・哲学を持つ強さ","しなやかに変われる柔らかさ"),
+b(6,"惹かれる在り方は?","与え導くリーダー","寄り添い支える伴走者"),
+b(6,"理想は?","常に学び変化し続ける","これでいいと満ち足りている"),
+b(6,"自分を表すなら?","情熱的でエネルギッシュ","静かで落ち着いている"),
+b(6,"人生で残したいのは?","目に見える実績","関わった人の心に残る記憶"),
+
+/* ===== 7. 遊び・体験 (10) ===== */
+b(7,"休日は?","アクティブに動き回る冒険","のんびり癒やしの時間"),
+m(7,"お金も時間も無制限なら、今すぐしたい体験は?",[
+  ["世界中を旅する","travel"],["大自然で過ごす","nature"],
+  ["文化・芸術に浸る","art"],["心ゆくまで何もしない","rest"]],true),
+b(7,"旅は?","計画を立てて巡る","行き当たりばったりで漂う"),
+b(7,"余暇は?","新しいことに挑戦する","好きなことを繰り返す"),
+b(7,"遊ぶなら?","街や文化(美術・食・音楽)","大自然(海・山・森)"),
+b(7,"リフレッシュは?","体を動かして汗をかく","ゆっくり休んで何もしない"),
+b(7,"旅先で泊まるなら?","上質で快適なホテル","自然に溶け込む素朴な宿"),
+b(7,"どこへでも行けるなら?","行ったことのない秘境","お気に入りの定番の場所",true),
+b(7,"体験は?","一度きりの特別な非日常","何度も味わえる日常の小さな贅沢"),
+b(7,"余暇の相手は?","気の合う仲間とワイワイ","一人やパートナーと静かに"),
+
+/* ===== 8. 学び・成長 (7) ===== */
+b(8,"学ぶ動機は?","役に立つから","ただ面白いから"),
+m(8,"何でも学べるとしたら、いま一番深めたい領域は?",[
+  ["人間・心理・生き方","human"],["自然・宇宙・科学","science"],
+  ["芸術・美・表現","art"],["歴史・文化・思想","history"]],true),
+b(8,"学び方は?","本や情報でじっくり","実際に体験して身につける"),
+b(8,"知りたいのは?","物事の本質・なぜ","役立つ実践・どうやって"),
+b(8,"成長を感じるのは?","できなかったことができる瞬間","世界の見え方が変わる瞬間"),
+b(8,"学びは?","一人で探究する","人と語り合って深める"),
+b(8,"惹かれる知は?","人間や内面の深い理解","世界や仕組みの広い知識"),
+
+/* ===== 9. 心・健康 (5) ===== */
+b(9,"心の理想は?","ワクワク高揚している状態","静かに満たされている状態"),
+b(9,"何の不安もないなら、毎日感じたいのは?","情熱・興奮","安らぎ・感謝",true),
+b(9,"体との向き合い方は?","鍛えて高めていく","労り整えていく"),
+b(9,"心の支えは?","自分の内側の充実","人との温かい繋がり"),
+b(9,"一日の終わりに感じたいのは?","やりきった充実感","穏やかな幸福感"),
+];
+
+/* ---------- 状態 ---------- */
+let idx = 0;
+const answers = new Array(Q.length).fill(null); // b: 数値(-2..2) / m: {tag, optIndex}
+
+/* ---------- DOM ---------- */
+const $ = id => document.getElementById(id);
+const intro=$("intro"), stage=$("stage"), topbar=$("topbar"),
+      result=$("result"), copyWrap=$("copyWrap"),
+      fill=$("progressFill"), pnum=$("progressNum"), backBtn=$("backBtn");
+
+$("startBtn").onclick = () => {
+  intro.classList.add("hidden");
+  topbar.classList.remove("hidden");
+  stage.classList.remove("hidden");
+  render();
+};
+backBtn.onclick = () => { if(idx>0){ idx--; render(); } };
+$("restartBtn").onclick = () => location.reload();
+
+function updateProgress(){
+  const done = answers.filter(a=>a!==null).length;
+  fill.style.width = (idx/Q.length*100) + "%";
+  pnum.textContent = (idx+1) + " / " + Q.length;
+  backBtn.classList.toggle("show", idx>0);
+}
+
+function render(){
+  updateProgress();
+  const q = Q[idx];
+  stage.classList.remove("fade"); void stage.offsetWidth; stage.classList.add("fade");
+
+  let html = `<div class="q-genre">${GENRES[q.g]}</div>`;
+  html += `<h2 class="q-text serif">${q.t}${q.free?'<span class="q-free">制約なし</span>':''}</h2>`;
+
+  if(q.type==="b"){
+    html += `<div class="binary-labels"><span>${q.l}</span><span>${q.r}</span></div>`;
+    html += `<div class="opts">`;
+    const choices=[
+      {mk:"◎ 左",label:q.l,v:-2},
+      {mk:"○ 左",label:"どちらかといえば "+q.l,v:-1},
+      {mk:"○ 右",label:"どちらかといえば "+q.r,v:1},
+      {mk:"◎ 右",label:q.r,v:2},
+    ];
+    choices.forEach((c,i)=>{
+      html += `<button class="opt" data-v="${c.v}" data-i="${i}"><span class="mk">${c.mk}</span><span>${c.label}</span></button>`;
+    });
+    html += `</div>`;
+  } else {
+    html += `<div class="opts">`;
+    q.opts.forEach((o,i)=>{
+      html += `<button class="opt" data-tag="${o[1]}" data-i="${i}"><span class="mk">${"ABCD"[i]}</span><span>${o[0]}</span></button>`;
+    });
+    html += `</div>`;
+  }
+  stage.innerHTML = html;
+
+  stage.querySelectorAll(".opt").forEach(btn=>{
+    btn.onclick = () => {
+      if(q.type==="b") answers[idx] = parseInt(btn.dataset.v,10);
+      else answers[idx] = {tag:btn.dataset.tag, i:parseInt(btn.dataset.i,10)};
+      btn.classList.add("flash");
+      setTimeout(advance, 150);
+    };
+  });
+}
+
+function advance(){
+  if(idx < Q.length-1){ idx++; render(); }
+  else finish();
+}
+
+/* =====================================================================
+   集計 & 結果生成
+   ===================================================================== */
+function tally(){
+  let overall=0;
+  const genre={1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};
+  const genreCount={1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};
+  const T={create:0,nature:0,people:0,explore:0,body:0,rest:0,travel:0,
+           home:0,art:0,thought:0,craft:0,freedom:0,mentor:0,comfort:0,
+           challenge:0,pioneer:0,creator:0,explorer:0,healer:0,human:0,
+           science:0,history:0};
+  const place={sea:0,mountain:0,city:0,nomad:0};
+
+  Q.forEach((q,i)=>{
+    const a=answers[i];
+    if(a===null) return;
+    if(q.type==="b"){
+      overall+=a; genre[q.g]+=a; genreCount[q.g]++;
+    } else {
+      const tag=a.tag;
+      if(tag in T) T[tag]++;
+      // タグ→テーマ/場所への波及
+      const map={
+        travel:["explore"], freedom:["explore"], mentor:["people"],
+        art:["create"], craft:["create"], sports:["body"],
+        thought:["explore"], pioneer:["explore"], creator:["create"],
+        explorer:["explore","travel"], healer:["people"],
+        human:["people","thought"], science:["explore","nature"],
+        history:["thought"], challenge:[], comfort:[]
+      };
+      (map[tag]||[]).forEach(k=>{T[k]=(T[k]||0)+1;});
+      if(tag==="sea"){place.sea++;T.nature++;}
+      if(tag==="mountain"){place.mountain++;T.nature++;}
+      if(tag==="city"){place.city++;}
+      if(tag==="nomad"){place.nomad++;T.travel++;}
+    }
+  });
+  return {overall,genre,genreCount,T,place};
+}
+
+function lean(genre,count,g){ // -1..1 平均 (負=左/能動)
+  if(!count[g]) return 0;
+  return genre[g]/count[g]/2;
+}
+
+function topKey(obj){
+  let k=null,max=-1;
+  for(const key in obj){ if(obj[key]>max){max=obj[key];k=key;} }
+  return k;
+}
+
+function buildResult(){
+  const s=tally();
+  const L=g=>lean(s.genre,s.genreCount,g);
+  const time=L(1), housing=L(2), family=L(3), social=L(4),
+        being=L(6), play=L(7), inner=L(9);
+  const overallAvg = s.overall / Object.values(s.genreCount).reduce((a,b)=>a+b,0) / 2;
+
+  // 方向ラベル
+  const active = overallAvg < -0.12;   // 能動/挑戦寄り
+  const calm   = overallAvg >  0.12;   // 受容/穏やか寄り
+
+  // 場所タイプ
+  let placeType = topKey(s.place);
+  if(s.place[placeType]===0){ placeType = housing<0 ? "mountain" : "city"; }
+
+  // 情熱テーマ
+  const passionPool={create:s.T.create,nature:s.T.nature,people:s.T.people,
+                     explore:s.T.explore,body:s.T.body};
+  let passion = topKey(passionPool);
+  if(passionPool[passion]===0) passion="create";
+
+  /* ---------- 1. 要約 ---------- */
+  let sum="";
+  if(active) sum+="あなたの理想の未来は、立ち止まらず動き続け、挑戦と創造のなかで生き生きとしている姿に色濃く表れています。";
+  else if(calm) sum+="あなたの理想の未来は、静けさと余白に満たされ、今この瞬間を深く味わう穏やかな時間のなかに息づいています。";
+  else sum+="あなたの理想の未来は、挑戦と安らぎのあいだをしなやかに行き来しながら、自分のリズムで生きていく姿に表れています。";
+
+  const placeText={
+    sea:"海の見える開けた場所で、光と水の気配を感じながら暮らす——",
+    mountain:"山や森に抱かれた静かな場所に根を下ろし、自然の時間に寄り添って暮らす——",
+    city:"洗練された街の利便と刺激のなかで、上質な空間を持って暮らす——",
+    nomad:"一つの場所に縛られず、土地から土地へ軽やかに移り住みながら暮らす——"
+  }[placeType];
+  sum+=placeText;
+  sum+= housing<0 ? "自然や静けさに包まれた住まいが、心の土台になります。"
+                  : "刺激と文化に触れられる環境が、あなたを満たします。";
+
+  const passionText={
+    create:"日々の中心にあるのは「創ること」。手や心から何かを生み出す時間が、あなたを最も夢中にさせます。",
+    nature:"日々の中心にあるのは「自然や身体との関わり」。生きものとしての感覚を取り戻す時間が力になります。",
+    people:"日々の中心にあるのは「人と関わること」。誰かを導き、育て、繋ぐことに深い喜びを感じます。",
+    explore:"日々の中心にあるのは「探究」。知らない世界を解き明かしていく時間が、あなたを輝かせます。",
+    body:"日々の中心にあるのは「身体を動かすこと」。生きている実感のなかで活力が湧いてきます。"
+  }[passion];
+  sum+=passionText;
+
+  sum+= family<0 ? "大切な人とは濃い時間を分かち合い、日常をともに重ねていきたいと願っています。"
+                 : "大切な人とは、互いの自由を尊重し合える心地よい距離感を大切にしています。";
+  sum+= social<0 ? "多様な人と広く繋がる開かれた関係に、刺激とエネルギーを見出します。"
+                 : "少数の深い繋がりのなかで、安心して自分でいられることを望んでいます。";
+  sum+= being<0 ? "そして「成長し挑戦し続ける自分」でありたいという想いが、未来を前へ押し出しています。"
+                : "そして「満たされ穏やかにいる自分」でいられることを、何よりの理想としています。";
+
+  /* ---------- 2. キーワード ---------- */
+  const kw=[];
+  kw.push(active?"挑戦と創造":(calm?"静けさと余白":"自分のリズム"));
+  kw.push({sea:"海と光",mountain:"森と静寂",city:"洗練された都市",nomad:"漂う暮らし"}[placeType]);
+  kw.push({create:"生み出す喜び",nature:"自然との調和",people:"人と繋がる",explore:"知の探究",body:"身体の躍動"}[passion]);
+  kw.push(family<0?"濃密な絆":"心地よい距離");
+  kw.push(social<0?"開かれた縁":"深い少数");
+  kw.push(being<0?"成長し続ける":"満ち足りる");
+  kw.push(inner<0?"高揚と情熱":"安らぎと感謝");
+  kw.push(time<0?"生産性":"味わい");
+  kw.push(play<0?"冒険":"癒やし");
+  kw.push(L(8)<0?"本質を問う":"体験から学ぶ");
+  // 補充
+  const extra=["自由","ありのまま","美しい日常","好奇心","心の余裕","本当の自分"];
+  let ei=0; while(kw.length<10) kw.push(extra[ei++]);
+
+  /* ---------- 3. 時間の使い方 ---------- */
+  const morning = answers[1]; // Q2: 朝型(-)/夜型(+)
+  let timeText="【1日の理想】\n";
+  timeText += (morning!==null && morning<0)
+    ? "朝はゆっくり目覚め、静かな光のなかで一日が始まります。誰にも急かされない朝の時間が、あなたの一日を整えます。\n"
+    : "夜が更けるほどに調子が上がり、自分だけの世界に没頭できる夜の時間が、一日のハイライトになります。\n";
+  timeText += (time<0)
+    ? "日中は、好きなことに集中して取り組む“没頭の時間”が中心。"
+    : "日中は、予定に追われず、その時の気分に沿って流れていく“余白の時間”が中心。";
+  timeText += (s.T.create>=2||passion==="create")
+    ? "手を動かし、何かを生み出す時間をたっぷり確保します。\n"
+    : (passion==="nature"||housing<0)
+      ? "外に出て自然に触れ、身体を動かす時間を大切にします。\n"
+      : "人と会い、語り合う時間を豊かに織り込みます。\n";
+  timeText += "\n【1週間の理想】\n";
+  timeText += (L(1)<0||being<0)
+    ? "平日は夢中になれる活動に没頭し、週末はその余韻と次への充電に充てる——メリハリのあるリズム。"
+    : "曜日の区切りは曖昧で、心が動いたときに動き、休みたいときに休む——ゆるやかに循環するリズム。";
+  timeText += social<0
+    ? "週の中で人と集う機会を複数持ち、刺激を取り入れます。"
+    : "週に何度かは、ひとりor大切な人との静かな時間を意図的に確保します。";
+
+  /* ---------- 4. 画像プロンプト ×3 ---------- */
+  const mood = calm ? "serene, peaceful, soft and warm atmosphere"
+                    : (active ? "vivid, alive, energetic yet refined atmosphere"
+                              : "calm and inviting, gently uplifting atmosphere");
+
+  const living={
+    sea:`Photorealistic cinematic photograph of a serene modern home overlooking the ocean at golden hour, floor-to-ceiling windows, soft natural light pouring in, calm waves on the horizon, minimal warm interior with linen and light wood, a cup of coffee on a wooden table, ${mood}, shot on 35mm, shallow depth of field --ar 16:9 --style raw --v 6`,
+    mountain:`Photorealistic cinematic photograph of a quiet cabin nestled in a misty forest at dawn, large windows framing green trees, warm minimalist wooden interior, a wisp of steam from tea, soft morning light and gentle fog, ${mood}, shot on 35mm, natural color grading --ar 16:9 --style raw --v 6`,
+    city:`Photorealistic cinematic photograph of a refined high-floor apartment in a beautiful city at blue hour, elegant minimal interior, warm interior lighting, city lights glowing softly through large windows, books and art, ${mood}, shot on 35mm, cinematic tones --ar 16:9 --style raw --v 6`,
+    nomad:`Photorealistic cinematic photograph of a light-filled temporary home in a beautiful foreign town, an open suitcase and a journal, sheer curtains moving in the breeze, sunlight on a wooden floor, a sense of freedom and movement, ${mood}, shot on 35mm --ar 16:9 --style raw --v 6`
+  }[placeType];
+
+  const work={
+    create:`Photorealistic cinematic photograph of a sunlit artist's atelier, hands shaping a creative work, scattered tools and materials, large windows with soft daylight, plants and warm wood, a focused and joyful mood, ${mood}, shot on 50mm, fine detail --ar 16:9 --style raw --v 6`,
+    nature:`Photorealistic cinematic photograph of a person tending a thriving garden / working with the land in beautiful nature, soft golden light, earthy tones, a calm sense of purpose and connection, ${mood}, shot on 35mm --ar 16:9 --style raw --v 6`,
+    people:`Photorealistic cinematic photograph of a warm mentoring scene, a small circle of people in deep conversation in a beautiful light-filled space, genuine smiles and attentive faces, ${mood}, shot on 50mm --ar 16:9 --style raw --v 6`,
+    explore:`Photorealistic cinematic photograph of an inspiring personal study filled with books and curiosities, a desk with notes and a warm lamp, late afternoon light, an atmosphere of deep focus and wonder, ${mood}, shot on 35mm --ar 16:9 --style raw --v 6`,
+    body:`Photorealistic cinematic photograph of a person moving freely outdoors at sunrise — running, stretching or practicing — open landscape, soft warm light, a feeling of vitality and flow, ${mood}, shot on 35mm --ar 16:9 --style raw --v 6`
+  }[passion];
+
+  const people = family<0
+    ? `Photorealistic cinematic photograph of an intimate dinner table with a few close loved ones, candlelight and warm food, laughter and genuine connection, cozy beautiful interior at evening, ${mood}, shot on 50mm, shallow depth of field --ar 16:9 --style raw --v 6`
+    : (social<0
+      ? `Photorealistic cinematic photograph of a lively warm gathering of friends in a beautiful outdoor setting, golden hour, people talking and laughing, a long table with food, a sense of open community, ${mood}, shot on 35mm --ar 16:9 --style raw --v 6`
+      : `Photorealistic cinematic photograph of two people sharing a quiet, tender moment together in a beautiful natural setting at golden hour, walking side by side, soft warm light, a feeling of calm closeness and freedom, ${mood}, shot on 35mm --ar 16:9 --style raw --v 6`);
+
+  return {sum,kw,timeText,prompts:{living,work,people}};
+}
+
+/* =====================================================================
+   描画
+   ===================================================================== */
+function finish(){
+  const r = buildResult();
+  stage.classList.add("hidden");
+  topbar.classList.add("hidden");
+  result.classList.remove("hidden");
+  copyWrap.classList.remove("hidden");
+  fill.style.width="100%";
+
+  const kwHtml = r.kw.slice(0,10).map(k=>`<span>${k}</span>`).join("");
+
+  result.innerHTML = `
+    <div class="eyebrow">Your Ideal Future</div>
+    <h2 class="title serif">砂川友起さんの、<br>制約のない理想の未来</h2>
+    <p class="sub">100の問いから浮かび上がった、あなたの「本当はこう在りたい」</p>
+
+    <div class="block">
+      <h3>理想未来の要約</h3>
+      <p>${r.sum}</p>
+    </div>
+
+    <div class="block">
+      <h3>理想を象徴する10のキーワード</h3>
+      <div class="kw">${kwHtml}</div>
+    </div>
+
+    <div class="block">
+      <h3>時間の使い方の理想</h3>
+      <p>${r.timeText}</p>
+    </div>
+
+    <div class="block">
+      <h3>理想の情景 — 画像生成プロンプト ×3</h3>
+      <div class="prompt"><div class="ptag">① 暮らし / LIVING</div><code>${r.prompts.living}</code></div>
+      <div class="prompt"><div class="ptag">② 仕事・創作 / WORK & CREATION</div><code>${r.prompts.work}</code></div>
+      <div class="prompt"><div class="ptag">③ 人と過ごす時間 / TOGETHER</div><code>${r.prompts.people}</code></div>
+    </div>
+  `;
+
+  // コピー用テキスト生成
+  const fullText =
+`■ 砂川友起さんの理想未来診断 結果
+
+【理想未来の要約】
+${r.sum}
+
+【理想を象徴する10のキーワード】
+${r.kw.slice(0,10).map((k,i)=>`${i+1}. ${k}`).join("\n")}
+
+【時間の使い方の理想】
+${r.timeText}
+
+【画像生成プロンプト ×3】
+
+① 暮らし / LIVING
+${r.prompts.living}
+
+② 仕事・創作 / WORK & CREATION
+${r.prompts.work}
+
+③ 人と過ごす時間 / TOGETHER
+${r.prompts.people}
+`;
+
+  $("copyBtn").onclick = () => {
+    const done=()=>{ const n=$("copiedNote"); n.classList.add("show"); setTimeout(()=>n.classList.remove("show"),1800); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(fullText).then(done).catch(()=>fallbackCopy(fullText,done));
+    } else fallbackCopy(fullText,done);
+  };
+  window.scrollTo(0,0);
+}
+
+function fallbackCopy(text,cb){
+  const ta=document.createElement("textarea");
+  ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try{document.execCommand("copy");}catch(e){}
+  document.body.removeChild(ta); cb&&cb();
+}
+</script>
+</body>
+</html>
