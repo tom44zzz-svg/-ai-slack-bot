@@ -1,0 +1,28 @@
+{
+  "//": "MCP（外部サービス連携）の設定テンプレート。使うときは .mcp.json にコピーし、鍵を埋める。",
+  "//secrets": "トークン類はこのファイルに直書きせず、環境変数(${VAR})経由にすること。.mcp.json は機密を含むなら .gitignore 推奨。",
+  "mcpServers": {
+    "filesystem": {
+      "//": "リポジトリ配下をMCP経由で読み書き（鍵不要・動作確認向き）",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "."]
+    },
+    "github": {
+      "//": "PR/Issue/CIなどGitHub操作。GITHUB_PERSONAL_ACCESS_TOKEN が必要",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "slack": {
+      "//": "Slack投稿・検索。SLACK_BOT_TOKEN と SLACK_TEAM_ID が必要",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-slack"],
+      "env": {
+        "SLACK_BOT_TOKEN": "${SLACK_BOT_TOKEN}",
+        "SLACK_TEAM_ID": "${SLACK_TEAM_ID}"
+      }
+    }
+  }
+}

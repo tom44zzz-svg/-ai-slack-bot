@@ -1,0 +1,28 @@
+name: AI Morning Digest
+
+# 毎朝 3:05 JST に AI ニュースを収集して Slack に投稿する。
+# - cron は UTC。18:05 UTC = 翌 03:05 JST(UTC+9)。
+# - GitHub Actions の定期実行は混雑時に数分ずれる/稀にスキップされるため、
+#   3:00 ちょうどではなく数分ずらしてある。
+# - ⚠ 定期実行は「デフォルトブランチ」に置かれたワークフローのみ発火する。
+#   このファイルを main(デフォルトブランチ) にマージするまで cron は動かない。
+on:
+  schedule:
+    - cron: '5 18 * * *'
+  workflow_dispatch: {} # 手動テスト用（Actionsタブから今すぐ実行できる）
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install deps
+        run: npm ci || npm install
+      - name: Generate & post digest
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: node scripts/morning-digest.mjs
