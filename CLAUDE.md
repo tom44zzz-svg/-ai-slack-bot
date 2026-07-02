@@ -26,6 +26,7 @@ lib/
   prompt.ts        LLM プロンプト組み立て
 data/   ← ★ アプリの「正本」。機械可読な辞書群（下記）
 docs/   人間向け仕様書
+business/   受注業務キット（ヒアリング/定型文/納品テンプレ/営業資料）。deliverables/ は機密のためgit管理外
 ```
 
 ## data/*.yaml が正本（最重要）
@@ -60,7 +61,7 @@ npm run lint     # Lint
 node scripts/validate-data.mjs   # データ辞書の整合性チェック
 ```
 
-スラッシュコマンド: `/check`（lint+build+validate を一括）, `/new-format`（フォーマット追加を支援）
+スラッシュコマンド: `/check`（lint+build+validate を一括）, `/new-format`（フォーマット追加を支援）, `/order`（受注案件の処理: ヒアリング→構成案→納品文書）
 
 ## 規約・注意点
 
