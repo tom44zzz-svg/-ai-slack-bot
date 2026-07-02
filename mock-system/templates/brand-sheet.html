@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!--
+  Brand Sheet テンプレート（mock-system/SPEC.md §4）
+  使い方: このファイルをコピーし、:root のトークンと本文コンテンツを差し替える。
+  現在の内容は記入例（架空ブランド「灯り屋」/ 伝統×高級×静謐×情緒×ミニマル）。
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ===== デザイントークン（ここを差し替える） ===== */
+    --base:    #F5F1E8;  /* ベース: 生成り（B=20 高級 → 上質な紙の白） */
+    --ink:     #2B2724;  /* 文字: 墨（真っ黒を使わない＝静謐） */
+    --main:    #44584C;  /* メイン: 深松葉（土地=山の記憶） */
+    --accent:  #C08445;  /* アクセント: 灯りの橙金（ブランド名と1対1） */
+    --font-display: 'Shippori Mincho','IPAPGothic',serif;   /* A=15 伝統 × B=20 高級 → 明朝 */
+    --font-body: 'Zen Kaku Gothic New','IPAPGothic',sans-serif;
+    --tracking: 0.08em;   /* C=15 静謐 → 字間ゆったり */
+    --leading: 1.9;
+    --radius: 0px;        /* B=20 高級 → 角丸なし */
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{width:1600px;background:var(--base);color:var(--ink);font-family:var(--font-body);padding:72px 80px;}
+  .label{font-size:13px;letter-spacing:.3em;color:var(--main);text-transform:uppercase;}
+  .rule{border:none;border-top:1px solid rgba(43,39,36,.18);margin:40px 0;}
+
+  /* header */
+  .brand-name{font-family:var(--font-display);font-size:88px;font-weight:700;letter-spacing:.12em;margin:18px 0 6px;}
+  .tagline{font-size:20px;letter-spacing:var(--tracking);color:var(--main);}
+  .vision{margin-top:28px;padding-left:22px;border-left:2px solid var(--accent);font-family:var(--font-display);font-size:22px;line-height:var(--leading);letter-spacing:var(--tracking);}
+  .vision small{display:block;margin-top:8px;font-family:var(--font-body);font-size:13px;color:rgba(43,39,36,.55);}
+
+  h2{font-size:15px;letter-spacing:.25em;color:var(--main);margin-bottom:22px;font-weight:700;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:56px;}
+
+  /* axes */
+  .axis{display:grid;grid-template-columns:150px 1fr 44px;gap:14px;align-items:center;margin-bottom:14px;font-size:14px;}
+  .axis .names{display:flex;justify-content:space-between;color:rgba(43,39,36,.75);}
+  .bar{height:5px;background:rgba(43,39,36,.12);position:relative;}
+  .bar i{position:absolute;top:-4px;width:13px;height:13px;border-radius:50%;background:var(--accent);transform:translateX(-50%);}
+  .axis b{text-align:right;font-size:15px;}
+  .evidence{font-size:12.5px;color:rgba(43,39,36,.55);margin-top:16px;line-height:1.8;}
+
+  /* palette */
+  .swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .sw{height:150px;padding:14px;display:flex;flex-direction:column;justify-content:flex-end;border:1px solid rgba(43,39,36,.1);}
+  .sw span{font-size:12px;letter-spacing:.05em;}
+  .sw .hex{font-size:15px;font-weight:700;}
+  .sw-note{font-size:12.5px;color:rgba(43,39,36,.55);margin-top:12px;line-height:1.8;}
+
+  /* type specimen */
+  .spec-display{font-family:var(--font-display);font-size:44px;font-weight:700;letter-spacing:var(--tracking);line-height:1.5;}
+  .spec-body{font-size:15px;line-height:var(--leading);letter-spacing:var(--tracking);margin-top:16px;max-width:38em;}
+  .spec-meta{font-size:12.5px;color:rgba(43,39,36,.55);margin-top:14px;}
+
+  /* tone & mood */
+  .tones{display:flex;gap:12px;margin-bottom:20px;}
+  .tone{border:1px solid var(--main);color:var(--main);padding:8px 22px;font-size:15px;letter-spacing:.2em;}
+  .moods{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .mood{height:110px;display:flex;align-items:flex-end;padding:12px;color:#F5F1E8;font-size:12.5px;letter-spacing:.08em;}
+
+  /* application mocks */
+  .apps{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:28px;align-items:start;}
+  .app-label{font-size:12px;color:rgba(43,39,36,.5);margin-top:10px;letter-spacing:.1em;}
+  .post{aspect-ratio:4/5;position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(43,39,36,.18);}
+  .post-1{background:linear-gradient(165deg,#3c4f44,#232e28 70%);color:#F5F1E8;display:flex;flex-direction:column;justify-content:space-between;padding:26px;}
+  .post-1 .p-label{font-size:11px;letter-spacing:.3em;color:#C08445;}
+  .post-1 h3{font-family:var(--font-display);font-size:31px;font-weight:700;letter-spacing:.1em;line-height:1.6;}
+  .post-1 .p-foot{font-size:11px;letter-spacing:.15em;opacity:.7;}
+  .post-2{background:#F5F1E8;border:1px solid rgba(43,39,36,.12);display:flex;flex-direction:column;justify-content:space-between;padding:26px;}
+  .post-2 h3{font-family:var(--font-display);font-size:26px;font-weight:700;letter-spacing:.08em;line-height:1.6;}
+  .post-2 ul{list-style:none;font-size:14px;line-height:2.1;letter-spacing:.05em;}
+  .post-2 ul li::before{content:"— ";color:var(--accent);}
+  .post-2 .p-foot{font-size:11px;color:var(--main);letter-spacing:.15em;}
+  .card{aspect-ratio:91/55;background:var(--ink);color:#F5F1E8;padding:26px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 10px 30px rgba(43,39,36,.18);}
+  .card .c-name{font-family:var(--font-display);font-size:30px;letter-spacing:.35em;}
+  .card .c-meta{font-size:11px;letter-spacing:.12em;line-height:1.9;opacity:.75;}
+  .card .c-line{width:36px;height:2px;background:var(--accent);}
+
+  .foot{margin-top:44px;font-size:12px;color:rgba(43,39,36,.5);letter-spacing:.05em;display:flex;justify-content:space-between;}
+</style>
+</head>
+<body>
+
+  <div class="label">Brand Sheet — generated by Brand-to-Mock</div>
+  <div class="brand-name">灯り屋</div>
+  <div class="tagline">米沢・小さな宿｜静けさを、贅沢に。</div>
+  <div class="vision">
+    「米沢の静けさを贅沢に味わう小さな宿。<br>土地の記憶を、次の百年へ継ぐ。」
+    <small>― ブランドビジョン（入力ブリーフ原文）</small>
+  </div>
+
+  <hr class="rule">
+
+  <div class="grid2">
+    <div>
+      <h2>01 ── ブランド5軸</h2>
+      <div class="axis"><div class="names"><span>伝統</span><span>革新</span></div><div class="bar"><i style="left:15%"></i></div><b>15</b></div>
+      <div class="axis"><div class="names"><span>高級</span><span>親近</span></div><div class="bar"><i style="left:20%"></i></div><b>20</b></div>
+      <div class="axis"><div class="names"><span>静謐</span><span>躍動</span></div><div class="bar"><i style="left:15%"></i></div><b>15</b></div>
+      <div class="axis"><div class="names"><span>理性</span><span>情緒</span></div><div class="bar"><i style="left:70%"></i></div><b>70</b></div>
+      <div class="axis"><div class="names"><span>ミニマル</span><span>豊潤</span></div><div class="bar"><i style="left:25%"></i></div><b>25</b></div>
+      <div class="evidence">
+        採点根拠: 「次の百年へ<b>継ぐ</b>」→伝統15 ／ 「<b>贅沢に</b>味わう」→高級20 ／
+        「<b>静けさ</b>」→静謐15 ／ 「土地の<b>記憶</b>」→情緒70 ／ 「<b>小さな</b>宿」→ミニマル25
+      </div>
+    </div>
+    <div>
+      <h2>02 ── カラーパレット</h2>
+      <div class="swatches">
+        <div class="sw" style="background:#F5F1E8;"><span>ベース｜生成り</span><span class="hex">#F5F1E8</span></div>
+        <div class="sw" style="background:#2B2724;color:#F5F1E8;"><span>文字｜墨</span><span class="hex">#2B2724</span></div>
+        <div class="sw" style="background:#44584C;color:#F5F1E8;"><span>メイン｜深松葉</span><span class="hex">#44584C</span></div>
+        <div class="sw" style="background:#C08445;color:#F5F1E8;"><span>アクセント｜灯り</span><span class="hex">#C08445</span></div>
+      </div>
+      <div class="sw-note">
+        判断: 高級×静謐→彩度を抑えた和トーン4色。メインは「土地=山」の深松葉、
+        アクセントは屋号「灯り」と1対1対応の橙金。真っ黒でなく墨色を使い、紙の白=生成りで上質さを担保。
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <div class="grid2">
+    <div>
+      <h2>03 ── タイポグラフィ</h2>
+      <div class="spec-display">静けさは、<br>この土地の贅沢。</div>
+      <div class="spec-body">囲炉裏の火が落ちるころ、宿は一日でいちばん静かな時間を迎えます。聞こえるのは雪のきしみと、湯の音だけ。</div>
+      <div class="spec-meta">見出し: Shippori Mincho 700 ／ 本文: Zen Kaku Gothic New ／ 字間 +0.08em・行間 1.9（静謐15 → ゆったり組み）</div>
+    </div>
+    <div>
+      <h2>04 ── トーン &amp; 写真ムード</h2>
+      <div class="tones"><div class="tone">静か</div><div class="tone">誠実</div><div class="tone">灯り</div></div>
+      <div class="moods">
+        <div class="mood" style="background:linear-gradient(160deg,#3c4f44,#1f2a24);">薄暮の山際</div>
+        <div class="mood" style="background:linear-gradient(160deg,#5a4632,#2e2318);">囲炉裏の火</div>
+        <div class="mood" style="background:linear-gradient(160deg,#8a8578,#5c584e);">雪と土壁</div>
+        <div class="mood" style="background:linear-gradient(160deg,#c9b896,#a08c62);">朝の障子光</div>
+      </div>
+      <div class="sw-note">写真指定: 自然光・暗部を残す・彩度低め／人物は後ろ姿か手元のみ／撮影時間帯は朝夕（情緒70 → 光で物語る）</div>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <h2>05 ── 適用例（このトークンで実際に組んだモック）</h2>
+  <div class="apps">
+    <div>
+      <div class="post post-1">
+        <div class="p-label">AKARIYA — YONEZAWA</div>
+        <h3>何もしない、<br>を予約する。</h3>
+        <div class="p-foot">静けさを贅沢に｜一日三組の宿</div>
+      </div>
+      <div class="app-label">Instagram 投稿（表紙・宣言型）</div>
+    </div>
+    <div>
+      <div class="post post-2">
+        <h3>灯り屋の夜にできること</h3>
+        <ul>
+          <li>囲炉裏の火を、ただ眺める</li>
+          <li>雪の音を聞きながら湯に浸かる</li>
+          <li>土地の酒を、一合だけ</li>
+          <li>百年前の梁の下で眠る</li>
+        </ul>
+        <div class="p-foot">保存して、旅の前にもう一度</div>
+      </div>
+      <div class="app-label">Instagram 投稿（リスト型）</div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="c-line"></div>
+        <div class="c-name">灯 り 屋</div>
+        <div class="c-meta">米沢・小さな宿｜静けさを、贅沢に。<br>山形県米沢市◯◯ ｜ akariya-yonezawa.jp</div>
+      </div>
+      <div class="app-label">名刺・ショップカード</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>品質ゲート: 4色以内 ✓ ／ 2書体 ✓ ／ 実コピー ✓ ／ コントラストAA ✓ ／ 判断の追跡可能性 ✓</span>
+    <span>mock-system/SPEC.md v1</span>
+  </div>
+
+</body>
+</html>

@@ -61,7 +61,7 @@ npm run lint     # Lint
 node scripts/validate-data.mjs   # データ辞書の整合性チェック
 ```
 
-スラッシュコマンド: `/check`（lint+build+validate を一括）, `/new-format`（フォーマット追加を支援）, `/order`（受注案件の処理: ヒアリング→構成案→納品文書）
+スラッシュコマンド: `/check`（lint+build+validate を一括）, `/new-format`（フォーマット追加を支援）, `/order`（受注案件の処理: ヒアリング→構成案→納品文書）, `/brand-mock`（ブランド価値観→デザインモック生成。正本は `mock-system/SPEC.md`）
 
 ## 規約・注意点
 
