@@ -83,7 +83,7 @@ function mkRoughMap(blotch=.16, freq=6){
   }
   const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;
 }
-const weaveN=mkWeaveNormal(30,1.5);
+const weaveN=mkWeaveNormal(48,1.05);
 const roughVar=mkRoughMap();
 const roughVar2=mkRoughMap(.22,9);
 
@@ -103,11 +103,17 @@ const EM=(geo,c,i,pos)=>{const m=new THREE.Mesh(geo,new THREE.MeshPhysicalMateri
     // 木目の筋
     x.strokeStyle='rgba(30,18,8,.25)';x.lineWidth=2;
     for(let i=0;i<30;i++){
-      x.beginPath();const yy=Math.random()*1024;
+      x.beginPath();const yy=(i*137.5)%1024;
       x.moveTo(0,yy);x.bezierCurveTo(300,yy+20,700,yy-25,1024,yy+10);x.stroke();
     }
+    // 使用感: 微細なスクラッチ
+    for(let i=0;i<14;i++){
+      x.strokeStyle='rgba(210,190,160,.10)';x.lineWidth=1;
+      const sx=(i*761)%1024, sy=(i*389)%1024, ang=((i*97)%180)*Math.PI/180, len=40+(i*53)%160;
+      x.beginPath();x.moveTo(sx,sy);x.lineTo(sx+Math.cos(ang)*len,sy+Math.sin(ang)*len);x.stroke();
+    }
   });
-  woodTex.wrapS=woodTex.wrapT=THREE.RepeatWrapping;woodTex.repeat.set(2,2);
+  woodTex.wrapS=woodTex.wrapT=THREE.RepeatWrapping;woodTex.repeat.set(1.35,1.35);
   const tbl=new THREE.Mesh(new THREE.PlaneGeometry(160,90),
     new THREE.MeshPhysicalMaterial({map:woodTex,roughness:.45,clearcoat:.35,clearcoatRoughness:.32,roughnessMap:roughVar2}));
   tbl.rotation.x=-Math.PI/2;scene.add(tbl);
@@ -120,15 +126,16 @@ const EM=(geo,c,i,pos)=>{const m=new THREE.Mesh(geo,new THREE.MeshPhysicalMateri
   // カウンター+ボトル棚(左奥)
   scene.add(M(new THREE.BoxGeometry(70,26,14),0x3a2c1f,.6,[-45,-15,-70]));
   scene.add(M(new THREE.BoxGeometry(70,2.5,10),0x2c2117,.6,[-45,4,-72]));
-  for(const [bx,bh,bc] of [[-62,9,0x7a5a2e],[-54,7,0x44614a],[-47,10,0x8a6a3a],[-38,6,0x5a4838],[-30,8,0x6e5540]])
+  for(const [bx,bh,bc] of [[-62,9,0x7a5a2e],[-54,7,0x44614a],[-47,10,0x8a6a3a],[-38,6,0x5a4838],[-30,8,0x6e5540]]){
     scene.add(M(new THREE.CylinderGeometry(1.7,1.7,bh,20),bc,.3,[bx,5.5+bh/2,-72]));
+    scene.add(M(new THREE.CylinderGeometry(.55,.75,2.2,14),bc,.3,[bx,5.5+bh+1.1,-72]));}
   // 窓(右奥・暖光)=メインキー
   const win=EM(new THREE.PlaneGeometry(46,52),0xffe2b6,6.5,[52,8,-62]);
   win.lookAt(0,4,0);scene.add(win);
   scene.add(M(new THREE.BoxGeometry(3,52,4),0x241a10,.8,[38,8,-58]));                // 窓枠
   // 窓の桟(格子)
   const mull=new THREE.MeshPhysicalMaterial({color:0x1e150c,roughness:.8});
-  for(const off of [-10,4]){const m=new THREE.Mesh(new THREE.BoxGeometry(1.6,52,1.6),mull);
+  for(const off of [-10.5,3.2]){const m=new THREE.Mesh(new THREE.BoxGeometry(1.6,52,1.6),mull);
     m.position.set(52+off*.35,8,-61.4);m.lookAt(0,8,0);scene.add(m);}
   {const m=new THREE.Mesh(new THREE.BoxGeometry(46,1.6,1.6),mull);
    m.position.set(52,14,-61.6);m.lookAt(0,14,0);scene.add(m);}
@@ -141,13 +148,13 @@ const EM=(geo,c,i,pos)=>{const m=new THREE.Mesh(geo,new THREE.MeshPhysicalMateri
   scene.add(M(new THREE.CylinderGeometry(12,12,1.5,32),0x3f3022,.5,[30,-8,-72]));
   scene.add(M(new THREE.CylinderGeometry(1.2,1.2,18,12),0x2c2117,.6,[30,-18,-72]));
   // 観葉植物(左)
-  scene.add(M(new THREE.SphereGeometry(6,20,20),0x2e4a34,.7,[-24,6,-58]));
-  scene.add(M(new THREE.SphereGeometry(4.5,20,20),0x37573d,.7,[-19,11,-60]));
+  for(const [px,py,pz,pr,pc] of [[-25,4,-62,2.2,0x2e4a34],[-22,7,-64,1.8,0x37573d],[-27,8,-63,1.6,0x2a4531],[-23,10,-65,1.4,0x3d5c42],[-26,11,-64,1.2,0x314d38],[-21,4.5,-63,1.5,0x355239],[-24,6,-61,1.3,0x2e4a34]])
+    scene.add(M(new THREE.SphereGeometry(pr,16,16),pc,.75,[px,py,pz]));
 }
 
 // ===== アイテム（実物スケール） =====
 const fabric=new THREE.MeshPhysicalMaterial({color:0x423a30,roughness:.94,
-  normalMap:weaveN, normalScale:new THREE.Vector2(.55,.55), roughnessMap:roughVar});
+  normalMap:weaveN, normalScale:new THREE.Vector2(.4,.4), roughnessMap:roughVar});
 
 // エプロン: 畳んだ布(皺の変位ジオメトリ・プリント部は皺を抑制)
 {
@@ -242,17 +249,24 @@ const fabric=new THREE.MeshPhysicalMaterial({color:0x423a30,roughness:.94,
   const g=new THREE.Group();g.add(mug);g.add(handle);g.add(coffee);
   g.position.set(2,0,7);g.rotation.y=.35;scene.add(g);
   // コーヒー豆(楕円体+割れ目)を無造作に
-  const beanMat=new THREE.MeshPhysicalMaterial({color:0x3a2313,roughness:.5,clearcoat:.25,roughnessMap:roughVar});
-  const creaseMat=new THREE.MeshPhysicalMaterial({color:0x1c0f06,roughness:.8});
-  for(const [bx,bz,rot] of [[9.5,13.5,.5],[11,14.8,2.2],[-1.5,12.6,1.1],[8.3,15.8,3.6],[-8.5,13.2,2.8],[13.4,13.9,4.4]]){
+  const beanMat=new THREE.MeshPhysicalMaterial({color:0x54331b,roughness:.48,clearcoat:.3,roughnessMap:roughVar});
+  const creaseMat=new THREE.MeshPhysicalMaterial({color:0x241105,roughness:.85});
+  const mkBean=(bx,by,bz,rot)=>{
     const bean=new THREE.Group();
-    const b=new THREE.Mesh(new THREE.SphereGeometry(.62,24,18),beanMat);
+    const b=new THREE.Mesh(new THREE.SphereGeometry(.66,24,18),beanMat);
     b.scale.set(1,.55,.72);bean.add(b);
-    const cr=new THREE.Mesh(new THREE.BoxGeometry(1.06,.08,.09),creaseMat);
+    const cr=new THREE.Mesh(new THREE.BoxGeometry(1.15,.12,.13),creaseMat);
     cr.position.y=.3;bean.add(cr);
-    bean.position.set(bx,.34,bz);bean.rotation.y=rot;bean.rotation.z=(rot%1)*.18;
+    bean.position.set(bx,by,bz);bean.rotation.y=rot;bean.rotation.z=(rot%1)*.18;
     scene.add(bean);
-  }
+  };
+  // ソーサー(豆の置き皿=物語の理由付け)
+  const saucer=new THREE.Mesh(new THREE.CylinderGeometry(4.4,3.6,.5,48),
+    new THREE.MeshPhysicalMaterial({color:0xf1ece0,roughness:.4,clearcoat:.5,clearcoatRoughness:.3,roughnessMap:roughVar}));
+  saucer.position.set(-7,.25,12.5);scene.add(saucer);
+  mkBean(-7.8,.62,12.0,.5); mkBean(-6.4,.62,13.2,2.2); mkBean(-7.1,.62,11.4,3.8);
+  // テーブルにこぼれた2粒
+  mkBean(-2.2,.34,14.6,1.1); mkBean(9.8,.34,14.2,2.9);
 }
 // タンブラー（立てる・左奥）
 {
@@ -283,10 +297,14 @@ const fabric=new THREE.MeshPhysicalMaterial({color:0x423a30,roughness:.94,
     x.fillText('0238-00-0000',96,470);x.fillText('akariya-yonezawa.jp',96,520);
     x.save();x.translate(880,470);drawEmblem(x,80,GOLD);x.restore();
   });
-  const mat=new THREE.MeshPhysicalMaterial({map:cardTex,roughness:.65});
-  const stack=new THREE.Mesh(new THREE.BoxGeometry(9.1,.7,5.5),mat);
-  stack.position.set(11.5,.35,10);stack.rotation.y=-.2;scene.add(stack);
-  const lean=new THREE.Mesh(new THREE.BoxGeometry(9.1,.08,5.5),mat);
+  const matTop=new THREE.MeshPhysicalMaterial({map:cardTex,roughness:.65});
+  const matSide=new THREE.MeshPhysicalMaterial({color:0xf0ebe0,roughness:.7});
+  // 束=無地ボックス、その上にテクスチャ付き薄カードを重ねる(単一マテリアル同士)
+  const stackBase=new THREE.Mesh(new THREE.BoxGeometry(9.1,.62,5.5),matSide);
+  stackBase.position.set(11.5,.31,10);stackBase.rotation.y=-.2;scene.add(stackBase);
+  const stackTop=new THREE.Mesh(new THREE.BoxGeometry(9.08,.06,5.48),matTop);
+  stackTop.position.set(11.5,.65,10);stackTop.rotation.y=-.2;scene.add(stackTop);
+  const lean=new THREE.Mesh(new THREE.BoxGeometry(9.1,.06,5.5),matTop);
   lean.position.set(12.8,0.78,11.8);lean.rotation.y=.15;scene.add(lean);  // 束の上にずらし置き
 }
 // チラシ A5（左手前・角度）
@@ -329,7 +347,7 @@ const fabric=new THREE.MeshPhysicalMaterial({color:0x423a30,roughness:.94,
   const ring=new THREE.Mesh(new THREE.TorusGeometry(.9,.13,16,48),
     new THREE.MeshPhysicalMaterial({color:0xd8d2c8,metalness:1,roughness:.3,roughnessMap:roughVar}));
   ring.rotation.x=-Math.PI/2-.18;ring.position.set(0,.16,-3.05);grp.add(ring);  // タグの穴を通る位置
-  grp.position.set(-4,0,16);grp.rotation.y=-.5;scene.add(grp);
+  grp.position.set(.5,0,17);grp.rotation.y=-.35;scene.add(grp);
 }
 
 // ===== 手前の補助光（暗部起こし・弱） =====
