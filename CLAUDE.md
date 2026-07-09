@@ -75,8 +75,9 @@ node scripts/validate-data.mjs   # データ辞書の整合性チェック
 
 `.claude/` に「使いこなし」設定を導入済み。詳細は `.claude/README.md`。
 
-- `settings.json` … 権限allowlist + Hooks（SessionStartでnpm install / 編集時にYAML検証）
-- `commands/` … `/check`, `/new-format`
-- `skills/content-data/` … YAML辞書の編集・拡張ガイド（Skill）
-- `agents/data-reviewer.md` … データ整合性レビュー用のサブエージェント
+- `settings.json` … 権限（defaultMode acceptEdits + 危険操作ask + allowlist）+ Hooks（SessionStartでnpm install / 編集時にYAML検証 / Notification通知）
+- `commands/` … `/check`, `/new-format`, `/order`, `/brand-mock`, `/gokugen`
+- `skills/` … content-data（YAML辞書）, client-work（受注対応）
+- `agents/` … data-reviewer（データ整合性）, gokugen-*（極限起動5役・並列分業）
 - `.mcp.example.json` … 外部サービス連携（MCP）のテンプレート
+- 上級運用（`/effort` `/plan` `/context` `/rewind` 等）は `.claude/README.md` 参照

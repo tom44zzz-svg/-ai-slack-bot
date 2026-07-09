@@ -1,6 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
+    "defaultMode": "acceptEdits",
     "allow": [
       "Bash(npm install)",
       "Bash(npm run lint:*)",
@@ -14,6 +15,14 @@
       "Bash(git add:*)",
       "Bash(git restore:*)",
       "Read(//home/user/-ai-slack-bot/**)"
+    ],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)",
+      "Bash(rm -rf:*)",
+      "Bash(curl:*)",
+      "Bash(npx:*)"
     ],
     "deny": [
       "Read(./.env)",
@@ -38,6 +47,16 @@
           {
             "type": "command",
             "command": "node scripts/hook-validate.mjs"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/notify.mjs"
           }
         ]
       }
