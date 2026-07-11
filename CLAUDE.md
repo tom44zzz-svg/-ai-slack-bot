@@ -27,7 +27,14 @@ lib/
 data/   ← ★ アプリの「正本」。機械可読な辞書群（下記）
 docs/   人間向け仕様書
 business/   受注業務キット（ヒアリング/定型文/納品テンプレ/営業資料）。deliverables/ は機密のためgit管理外
+brain/  ← ★ 第二の脳。事業・戦略・意思決定の文脈（raw/entities/concepts/INDEX.md）
 ```
+
+## 第二の脳 brain/（作業前に読む）
+
+**事業・制作・営業・戦略の相談を受けたら、まず `brain/INDEX.md` を読み、関連する `entities/` `concepts/` を参照してから作業する。** モデルの賢さより「蓄積した文脈をどれだけ読ませるか」で出力が変わる、という思想。
+- 最重要: `brain/concepts/出荷ファースト.md`（準備でなく出荷がボトルネック）
+- 新しい判断・学びが出たら `/brain` で脳を育てる（意思決定は「なぜ」を残す）
 
 ## data/*.yaml が正本（最重要）
 
@@ -76,7 +83,7 @@ node scripts/validate-data.mjs   # データ辞書の整合性チェック
 `.claude/` に「使いこなし」設定を導入済み。詳細は `.claude/README.md`。
 
 - `settings.json` … 権限（defaultMode acceptEdits + 危険操作ask + allowlist）+ Hooks（SessionStartでnpm install / 編集時にYAML検証 / Notification通知）
-- `commands/` … `/check`, `/new-format`, `/order`, `/brand-mock`, `/gokugen`
+- `commands/` … `/check`, `/new-format`, `/order`, `/brand-mock`, `/gokugen`, `/brain`（第二の脳の育成）
 - `skills/` … content-data（YAML辞書）, client-work（受注対応）
 - `agents/` … data-reviewer（データ整合性）, gokugen-*（極限起動5役・並列分業）
 - `.mcp.example.json` … 外部サービス連携（MCP）のテンプレート

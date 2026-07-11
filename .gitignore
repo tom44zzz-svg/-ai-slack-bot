@@ -9,3 +9,6 @@ next-env.d.ts
 
 # クライアント納品物（機密）はコミットしない
 business/deliverables/
+
+# 第二の脳の機密メモ（クライアント具体情報など）はコミットしない
+brain/private/
