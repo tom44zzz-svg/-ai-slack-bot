@@ -26,6 +26,11 @@ AIが作業前にここを読み、必要なページへ辿る。各行は1行�
 ## raw/（原文置き場・改変しない）
 - `raw/2026-07-05-second-brain-fable5.md` … 第二の脳の元記事（X投稿）
 
+## learning/（AIエージェント習得の日課）
+- `learning/curriculum.md` … 習得カリキュラム（L0〜L5の地図）
+- `learning/progress.md` … 現在地・ストリーク・次テーマ（`/lesson` が毎日更新）
+- 毎日 `/lesson` で1テーマ。半歩先を維持する
+
 ## log/（作業ログ・整理ループの記録）
 - 日々の作業ログ。毎晩整理→毎週 concepts/entities に統合する
 
