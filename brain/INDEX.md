@@ -22,9 +22,12 @@ AIが作業前にここを読み、必要なページへ辿る。各行は1行�
 - `concepts/事業戦略-ROI順.md` … 稼ぎの3ルートと優先順位
 - `concepts/価格戦略.md` … ココナラ実勢と値付けの方針
 - `concepts/制作品質の原則.md` … フォトリアル6原則・極限起動・品質の型
+- `concepts/ハーネスエンジニアリング.md` … 実装役×レビュー役を分け、実ブラウザE2Eで合否判定する自律開発の型
+- `concepts/HeroUI-UIライブラリ.md` … 旧NextUI。React/Tailwindの高速UI。受注UIの出荷を速める道具
 
 ## raw/（原文置き場・改変しない）
 - `raw/2026-07-05-second-brain-fable5.md` … 第二の脳の元記事（X投稿）
+- `raw/2026-07-ハーネスエンジニアリング開発実況.md` … 自律開発実況の書き起こし（ハーネス設計の原文）
 
 ## learning/（AIエージェント習得の日課）
 - `learning/curriculum.md` … 習得カリキュラム（L0〜L5の地図）
