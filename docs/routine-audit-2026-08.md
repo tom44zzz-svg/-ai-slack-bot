@@ -1,8 +1,26 @@
 # Routine 棚卸し（2026-08-02 実施）
 
 Claude Code の Routine（定期実行タスク）全7件を点検した結果。
-**Claude側のセッションから変更ツールが使えないため、実行はアプリのUIから手動で行う。**
-UIで既存Routineを編集すれば削除→再作成は不要（実行履歴も残る）。
+**実行はアプリのUIから手動で行う。** UIで既存Routineを編集すれば削除→再作成は不要（実行履歴も残る）。
+
+> 🔑 **2026-08-12 追記：なぜClaude側から変更できないのかが判明した**
+>
+> 8/2〜8/11 は「変更ツールがこのセッションに未接続」と診断していたが、これは誤りだった。
+> 8/12 に `update_trigger` を実際に叩いたところ、ツールは存在し、返ってきたのは**権限エラー**:
+>
+> ```
+> this routine was created via "http_api", not by an agent.
+> Agents can only update routines they created (via create_trigger).
+> A routine's own session may still disable itself (enabled=false only).
+> ```
+>
+> **接続の問題ではなく所有権の問題。** 7件はすべてアプリUI（`http_api` / `meta_mcp`）で作られており、
+> エージェントが後から触ることは仕様上できない。**待っていても解決しない。**
+> → 下のチェックリストは、いつまで待ってもClaude側では消化されない。**本人のタップ以外に道は無い。**
+>
+> 唯一の例外：エラー文が名指ししている「自分自身のセッションを持つRoutineは `enabled=false` にできる」。
+> 該当するのは毎日レッスン（`trig_01Bzx6bCAmDgebAw4PxfNYZN`、`persistent_session_id` がこのセッション）**だけ**。
+> 止めたいのは禁書系なので、これは使わない。
 
 関連: 学習 Day 20「業務OS化 ─ 足す仕組みと捨てる習慣はセット」
 
@@ -47,15 +65,24 @@ UIで既存Routineを編集すれば削除→再作成は不要（実行履歴�
 
 ---
 
-## B. 削除推奨：ウィークリーAIニュース（`trig_01GvLH5XKcSbdPN4iXjAudXc`）
+## B. ウィークリーAIニュース（`trig_01GvLH5XKcSbdPN4iXjAudXc`）
 
-3つ揃って無駄になっている。
+> ✅ **2026-08-12 更新: 削除ではなく「日本語化して存続」に決定**（本人指示「ウィークリーAIニュースを日本語で配信するようにして」）。
+> 下記3点の問題はそのまま有効なので、**削除の代わりに全部つぶす**差し替えプロンプトを
+> `docs/routine-replacement-prompts.md` §6 に用意した。重複は**スコープ分離**で解消する
+> （weekly-ai-report＝総合 / ウィークリーAIニュース＝自分の手が動く範囲だけ）。
+
+当初の削除推奨の根拠（問題自体は実在する）:
 
 1. **weekly-ai-report と内容が重複**（どちらも週次のAIニュースまとめ）
 2. **出力先が存在しない** — プロンプトは "Post the digest to a designated channel or send as a message" とあるだけで、channel が指定されていない。**毎週生成されて、どこにも届かず消えている。**
 3. プロンプトが英語（他は全部日本語）
 
-→ **削除。** AIニュースは weekly-ai-report（Discord投稿・実際に届いている）に一本化する。
+~~→ **削除。** AIニュースは weekly-ai-report（Discord投稿・実際に届いている）に一本化する。~~
+
+→ **改訂（8/12）: 日本語プロンプトに貼り替えて存続。**
+1 は守備範囲を分けて解消、2 は出力先を「最終応答＋`brain/inbox/ai-news/` にコミット」で明示、
+3 は全文日本語化。差し替え文面は `docs/routine-replacement-prompts.md` §6。
 
 ---
 
@@ -154,21 +181,21 @@ Webhook URLを知っている人は誰でもそのチャンネルに投稿でき
 
 優先度順。上3つで効果の大半が出る。
 
-**削除する3件**
-- [ ] **① ウィークリーAIニュース を削除**（`trig_01GvLH5XKcSbdPN4iXjAudXc`）— 重複＋出力先なし
-- [ ] **② 禁書ノオト・PM日報 を削除**（`trig_01UNpXWUbEZ7MrUj6jaJ4VPe`）— 固定表の引き直しにLLM不要
-- [ ] **③ 禁書ノオト・PM月報 を削除**（`trig_011LSJgrPBY5SgRAYij84nGW`）— 2026-08-10 本人指示で禁書関連は全停止
-- [ ] ※要確認: 週次ショート動画（`trig_0196YFDKY1ZrvZMkRcypox75`）も禁書系なら同時に削除
+**止める2件**（最優先。ここだけで月30本のLLM実行が消える）
+- [ ] **① 禁書ノオト・PM日報 を削除/無効化**（`trig_01UNpXWUbEZ7MrUj6jaJ4VPe`）— 固定表の引き直しにLLM不要
+- [ ] **② 禁書ノオト・PM月報 を削除/無効化**（`trig_011LSJgrPBY5SgRAYij84nGW`）— 2026-08-10 本人指示で禁書関連は全停止
+- [ ] ※要確認: 週次ショート動画（`trig_0196YFDKY1ZrvZMkRcypox75`）も禁書系なら同時に停止
 
 **設定を変える**
 - [ ] **③ 毎日レッスン を「毎回新規セッション」に変更**（`trig_01Bzx6bCAmDgebAw4PxfNYZN`）
-- [ ] **④ 残り5件すべてでコネクタを全部オフ**
+- [ ] **④ 残り全件でコネクタを全部オフ**
 
 **プロンプトを貼り替える**（`docs/routine-replacement-prompts.md` からコピー）
 - [ ] ⑤ GGG週次（`trig_01FT4NsLqh7pMGoNJXZkFboV`）
 - [ ] ⑥ GGG月次（`trig_01UtzFpnPmsP2Yp8M3EDEKaD`）
-- [ ] ⑦ 禁書PM月報（`trig_011LSJgrPBY5SgRAYij84nGW`）
+- [ ] ⑦ 禁書PM月報（`trig_011LSJgrPBY5SgRAYij84nGW`）※ 止めるなら不要
 - [ ] ⑧ 週次ショート動画（`trig_0196YFDKY1ZrvZMkRcypox75`）※ 先に⑨を確認
+- [ ] **⑪ ウィークリーAIニュース を日本語版に貼り替え**（`trig_01GvLH5XKcSbdPN4iXjAudXc`）§6
 
 **確認が要るもの**
 - [ ] ⑨ 「歴史の裏側」チャンネルが現役か（違えば⑧を修正 or 削除）
@@ -178,14 +205,18 @@ Webhook URLを知っている人は誰でもそのチャンネルに投稿でき
 
 ## 完了後の姿
 
-Routine は **7件 → 4件**（禁書系を全停止した場合）。
+Routine は **7件 → 5件**（禁書系を全停止した場合。8/12にウィークリーAIニュースが存続に変わったため4→5）。
 
 | 名前 | タイミング(JST) | 位置づけ |
 |---|---|---|
 | GGG週次レポート | 日 10:00 | 💰 受注案件・収入直結 |
 | GGG月次レポート | 毎月1日 10:00 | 💰 受注案件・収入直結 |
-| weekly-ai-report | 月 05:00 | 📥 打ち切り条件付き（1手が変わらない週が3回で停止） |
+| weekly-ai-report | 月 05:00 | 📥 総合ニュース。打ち切り条件付き（1手が変わらない週が3回で停止） |
+| ウィークリーAIニュース | 月 18:00 | 📥 実務特化（日本語版）。同じく打ち切り条件付き |
 | AIエージェント習得 毎日レッスン | 毎日 07:30（新規セッション） | 📥 |
+
+⚠️ インプット系が4件、アウトプットを強制するものが0件のまま。
+`/ship`（`brain/ship-log.md`）はRoutineではなく手動なので、ここには現れない。
 
 ※ 週次ショート動画（月 09:00）は「歴史の裏側」チャンネルの現況次第。禁書系なら同時停止。
 
