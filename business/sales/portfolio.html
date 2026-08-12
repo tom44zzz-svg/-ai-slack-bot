@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1200px; height:1250px; }
+  body { font-family:'IPAGothic',sans-serif; background:#0f2136; color:#eaf2f8; padding:0; }
+
+  /* ── ヘッダー ── */
+  .hd { padding:30px 44px 24px; border-bottom:3px solid #3fc1e0; position:relative; }
+  .hd .who { font-size:13px; color:#3fc1e0; letter-spacing:3px; font-weight:bold; }
+  .hd .nm { font-size:40px; font-weight:bold; margin-top:7px; letter-spacing:1px; }
+  .hd .nm .ph { display:inline-block; min-width:280px; border-bottom:3px dashed #ff9b42;
+                color:#ff9b42; font-size:26px; padding:0 12px 3px; }
+  .hd .tag { font-size:19px; color:#bfe9f5; margin-top:12px; font-weight:bold; }
+  .hd .sub2 { font-size:14.5px; color:#9fb3c4; margin-top:6px; line-height:1.6; }
+  .hd .loc { position:absolute; right:44px; top:34px; text-align:right; }
+  .hd .loc .l1 { font-size:13px; color:#9fb3c4; line-height:1.8; }
+  .hd .loc .l1 b { color:#eaf2f8; }
+
+  .sec { padding:22px 44px 0; }
+  .sh { display:flex; align-items:baseline; gap:12px; margin-bottom:13px; }
+  .sh .n { font-family:monospace; font-size:15px; font-weight:bold; color:#0f2136;
+           background:#3fc1e0; border-radius:5px; padding:2px 9px; }
+  .sh .t { font-size:20px; font-weight:bold; }
+  .sh .d { font-size:13px; color:#7f93a6; }
+
+  /* ── ① Before / After ── */
+  .ba { display:flex; gap:16px; align-items:stretch; }
+  .bef { flex:0 0 236px; background:#16304a; border:2px solid #26476a; border-radius:11px; padding:14px 15px; }
+  .bef .lb { font-size:12px; color:#7f93a6; font-weight:bold; letter-spacing:1.5px; }
+  .bef .note { margin-top:9px; background:#e8dfc4; color:#3a3324; border-radius:6px;
+               padding:13px 12px; font-size:15px; line-height:1.55; font-weight:bold; }
+  .bef .meta { margin-top:11px; font-size:12px; color:#9fb3c4; line-height:1.75; }
+  .bef .meta b { color:#eaf2f8; }
+  .bef .chip { display:inline-block; background:#0f2a22; color:#8ff0c8; border:1px solid #2f6a55;
+               border-radius:4px; font-size:11px; padding:1px 7px; margin:3px 3px 0 0; }
+
+  .arr { flex:0 0 46px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .arr .a { font-size:30px; color:#ff9b42; font-weight:bold; }
+  .arr .c { font-size:11px; color:#7f93a6; writing-mode:vertical-rl; margin-top:6px; letter-spacing:2px; }
+
+  .aft { flex:1; background:#16304a; border:2px solid #3fc1e0; border-radius:11px; padding:14px 15px; }
+  .aft .lb { font-size:12px; color:#3fc1e0; font-weight:bold; letter-spacing:1.5px; }
+  .titles { margin-top:8px; }
+  .ti { font-size:13px; color:#cdd9e4; line-height:1.55; padding:1px 0; }
+  .ti i { font-style:normal; font-family:monospace; color:#ff9b42; font-weight:bold; margin-right:6px; }
+  .ti b { color:#fff; }
+
+  .slides { display:flex; gap:8px; margin-top:11px; }
+  .sl { flex:1; height:172px; border-radius:5px; overflow:hidden;
+        display:flex; flex-direction:column; background:#fbf8f2; position:relative; }
+  .sl .num { position:absolute; left:4px; top:3px; font-size:9px; font-family:monospace;
+             color:#0f2136; background:#3fc1e0; border-radius:3px; padding:0 4px; z-index:3; }
+  .sl .top { padding:16px 7px 5px; font-size:9.5px; font-weight:bold; color:#241d12; line-height:1.35; }
+  .sl .mid { flex:1; margin:0 7px; border-radius:3px; display:flex;
+             align-items:center; justify-content:center; font-size:8.5px; color:#7a6a52; }
+  .sl .bot { padding:5px 7px 7px; font-size:8.5px; color:#6b5c46; line-height:1.35; }
+  .ph1 { background:linear-gradient(150deg,#7d2b22,#c4553a 55%,#e08a4e); }
+  .ph2 { background:#efe6d4; border:1px dashed #c3b697; }
+  .cov { background:linear-gradient(150deg,#6e241d,#b8492f 60%,#d97b40); }
+  .cov .top { color:#fff; font-size:11px; padding:18px 8px 4px; text-shadow:0 1px 3px rgba(0,0,0,.5); }
+  .cov .bot { color:#ffe4cc; }
+  .cta { background:#0f2a22; }
+  .cta .top { color:#c9f7e4; }
+  .cta .mid { background:#16483a; color:#8ff0c8; }
+  .cta .bot { color:#8ff0c8; }
+  .bars { display:flex; flex-direction:column; gap:3px; width:100%; padding:0 8px; }
+  .bars i { display:block; height:4px; background:#d3c7ac; border-radius:2px; }
+  .bars i:nth-child(2) { width:78%; } .bars i:nth-child(3) { width:56%; }
+
+  /* ── ② システム図 ── */
+  .flow { display:flex; align-items:stretch; gap:0; }
+  .fs { flex:1; background:#16304a; border:2px solid #26476a; border-radius:9px;
+        padding:10px 9px; text-align:center; }
+  .fs .k { font-size:13px; font-weight:bold; color:#eaf2f8; line-height:1.35; }
+  .fs .v { font-size:11px; color:#8ea6bb; margin-top:5px; line-height:1.45; }
+  .fs.hi { border-color:#3fc1e0; background:#123a52; }
+  .fs.hi .k { color:#bfe9f5; }
+  .fs.gr { border-color:#46d39a; background:#0f2a22; }
+  .fs.gr .k { color:#8ff0c8; }
+  .fa { flex:0 0 24px; display:flex; align-items:center; justify-content:center;
+        color:#3a5f80; font-size:15px; }
+
+  /* ── ③ 数字 ── */
+  .nums { display:flex; gap:12px; }
+  .nc { flex:1; background:#16304a; border:2px solid #26476a; border-radius:11px;
+        padding:13px 10px; text-align:center; }
+  .nc .v { font-family:monospace; font-size:38px; font-weight:bold; color:#3fc1e0; line-height:1; }
+  .nc .v small { font-size:16px; color:#7f93a6; margin-left:2px; }
+  .nc .k { font-size:12.5px; color:#cdd9e4; margin-top:7px; line-height:1.4; }
+  .nc.o { border-color:#ff9b42; } .nc.o .v { color:#ff9b42; }
+
+  /* ── ④ 実績 ── */
+  .work { display:flex; gap:14px; }
+  .wc { flex:1; background:#16304a; border:2px solid #26476a; border-radius:11px; padding:13px 15px; }
+  .wc .cat { font-size:11.5px; color:#3fc1e0; font-weight:bold; letter-spacing:1.5px; }
+  .wc .ttl { font-size:15.5px; font-weight:bold; margin-top:6px; line-height:1.4; }
+  .wc .dt { font-size:12.5px; color:#9fb3c4; line-height:1.65; margin-top:7px; }
+  .wc .dt b { color:#cdd9e4; }
+  .wc .an { display:inline-block; font-size:10.5px; color:#8ea6bb; border:1px solid #3a5f80;
+            border-radius:4px; padding:1px 7px; margin-top:8px; }
+
+  /* ── フッター ── */
+  .ft { margin:22px 44px 0; background:#123a52; border:2px solid #3fc1e0; border-radius:11px;
+        padding:15px 20px; display:flex; align-items:center; gap:18px; }
+  .ft .fl { flex:1; }
+  .ft .fh { font-size:17px; font-weight:bold; color:#bfe9f5; }
+  .ft .fd { font-size:13px; color:#9fb3c4; margin-top:6px; line-height:1.6; }
+  .ft .fd b { color:#eaf2f8; }
+  .ft .fr { flex:0 0 300px; background:#0f2136; border-radius:8px; padding:11px 14px; }
+  .ft .fr .r { display:flex; justify-content:space-between; font-size:12.5px;
+               color:#9fb3c4; padding:3px 0; }
+  .ft .fr .r b { color:#eaf2f8; font-family:monospace; }
+  .ft .fr .r.m { color:#ffb877; } .ft .fr .r.m b { color:#ff9b42; }
+
+</style></head>
+<body>
+
+  <div class="hd">
+    <div class="who">SNS CONTENT DESIGN ─ 投稿設計・制作</div>
+    <div class="nm"><span class="ph">屋号／お名前</span></div>
+    <div class="tag">ネタを送るだけ。構成 → デザイン → 投稿文まで一式で納品します。</div>
+    <div class="sub2">感覚ではなく<b style="color:#bfe9f5">型</b>で作ります。フック × トーン × 構成の3軸で、あなたのネタに最適な投稿フォーマットを選定。</div>
+    <div class="loc"><div class="l1">
+      <b>山形県米沢市</b><br>オンライン対応・全国可<br>
+      <span style="color:#8ff0c8">初回サンプル1本 無料</span>
+    </div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sh"><div class="n">01</div><div class="t">ネタ1行 → 完成投稿</div>
+      <div class="d">お客様にご用意いただくのは、左の1行だけです</div></div>
+    <div class="ba">
+      <div class="bef">
+        <div class="lb">BEFORE ── いただくもの</div>
+        <div class="note">「米沢牛、部位で<br>選ぶと美味しい」</div>
+        <div class="meta">
+          <b>業種</b>　焼肉店（米沢・仮）<br>
+          <b>目的</b>　来店促進<br>
+          <b>読者</b>　地元＋観光客<br>
+          <span style="color:#7f93a6">↓ 3軸で自動選定</span>
+          <div>
+            <span class="chip">フック: 数字型</span>
+            <span class="chip">トーン: ポジティブ</span>
+            <span class="chip">構成: リスト</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="arr"><div class="a">▶</div><div class="c">2営業日</div></div>
+
+      <div class="aft">
+        <div class="lb">AFTER ── 納品するもの</div>
+        <div class="titles">
+          <div class="ti"><i>A</i>米沢牛、部位で選ぶと世界が変わる｜プロが選ぶ<b>TOP5</b></div>
+          <div class="ti"><i>B</i><b>知らずに頼むと損してる。</b>米沢牛の部位、正解はこれ</div>
+          <div class="ti"><i>C</i><b>地元民が本当に頼む</b>米沢牛の部位、教えます</div>
+        </div>
+        <div class="slides">
+          <div class="sl cov"><div class="num">1</div>
+            <div class="top">米沢牛、部位で選ぶと世界が変わる</div>
+            <div class="mid"></div>
+            <div class="bot">表紙／肉の実写</div></div>
+          <div class="sl"><div class="num">2</div>
+            <div class="top">いつも同じ部位、頼んでいませんか？</div>
+            <div class="mid ph2"><div class="bars"><i></i><i></i><i></i></div></div>
+            <div class="bot">問題提起</div></div>
+          <div class="sl"><div class="num">3</div>
+            <div class="top">① サーロイン</div>
+            <div class="mid ph1"></div>
+            <div class="bot">特徴＋おすすめの食べ方</div></div>
+          <div class="sl"><div class="num">4</div>
+            <div class="top">② ミスジ</div>
+            <div class="mid ph1"></div>
+            <div class="bot">特徴＋おすすめの食べ方</div></div>
+          <div class="sl"><div class="num">5</div>
+            <div class="top">③ ザブトン</div>
+            <div class="mid ph1"></div>
+            <div class="bot">特徴＋おすすめの食べ方</div></div>
+          <div class="sl"><div class="num">6</div>
+            <div class="top">④ シャトーブリアン</div>
+            <div class="mid ph1"></div>
+            <div class="bot">特徴＋おすすめの食べ方</div></div>
+          <div class="sl cta"><div class="num">7</div>
+            <div class="top">まとめ｜迷ったらこの順で</div>
+            <div class="mid">保存 &amp; 来店時に</div>
+            <div class="bot">CTA＋キャプション・#10案</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sh"><div class="n">02</div><div class="t">制作システム</div>
+      <div class="d">毎回ゼロから考えません。同じ工程を通すので、品質の下限が固定されます</div></div>
+    <div class="flow">
+      <div class="fs"><div class="k">ネタ</div><div class="v">1行＋<br>ヒアリング1枚</div></div>
+      <div class="fa">▶</div>
+      <div class="fs hi"><div class="k">3軸フィルタ</div><div class="v">フック×トーン<br>×構成</div></div>
+      <div class="fa">▶</div>
+      <div class="fs hi"><div class="k">フォーマット選定</div><div class="v">21種から<br>最適な型を1つ</div></div>
+      <div class="fa">▶</div>
+      <div class="fs"><div class="k">スライド構成</div><div class="v">1枚ごとに<br>上段・中段・下段</div></div>
+      <div class="fa">▶</div>
+      <div class="fs"><div class="k">図解・写真指定</div><div class="v">図解20種<br>から指定</div></div>
+      <div class="fa">▶</div>
+      <div class="fs gr"><div class="k">品質チェック</div><div class="v">17項目を<br>納品前に通す</div></div>
+      <div class="fa">▶</div>
+      <div class="fs gr"><div class="k">納品</div><div class="v">完成データ＋<br>投稿文＋#</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sh"><div class="n">03</div><div class="t">持っている型</div>
+      <div class="d">すべて自分で構築・運用しているものです</div></div>
+    <div class="nums">
+      <div class="nc"><div class="v">21<small>種</small></div><div class="k">投稿フォーマット</div></div>
+      <div class="nc"><div class="v">23<small>種</small></div><div class="k">スライドテンプレート</div></div>
+      <div class="nc"><div class="v">20<small>種</small></div><div class="k">図解パターン</div></div>
+      <div class="nc"><div class="v">14<small>項目</small></div><div class="k">制作ルール</div></div>
+      <div class="nc"><div class="v">17<small>項目</small></div><div class="k">納品前チェック</div></div>
+      <div class="nc o"><div class="v">2<small>日</small></div><div class="k">構成案の納期<br><span style="font-size:11px;color:#8ea6bb">制作込みは4営業日</span></div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sh"><div class="n">04</div><div class="t">これまでの仕事</div>
+      <div class="d">守秘のため社名は伏せています。詳細はご相談時にお伝えできる範囲でご説明します</div></div>
+    <div class="work">
+      <div class="wc">
+        <div class="cat">CLIENT WORK ─ 01</div>
+        <div class="ttl">金融系企業のSNS制作ルール策定・運用</div>
+        <div class="dt">表記や訴求の基準づくりから関わり、<b>「誰が作っても同じ品質になる」制作ルール</b>を整備。
+          上の17項目チェックはここでの経験がもとになっています。</div>
+        <div class="an">社名非公開</div>
+      </div>
+      <div class="wc">
+        <div class="cat">CLIENT WORK ─ 02</div>
+        <div class="ttl">園芸店3店舗の YouTube / Instagram 運用支援</div>
+        <div class="dt">登録者<b>5.4万規模</b>のチャンネルについて、週次・月次で数値を分析し企画を設計。
+          <b>伸びたタイトルの共通パターンを言語化</b>して、次の企画に反映する形で継続支援中。</div>
+        <div class="an">社名非公開・継続中</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ft">
+    <div class="fl">
+      <div class="fh">まずは1本、無料でサンプルをお作りします</div>
+      <div class="fd">ネタを1行いただければ、<b>タイトル3案＋スライド構成案</b>までを無料でお出しします。
+        そのうえでご判断ください。<b>合わなければ、そこで終わりで構いません。</b></div>
+    </div>
+    <div class="fr">
+      <div class="r"><span>投稿設計プラン（構成のみ）</span><b>2,000円〜</b></div>
+      <div class="r m"><span>まるごと制作プラン</span><b>5,000円〜</b></div>
+      <div class="r"><span>月間運用パートナー</span><b>30,000円／月</b></div>
+      <div class="r" style="border-top:1px solid #26476a;margin-top:4px;padding-top:6px;font-size:11.5px">
+        <span>修正</span><b>構成・デザイン各2回無料</b></div>
+    </div>
+  </div>
+
+</body></html>

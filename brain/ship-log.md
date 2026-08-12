@@ -11,7 +11,14 @@
 
 ## 🎯 次に出す1つ（if-then 形式・1つだけ）
 
-- **（未設定）** ← 次回の `/ship` で決める
+- **「屋号を決めたら、`business/sales/portfolio.html` の橙の点線部分に打ち込んで書き出す」**
+  （2026-08-12 設定・Day 31）
+
+素材はもう全部そろっている。**残りの入力は屋号1つだけ**。
+その先の1歩目は「ココナラのプロフィールにヘッダー画像として上げる」＝相手不要・0歩。
+
+- 制作物: `business/sales/portfolio.png`（1200×1250・4枠すべて充填済み）
+- 書き出し: `node scripts/render-lesson.mjs business/sales/portfolio.html business/sales/portfolio.png 1200 1250`
 
 書き方の型:
 ```
