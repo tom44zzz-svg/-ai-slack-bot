@@ -9,6 +9,28 @@
 
 ---
 
+## 📍 画面の場所
+
+**`claude.ai/code/routines`** — ここがRoutine一覧。デスクトップアプリならサイドバーの **Routines**。
+一覧でRoutineをタップすると詳細ページが開き、操作は3つ:
+
+| 場所 | できること |
+|---|---|
+| **Repeats** セクションのトグル | **一時停止／再開**。設定は残る（元に戻せる） |
+| **鉛筆アイコン** | **Edit routine**（名前・プロンプト・リポジトリ・環境・コネクタ・トリガー） |
+| **ゴミ箱アイコン** | 削除。過去のセッションは残る |
+
+そのほか: **Run now**（即時実行）、過去の実行履歴も同じ詳細ページにある。
+
+> 💡 **`/schedule` は Web セッションの中では使えません。**
+> 公式ドキュメント:「You are inside a Claude Code on the web session.
+> Manage routines from the web UI instead」。CLI から操作するなら
+> **ターミナルかデスクトップアプリ**の Claude Code で `/schedule list` / `/schedule update`。
+>
+> 出典: <https://code.claude.com/docs/en/routines>
+
+---
+
 ## 結論を先に
 
 定期タスクは **8件・月79回**。禁書系3件を止めても **44回（−45%）にしかならない**。
@@ -37,10 +59,21 @@ persistent_session_id: session_01R5bjwdWV9fT48FNsVsAh6U
 翌日はその全部を読み直してから始まる。**日が経つほど1回が重くなる。**
 「クラウドコードがすぐいっぱいになる」の直接原因はこれ。
 
-→ 編集画面で **「毎回新しいセッションで実行」に変更**。
+> ⚠️ **2026-08-13 訂正: これはWebの編集画面ではできない可能性が高い。**
+> 公式ドキュメントの作成・編集フォームの説明にあるのは
+> プロンプト／リポジトリ／環境／トリガー／コネクタだけで、**セッション永続化の項目が無い**。
+> フォーム経由で作れば「毎回新しいセッション」が既定の挙動（"Each run creates a new session"）。
+> いまの `persist_session: true` は `/schedule` か API 経由で付いたものと思われる。
+
+**直す手段は2つ:**
+
+1. **ターミナル or デスクトップアプリ**の Claude Code で `/schedule update`
+   （Webセッション内では `/schedule` は使えない）
+2. Web で一度**削除して作り直す**（作成フォーム経由なら毎回新セッションが既定）
 
 **ストリークは途切れません。** 学習履歴は `brain/learning/progress.md` に
 毎回コミット済みなので、セッションを切っても現在地は失われない。
+作り直す場合のプロンプトは、いまRoutineに入っているもの（毎朝届く定型文）をそのまま使えばいい。
 
 ---
 
@@ -57,8 +90,12 @@ persistent_session_id: session_01R5bjwdWV9fT48FNsVsAh6U
 **どれも `allowed_tools` に入っていないので、1つも呼べません。**
 毎回読み込まれて、使われずに捨てられている。**外して失うものはありません。**
 
-→ 各Routineの編集画面で **コネクタのチェックを全部外す**。
+→ Routineをタップ → **鉛筆アイコン** → フォームを**一番下までスクロール** → **Connectors** で全部 Remove。
 ※ 将来 Notion や Slack に投稿させたくなったら、そのRoutineにだけ1個足す。
+
+> 📌 **なぜ全部ついていたのか**: 公式ドキュメントに
+> 「When you create a routine, **all of your currently connected connectors are included by default**」。
+> 自分で選んだのではなく、**作成時に自動で全部入る**仕様だった。
 
 > 📏 **数字について正直に**：167個は接続中コネクタから数えた実数。
 > トークン量は測っていません（Routineの実行ログを見る手段がこちら側に無い）。
@@ -78,7 +115,10 @@ persistent_session_id: session_01R5bjwdWV9fT48FNsVsAh6U
 制作サイクル表は日付から機械的に決まるのでLLM不要（学習 Day 21 の①）。
 ROI戦略上も禁書ノオトは②資産ルート＝棚上げが正しい（`brain/concepts/事業戦略-ROI順.md`）。
 
-→ 削除または無効化。
+→ **まずは Repeats のトグルをオフ（一時停止）で十分。** 1件3タップ、元に戻せる。
+完全に消すならゴミ箱アイコン。
+
+**ここから始めてください。** 3件 × 3タップで月35回の実行が消えます。
 
 ---
 
