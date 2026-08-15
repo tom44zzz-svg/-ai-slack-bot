@@ -19,7 +19,8 @@ Caps Lock ──[Karabiner-Elements]──▶ Hyper（⌘⌥⌃⇧ 同時押し�
 - **Karabiner-Elements** … キーの変換のみ担当（Caps Lock → Hyper、Caps+矢印 → F13〜F16）
 - **Hammerspoon** … 実際の動作を定義。ログイン時に自動起動（`hs.autoLaunch(true)`）
 - **Rectangle** … ウィンドウ配置の実行エンジン。Hammerspoon から URL スキームで命令
-- **AutoRaise** … マウスを乗せたウィンドウを自動で前面化
+- **AutoRaise** … マウスを乗せたウィンドウを自動で前面化。
+  **ログイン項目からは外した**（2026-08-15）。起動は Hammerspoon が受け持つ
 
 ## ホットキー一覧（2026-08-15 時点）
 
@@ -100,6 +101,11 @@ Caps+A のオン処理が `Contents/Resources/AutoRaise`（エンジン）だけ
 - `-- AUTORAISE_MENUBAR_BLOCK` … メニューバーに 🎈（ON）/ 🚫（OFF）を表示。クリックで切替。
   2秒ごとに状態を見て表示を同期
 - `-- AUTORAISE_HOTKEY_BLOCK` … Caps+A。メニューバーのクリックと**同じ処理**（`arToggle()`）を通す
+- **末尾の起動ブロック** … 読み込み時にエンジンが動いていなければ起動する。
+  ログイン項目から AutoRaise.app を外したので、**ここが起動の唯一の入口**
+
+> ⚠️ 副作用: `hs.reload()` するたびにオートレイズがONに戻る。
+> 意図的にOFFにしたまま設定を編集すると、リロードで復活する。普段は問題にならない。
 
 切替の実体は `~/bin/autoraise-toggle.sh`。**アプリ本体（純正🎈）は常に落とし、エンジンだけを起動/停止する。**
 
@@ -137,6 +143,17 @@ fi
 
 > 📌 アクティビティモニタで `autoraise` を検索すると、**無関係な `Autoupdate` も引っかかる**。
 > 数だけ見て判断しないこと。
+
+## 📌 未確認（次にMacを再起動したとき見る）
+
+ログイン項目から AutoRaise.app を外し、起動を Hammerspoon に移した構成は
+**2026-08-15 時点で再起動テストをしていない**。次回の再起動後、
+
+- メニューバーに🎈が出ているか
+- 背面ウィンドウにマウスを乗せて前面化するか
+
+を確認すること。動いていなければ、Hammerspoon の読み込みタイミングの問題なので
+末尾の起動ブロックを `hs.timer.doAfter` で数秒遅らせる。
 
 ## 関連
 
