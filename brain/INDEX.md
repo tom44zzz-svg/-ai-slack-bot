@@ -18,6 +18,7 @@ AIが作業前にここを読み、必要なページへ辿る。各行は1行�
 - `entities/クライアント-GGG.md` … 園芸店3店舗のYT/IG運用支援（受注案件）。数値・勝ちパターン・競合・季節カレンダーの正本
 - `entities/題材-米沢藩と上杉鷹山.md` … 歴史コンテンツの主題
 - `entities/事業-禁書ノオト.md` … 自社YouTube/TikTok事業。3チャンネル構成・マイルストーン・制作サイクルの正本
+- `entities/環境-Mac操作設定.md` … Karabiner(Caps→Hyper) × Hammerspoon × Rectangle × AutoRaise。ホットキー一覧と、Hammerspoonの`local`によるGC停止という定番の罠
 
 ## concepts/（抽象概念・戦略・学び）
 - `concepts/出荷ファースト.md` ★最重要 … 準備でなく出荷が唯一のボトルネック、という診断
