@@ -45,12 +45,23 @@ Caps Lock ──[Karabiner-Elements]──▶ Hyper（⌘⌥⌃⇧ 同時押し�
 | `/Applications/AutoRaise.app/Contents/MacOS/AutoRaise` | **メニューバー担当**（🎈アイコン） |
 | `/Applications/AutoRaise.app/Contents/Resources/AutoRaise` | **実行エンジン**（実際に前面化する） |
 
-- アプリ本体がエンジンを起動する。**両方動いているのが正常な状態**
-- エンジンだけを殺すと、アプリ本体も一緒に終了する
-- 起動は必ず **`open -a AutoRaise`**（アプリ本体から）。エンジンを直接叩くとアイコンが出ない
-- 設定は起動引数で渡っている: `-delay 1 -focusDelay 0 -mouseDelta 0 -pollMillis 50 -disableKey control`
-  - **`-disableKey control`** … Control を押している間だけ一時的に無効
-- 設定ファイルを使う場合は `~/.AutoRaise` または `~/.config/AutoRaise/config`
+**両方動いていて初めて正常。** そして厄介なことに、**片方だけを起動する方法では必ず片手落ちになる**。
+
+| やり方 | 結果 |
+|---|---|
+| `open -a AutoRaise`（アプリ本体だけ） | 🎈は出るが**前面化が働かない** |
+| エンジンを直接叩くだけ | 前面化は働くが**🎈が出ない** |
+| **両方を明示的に起動** | ← これが唯一の正解 |
+
+- ⚠️ **アプリ本体は、エンジンを起動してくれない。**（2026-08-15 に実測して確認）
+  「本体を立ち上げれば中身も動く」と思い込むと、丸ごと1回ハマる
+- エンジンだけを殺すと、アプリ本体も一緒に終了する（この方向は連動する）
+- `open -a` は**すでに起動中のアプリには何もしない**。オフ→オンで作り直すときは、
+  先に `pkill` してからでないと素通りする
+- 設定ファイル（`~/.AutoRaise` / `~/.config/AutoRaise/config`）は**存在しない**。
+  起動引数の `-delay 1 -focusDelay 0 -mouseDelta 0 -pollMillis 50 -disableKey control` は
+  **すべてデフォルト値**なので、カスタム設定は失われていない
+  - **`-disableKey control`** … Control を押している間だけ一時的に無効（デフォルト）
 
 ## 2026-08-15 に直した不具合
 
@@ -90,10 +101,28 @@ Caps+A のオン処理が `Contents/Resources/AutoRaise`（エンジン）だけ
   2秒ごとに状態を見て表示を同期
 - `-- AUTORAISE_HOTKEY_BLOCK` … Caps+A。メニューバーのクリックと**同じ処理**（`arToggle()`）を通す
 
-切替の実体は `~/bin/autoraise-toggle.sh`。
-オフ時はアプリ本体を quit したうえでエンジンも `pkill` し、オン時は `open -a AutoRaise`。
+切替の実体は `~/bin/autoraise-toggle.sh`。**アプリ本体（純正🎈）は常に落とし、エンジンだけを起動/停止する。**
+
+```bash
+pkill -f "…/Contents/MacOS/AutoRaise"        # 純正アイコンは出さない
+if pgrep -f "…/Contents/Resources/AutoRaise"; then
+  pkill  …/Resources/AutoRaise               # OFF
+else
+  nohup …/Resources/AutoRaise -delay 1 … &   # ON
+fi
+```
+
+**なぜ純正アイコンを出さないか**: エンジンをこちら側で直接起動しているため、
+アプリ本体はその状態を知らない。**🎈がオフ表示のまま固まり、嘘をつく。**
+状態を持っているのは Hammerspoon 側だけなので、表示も1つに寄せる。
 
 **表示と実処理が1本化されているので、どちらから操作してもズレない。**
+
+### 判定は必ずエンジンで行う
+
+`pgrep -f '[R]esources/AutoRaise'` … `[R]` はブラケットのトリック。
+`pgrep` を実行しているシェル自身にマッチさせないため。
+アプリ本体（`MacOS/`）の有無を見ると、**機能がオフでもONと表示してしまう**。
 
 外すときは、マーカーで囲まれたブロックごと削除して `hs.reload()`。
 
