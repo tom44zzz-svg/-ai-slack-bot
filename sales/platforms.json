@@ -1,0 +1,126 @@
+{
+  "_note": "automation の値は『その媒体で一括自動応募をしてよいか』ではなく『どこまで自動化しても規約上安全か』の運用方針です。登録時に各媒体の利用規約を必ず確認し、変化があればこのファイルを更新してください。",
+  "platforms": [
+    {
+      "id": "fukugyo-cloud",
+      "name": "複業クラウド",
+      "url": "https://talent.aw-anotherworks.com/",
+      "status": "active",
+      "priority": 1,
+      "job_types": ["sns", "ad", "short-video", "photo"],
+      "apply_method": "サイト内エントリー",
+      "automation": "monitor-only",
+      "note": "2026/07/15 に稼働開始。4週間で34社と接触したが 8/10 以降の新規はゼロ。掲載済み案件（ストック）を刈り取り終え、新着（フロー）待ちの状態。"
+    },
+    {
+      "id": "kaikoku",
+      "name": "カイコク",
+      "url": "https://kaikoku.blam.co.jp/",
+      "status": "not_registered",
+      "priority": 1,
+      "job_types": ["sns", "ad"],
+      "apply_method": "サイト内エントリー / スカウト",
+      "automation": "manual",
+      "note": "マーケター特化。SNS運用・広告運用のポジションが中心で、profile.json の実績をほぼ書き換えずに出せる。最優先。"
+    },
+    {
+      "id": "workship",
+      "name": "Workship",
+      "url": "https://goworkship.com/",
+      "status": "registered",
+      "priority": 1,
+      "job_types": ["sns", "ad", "short-video"],
+      "apply_method": "サイト内エントリー",
+      "automation": "monitor-only",
+      "note": "メルマガ受信中＝アカウントは生きている。週1〜3日のリモート案件が主。再稼働のコストがほぼゼロ。"
+    },
+    {
+      "id": "sokudan",
+      "name": "SOKUDAN",
+      "url": "https://sokudan.work/",
+      "status": "not_registered",
+      "priority": 1,
+      "job_types": ["sns", "ad", "short-video"],
+      "apply_method": "サイト内エントリー",
+      "automation": "manual",
+      "note": "副業・フリーランス特化でマーケ職の掲載が厚い。複業クラウドと客層が近く、応募文をほぼ流用できる。"
+    },
+    {
+      "id": "hipro-direct",
+      "name": "HiPro Direct",
+      "url": "https://direct.hipro-job.jp/",
+      "status": "not_registered",
+      "priority": 2,
+      "job_types": ["sns", "ad"],
+      "apply_method": "サイト内エントリー（審査あり）",
+      "automation": "manual",
+      "note": "パーソル運営の直接契約型。単価帯が高め。実績ベースの審査があるぶん、通れば単価交渉がしやすい。"
+    },
+    {
+      "id": "itpro-partners",
+      "name": "ITプロパートナーズ",
+      "url": "https://itpropartners.com/",
+      "status": "not_registered",
+      "priority": 2,
+      "job_types": ["sns", "ad"],
+      "apply_method": "エージェント経由（担当者面談）",
+      "automation": "none",
+      "note": "週2〜3日のスタートアップ案件。エージェント型なので自動応募の対象外。担当者との関係づくりが入口。"
+    },
+    {
+      "id": "youtrust",
+      "name": "YOUTRUST",
+      "url": "https://youtrust.jp/",
+      "status": "not_registered",
+      "priority": 2,
+      "job_types": ["sns", "ad", "short-video"],
+      "apply_method": "スカウト受信 / 友人経由",
+      "automation": "none",
+      "note": "受動チャネル。自動営業には向かないが、プロフィールを置いておくだけで声がかかる。仕込みだけしておく。"
+    },
+    {
+      "id": "wantedly",
+      "name": "Wantedly",
+      "url": "https://www.wantedly.com/",
+      "status": "active",
+      "priority": 2,
+      "job_types": ["sns", "ad", "short-video", "photo"],
+      "apply_method": "サイト内エントリー",
+      "automation": "monitor-only",
+      "note": "アンドストーリーはここ経由。すでに動いているので、応募本数を増やす余地がそのまま伸びしろ。"
+    },
+    {
+      "id": "lancers",
+      "name": "ランサーズ",
+      "url": "https://www.lancers.jp/",
+      "status": "registered",
+      "priority": 3,
+      "job_types": ["short-video", "photo"],
+      "apply_method": "プロジェクト提案",
+      "automation": "monitor-only",
+      "note": "新着通知を受信中。単価は低い（動画編集で1〜2万円/本）が本数は出る。外注体制があるのでディレクション側に立てば成立する。"
+    },
+    {
+      "id": "crowdworks",
+      "name": "クラウドワークス",
+      "url": "https://crowdworks.jp/",
+      "status": "not_registered",
+      "priority": 3,
+      "job_types": ["short-video", "photo"],
+      "apply_method": "プロジェクト提案",
+      "automation": "monitor-only",
+      "note": "ランサーズと同じ使い方。量で回す前提でのみ登録する。"
+    },
+    {
+      "id": "coconala",
+      "name": "ココナラ",
+      "url": "https://coconala.com/",
+      "status": "registered",
+      "priority": 3,
+      "job_types": ["short-video", "photo"],
+      "apply_method": "出品 / 公開依頼への提案",
+      "automation": "none",
+      "note": "出品型なので営業というより置いておくチャネル。既存の出品があるなら説明文の更新だけ。"
+    }
+  ]
+}

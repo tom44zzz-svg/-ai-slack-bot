@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sales": "node scripts/sales.mjs",
+    "discord:members": "node scripts/discord-members.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",

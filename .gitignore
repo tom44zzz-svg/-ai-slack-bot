@@ -6,3 +6,6 @@ node_modules/
 .DS_Store
 tsconfig.tsbuildinfo
 next-env.d.ts
+
+# Discord から書き出したメンバー名簿（第三者の個人情報を含むためコミットしない）
+sales/discord/
