@@ -74,6 +74,8 @@ node scripts/validate-data.mjs   # データ辞書の整合性チェック
 
 - **作業ブランチ**: `claude/ai-agent-ecosystem-visual-5ock5o`。main へ直接 push しない。
 - **言語**: すべて日本語で。ドキュメント・UI・YAML の `name`/`note` はもちろん、**Claude自身の説明・進捗報告・スキルやコマンド実行時の解説・結果もすべて日本語**で行う。英語の技術用語やスキル名（`code-review` 等）が出たら、初回に一言の日本語補足を付ける（例: 「`code-review`（コードの差分をレビューするスキル）」）。エラーメッセージやログが英語でも、要点は日本語で言い換えて伝える。
+- **報告の粒度**: 長い出力が要らない場面では「**最小十分情報で**」と指示する。Claude 自身の報告も同じ基準で書く。
+  **削るのではなく圧縮する**（必要な情報は残し、水増しを落とす）。出所は `brain/raw/2026-08-15-モチーフ駆動AIデザイン.md`。
 - **秘密情報**: `.env.local` は読まない・コミットしない（settings.json で deny 済み）。
 - **Vercel デプロイ**: Production Branch を `main` 以外に設定する必要あり（`docs/deploy.md`）。
 - データ辞書を変えたら docs/ 側のカタログ（`format-catalog.md` 等）との齟齬も意識する。
