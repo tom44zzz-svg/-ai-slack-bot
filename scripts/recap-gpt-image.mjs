@@ -1,0 +1,81 @@
+#!/usr/bin/env node
+// /recap の GPT 画像生成ルート。同じスロット JSON から、OpenAI の画像生成で図解を作る。
+// HTML→PNG 版（recap-render.mjs）と並べて比較するためのもの。
+//
+// 使い方:
+//   node scripts/recap-gpt-image.mjs <slots.json> <out.png> [--dry-run]
+//   --dry-run … API を呼ばず、送るプロンプトだけ表示する
+//
+// 必要: OPENAI_API_KEY（環境変数 or .env.local）。キーはログに一切出さない。
+// モデル: OPENAI_IMAGE_MODEL で上書き可（既定 gpt-image-2。404 なら gpt-image-1 を試す）
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+
+const args = process.argv.slice(2);
+const dry = args.includes('--dry-run');
+const [jsonPath, outPng] = args.filter((a) => !a.startsWith('--'));
+if (!jsonPath || !outPng) { console.error('usage: recap-gpt-image.mjs <slots.json> <out.png> [--dry-run]'); process.exit(1); }
+
+// .env.local を読む（表示はしない）
+function loadKey() {
+  if (process.env.OPENAI_API_KEY) return process.env.OPENAI_API_KEY;
+  if (existsSync('.env.local')) {
+    const m = readFileSync('.env.local', 'utf8').match(/^OPENAI_API_KEY=(.+)$/m);
+    if (m) return m[1].trim().replace(/^["']|["']$/g, '');
+  }
+  return '';
+}
+
+const s = JSON.parse(readFileSync(jsonPath, 'utf8'));
+const strip = (t) => String(t ?? '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/`(.+?)`/g, '$1');
+const li = (arr) => (arr || []).map((x) => `  - ${strip(x)}`).join('\n');
+
+const prompt = `
+日本語のインフォグラフィック（振り返り図解）を1枚、横長で描いてください。
+写真・イラスト・装飾・グラデーションは使わず、フラットなベクター調。
+背景は白（#F5F7FB）。使う色はネイビー #14213D、ブルー #1F5FBF、ゴールド #C9A227 の3色だけ。
+日本語はゴシック体で、以下の文字列を一字も変えず正確に描くこと。文字の創作・省略・置換は禁止。
+
+【上部・見出し】
+タイトル: ${strip(s.title)}
+サブタイトル: ${strip(s.subtitle)}
+右上に数値カード3つ: 「${s.stat_commits} コミット」「${s.stat_files} 変更ファイル」「${s.stat_lines} 追加/削除」
+
+【中央・2×2 の4パネル。各パネルは白カード＋上辺に色の帯】
+パネル01（帯はブルー）見出し「やったこと」
+${li(s.did)}
+パネル02（帯はネイビー）見出し「作ったもの・仕様」
+${li(s.built)}
+パネル03（帯はゴールド）見出し「決めたこと（理由つき）」
+${li(s.decided)}
+パネル04（帯は濃いゴールド、カード地は薄い黄）見出し「未完了・次の一手」
+${li(s.next)}
+
+【下部・1行】
+左にゴールドの縦線を付けた帯: ${strip(s.oneliner)}
+右下に小さく: ${strip(s.footer)}
+
+レイアウトは整然と、余白を均等に。文字は読める大きさで、はみ出しや重なりを作らないこと。
+`.trim();
+
+if (dry) { console.log(prompt); console.log(`\n[dry-run] 文字数: ${prompt.length}`); process.exit(0); }
+
+const key = loadKey();
+if (!key) { console.error('OPENAI_API_KEY がありません（.env.local に OPENAI_API_KEY=... を置いてください）'); process.exit(1); }
+const model = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
+
+const res = await fetch('https://api.openai.com/v1/images/generations', {
+  method: 'POST',
+  headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+  body: JSON.stringify({ model, prompt, size: '1536x1024', quality: 'high', n: 1 }),
+});
+if (!res.ok) {
+  const t = await res.text();
+  console.error(`OpenAI API エラー ${res.status}: ${t.slice(0, 400)}`);
+  if (res.status === 404) console.error('→ モデル名が違う可能性。OPENAI_IMAGE_MODEL=gpt-image-1 で再実行してください');
+  process.exit(1);
+}
+const data = await res.json();
+const b64 = data?.data?.[0]?.b64_json;
+if (!b64) { console.error('画像が返りませんでした:', JSON.stringify(data).slice(0, 300)); process.exit(1); }
+writeFileSync(outPng, Buffer.from(b64, 'base64'));
+console.log(`GPT 図解を書き出しました → ${outPng}（model=${model}）`);
