@@ -1,0 +1,37 @@
+{
+  "title": "**整理と記録**の2週間 ─ Routine・Mac・brain",
+  "subtitle": "定期タスクの棚卸しに始まり、Mac操作環境の修復、AIっぽさ対策の3部作の取り込みまで。学習は Day 30→32",
+  "period": "2026-08-12 〜 09-01 ／ 25b330c..HEAD ／ claude/ai-agent-ecosystem-visual-5ock5o",
+  "stat_commits": "11",
+  "stat_files": "27",
+  "stat_lines": "+1132 / -75",
+  "did": [
+    "Routine 8件を棚卸しし、禁書系3件の停止を決定・記録",
+    "Routine を変更できない本当の理由（**所有権**）を特定",
+    "ポートフォリオ1枚を既存素材だけで作成（Day 31）",
+    "屋号3案を「約束する軸」で出し分け（Day 32）",
+    "AutoRaise の Caps+A 不具合を根本原因から修正",
+    "YouTube 3本を要約し、brain/raw に3部作として保存"
+  ],
+  "built": [
+    "`/recap` ─ この図解を作るコマンド。JSON→固定テンプレ→PNG",
+    "`business/sales/portfolio.png` ─ 4枠充填済み。屋号だけ空",
+    "`docs/routine-cleanup-sheet.md` ─ タップ手順の正本を1枚に",
+    "`brain/entities/環境-Mac操作設定.md` ─ Karabiner/Hammerspoon/AutoRaise",
+    "`~/bin/autoraise-toggle.sh` ＋ Hammerspoon メニューバー 🎈/🚫",
+    "`mock-system/SPEC.md` §2.5 ─ モチーフレイヤーを追加"
+  ],
+  "decided": [
+    "**禁書系Routine 3件を全停止** ─ 制作サイクルは日付で決まりLLM不要。ROI上も棚上げが正解",
+    "**ウィークリーAIニュースは削除でなく日本語化** ─ 本人指示。重複はスコープ分離で解消",
+    "**AutoRaise の起動を Hammerspoon に一本化** ─ アプリ本体はエンジンを起動しないと実測で判明",
+    "**Hammerspoon のオブジェクトは local で持たない** ─ GC で静かに止まる。2箇所で実害"
+  ],
+  "next": [
+    "禁書系3件の停止タップ（本人のみ可能・Claude側は仕様上不可）",
+    "屋号を決める → `portfolio.html` の橙点線に入れる",
+    "Magic Keyboard の Touch ID ─ USB-C 直結が未実施"
+  ],
+  "oneliner": "「使えない」で止めず、**エラーの中身まで読む** ─ 10日分の誤診が1行で解けた",
+  "footer": "/recap ／ 2026-09-05 生成"
+}
