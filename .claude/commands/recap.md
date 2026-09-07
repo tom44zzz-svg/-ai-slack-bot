@@ -59,9 +59,15 @@ node scripts/recap-render.mjs docs/recaps/<slug>.json docs/recaps/<slug>.png
 - 返った JSON は**必ず目視で確認**する（無料モデルは数字を盛る・項目を落とすことがある）。数字は collect と突き合わせ、違えば直す
 - 接続できなければ（ゲートウェイ未起動など）、その旨を1行で伝えて**自分で JSON を書く通常ルートに戻る**
 
-### `--gpt` が付いているとき（比較用）
+### 2本立ての運用（2026-09-05 決定）
 
-同じ JSON から、OpenAI の画像生成でもう1枚作る。**HTML 版の代わりではなく、並べて比べるため。**
+- **既定 = HTML→PNG**。自動生成・記録・Routine 用。文字が確定する
+- **人に見せる用 = GPT Image（ChatGPT Pro の画面）**。本人が JSON を Custom GPT に貼る。
+  出てきた画像を受け取ったら、**JSON と1項目ずつ照合して、足された文字・欠けた文字を指摘する**（実測で「飾りの英語を足す」癖あり）
+
+### `--gpt` が付いているとき
+
+同じ JSON から GPT 版も作る（API キーがあれば直接生成、無ければ JSON と Custom GPT の案内を渡す）。
 
 ```bash
 node scripts/recap-gpt-image.mjs docs/recaps/<同じ>.json docs/recaps/<同じ>-gpt.png
