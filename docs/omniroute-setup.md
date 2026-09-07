@@ -65,3 +65,21 @@ export OPENAI_API_KEY=omniroute
 
 - 無料プロバイダは**品質・速度・上限が日替わり**。JSON が壊れて返ることがある → `recap-llm.mjs` は壊れていたら止めて中身を見せる
 - ゲートウェイはローカルで動くので、**Mac が起動していないと使えない**（クラウドセッションからは届かない）
+
+## Adobe Firefly で図解を描く件（2026-09-05 調査）
+
+**結論: 今の契約（個人の Creative Cloud）では、Firefly を API から叩けない。**
+
+- Claude の Adobe コネクタには**テキストから画像を生成するツールが無い**（編集系のみ。
+  「generative editing is not currently available」と明記）。`image_fill_area` は単色塗り、
+  `image_generative_expand` は既存画像の外側を広げるだけで、プロンプトを受け取らない
+- Firefly API（text-to-image）は **Firefly Services＝法人契約**の枠。個人 CC プランへの開放は
+  コミュニティで要望が出ている段階（https://community.adobe.com/feature-requests-405/... ）
+- 個人プランの生成クレジットは **Firefly の Web / アプリ UI でだけ**使える
+
+**使える形（半自動）**: `/recap` がプロンプトを書き出す → 本人が https://firefly.adobe.com に貼って生成 →
+出来た画像を共有する。プロンプトは `docs/recaps/<slug>.firefly-prompt.txt` に出る。
+
+**注意**: Firefly は**画像内の文字（特に日本語）の描画が弱い**。ラベルの多い図解には向かない可能性が高い。
+試すなら「文字は後から Express で乗せる」前提（`brain/concepts/制作品質の原則.md` の
+「日本語ロゴは無地生成＋後乗せ」と同じ判断）。

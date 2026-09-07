@@ -68,6 +68,7 @@ node scripts/recap-gpt-image.mjs docs/recaps/<同じ>.json docs/recaps/<同じ>-
 ```
 
 - 必要: `.env.local` の `OPENAI_API_KEY`（無ければスキップして、その旨を1行伝える）
+- Firefly で試したい場合は `--dry-run` の出力を `docs/recaps/<slug>.firefly-prompt.txt` に保存して渡す（本人が Firefly の UI で生成する。API は個人プランでは使えない → `docs/omniroute-setup.md`）
 - 出来た2枚を**両方** SendUserFile で送る。**文字の崩れ・欠落があれば必ず指摘する**（画像生成は文字が確率的）
 - 判定は本人に委ねる。どちらが良いかを勝手に決めない
 
