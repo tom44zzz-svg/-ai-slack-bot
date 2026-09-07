@@ -2,7 +2,7 @@
 description: 振り返り図解 — 今日/今回やったこと・作った仕様・決めたことを1枚のPNGにする（トークン最小）
 ---
 
-振り返り図解を作る。引数: $ARGUMENTS（`today`＝既定 / `3d` / `<rev>..<rev>` / 任意の期間説明。末尾に `--gpt` を付けると GPT 画像生成版も並べて作る）
+振り返り図解を作る。引数: $ARGUMENTS（`today`＝既定 / `3d` / `<rev>..<rev>` / 任意の期間説明。末尾に `--gpt` を付けると GPT 画像生成版も並べて作る。`--llm` を付けると JSON を外部LLM（OmniRoute 経由の無料モデル可）に書かせる）
 
 **目的**: エージェントの出力は文字列が長く、あとで「結局何をしたんだっけ」になる。
 **1枚の図解に圧縮して、そのケースを潰す。** 文章の要約ではなく、見て分かる形にする。
@@ -45,6 +45,19 @@ description: 振り返り図解 — 今日/今回やったこと・作った仕�
    　Chrome の場所は `CHROME_PATH` で指定できる）
 4. PNG を `SendUserFile` で本人に送る（`display: render`）
 5. **本人に聞かずに**、JSON と PNG をコミットする（振り返りは資産。`.html` は捨ててよい）
+
+### `--llm` が付いているとき（JSON を外部LLMに書かせる・無料モデル可）
+
+自分で JSON を書かず、collect の出力を `scripts/recap-llm.mjs` に渡して書かせる。接続先は `OPENAI_BASE_URL`（既定 OmniRoute `http://localhost:20128/v1`、モデル `auto`）。設定は `docs/omniroute-setup.md`。
+
+```bash
+scripts/recap-collect.sh <期間> > docs/recaps/<slug>.facts.txt
+node scripts/recap-llm.mjs docs/recaps/<slug>.facts.txt docs/recaps/<slug>.json
+node scripts/recap-render.mjs docs/recaps/<slug>.json docs/recaps/<slug>.png
+```
+
+- 返った JSON は**必ず目視で確認**する（無料モデルは数字を盛る・項目を落とすことがある）。数字は collect と突き合わせ、違えば直す
+- 接続できなければ（ゲートウェイ未起動など）、その旨を1行で伝えて**自分で JSON を書く通常ルートに戻る**
 
 ### `--gpt` が付いているとき（比較用）
 

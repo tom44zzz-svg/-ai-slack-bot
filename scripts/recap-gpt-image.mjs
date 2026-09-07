@@ -7,6 +7,9 @@
 //   --dry-run … API を呼ばず、送るプロンプトだけ表示する
 //
 // 必要: OPENAI_API_KEY（環境変数 or .env.local）。キーはログに一切出さない。
+// 接続先: OPENAI_BASE_URL で差し替え可（既定 https://api.openai.com/v1）。
+//   OmniRoute 経由なら http://localhost:20128/v1、OpenRouter なら https://openrouter.ai/api/v1
+//   OmniRoute はキー不要（任意の文字列でよい）
 // モデル: OPENAI_IMAGE_MODEL で上書き可（既定 gpt-image-2。404 なら gpt-image-1 を試す）
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 
@@ -16,14 +19,17 @@ const [jsonPath, outPng] = args.filter((a) => !a.startsWith('--'));
 if (!jsonPath || !outPng) { console.error('usage: recap-gpt-image.mjs <slots.json> <out.png> [--dry-run]'); process.exit(1); }
 
 // .env.local を読む（表示はしない）
-function loadKey() {
-  if (process.env.OPENAI_API_KEY) return process.env.OPENAI_API_KEY;
+function envOf(name) {
+  if (process.env[name]) return process.env[name];
   if (existsSync('.env.local')) {
-    const m = readFileSync('.env.local', 'utf8').match(/^OPENAI_API_KEY=(.+)$/m);
+    const m = readFileSync('.env.local', 'utf8').match(new RegExp(`^${name}=(.+)$`, 'm'));
     if (m) return m[1].trim().replace(/^["']|["']$/g, '');
   }
   return '';
 }
+const loadKey = () => envOf('OPENAI_API_KEY');
+const baseUrl = (envOf('OPENAI_BASE_URL') || 'https://api.openai.com/v1').replace(/\/$/, '');
+const isLocalGateway = /localhost|127\.0\.0\.1/.test(baseUrl);
 
 const s = JSON.parse(readFileSync(jsonPath, 'utf8'));
 const strip = (t) => String(t ?? '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/`(.+?)`/g, '$1');
@@ -59,11 +65,12 @@ ${li(s.next)}
 
 if (dry) { console.log(prompt); console.log(`\n[dry-run] 文字数: ${prompt.length}`); process.exit(0); }
 
-const key = loadKey();
-if (!key) { console.error('OPENAI_API_KEY がありません（.env.local に OPENAI_API_KEY=... を置いてください）'); process.exit(1); }
-const model = process.env.OPENAI_IMAGE_MODEL || 'gpt-image-2';
+const key = loadKey() || (isLocalGateway ? 'omniroute' : '');
+if (!key) { console.error('OPENAI_API_KEY がありません（.env.local に OPENAI_API_KEY=... を置くか、OPENAI_BASE_URL で OmniRoute を指定）'); process.exit(1); }
+const model = envOf('OPENAI_IMAGE_MODEL') || 'gpt-image-2';
+console.log(`接続先: ${baseUrl}  model=${model}`);
 
-const res = await fetch('https://api.openai.com/v1/images/generations', {
+const res = await fetch(`${baseUrl}/images/generations`, {
   method: 'POST',
   headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
   body: JSON.stringify({ model, prompt, size: '1536x1024', quality: 'high', n: 1 }),
