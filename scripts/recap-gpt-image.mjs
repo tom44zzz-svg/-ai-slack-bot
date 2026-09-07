@@ -66,7 +66,14 @@ ${li(s.next)}
 if (dry) { console.log(prompt); console.log(`\n[dry-run] 文字数: ${prompt.length}`); process.exit(0); }
 
 const key = loadKey() || (isLocalGateway ? 'omniroute' : '');
-if (!key) { console.error('OPENAI_API_KEY がありません（.env.local に OPENAI_API_KEY=... を置くか、OPENAI_BASE_URL で OmniRoute を指定）'); process.exit(1); }
+if (!key) {
+  // API キーが無い → 画面に貼る運用（ChatGPT Pro / Firefly）用にプロンプトを書き出して正常終了
+  const promptPath = outPng.replace(/\.png$/, '.prompt.txt');
+  writeFileSync(promptPath, prompt + '\n');
+  console.log(`API キーが無いので、画面に貼る用のプロンプトを書き出しました → ${promptPath}`);
+  console.log('ChatGPT（Pro）なら docs/gpt-recap-instructions.md の Custom GPT に JSON を貼るだけで生成できます');
+  process.exit(0);
+}
 const model = envOf('OPENAI_IMAGE_MODEL') || 'gpt-image-2';
 console.log(`接続先: ${baseUrl}  model=${model}`);
 
