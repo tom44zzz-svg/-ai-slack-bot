@@ -48,15 +48,21 @@ description: 振り返り図解 — 今日/今回やったこと・作った仕�
 
 ### `--llm` が付いているとき（JSON を外部LLMに書かせる・無料モデル可）
 
-自分で JSON を書かず、collect の出力を `scripts/recap-llm.mjs` に渡して書かせる。接続先は `OPENAI_BASE_URL`（既定 OmniRoute `http://localhost:20128/v1`、モデル `auto`）。設定は `docs/omniroute-setup.md`。
+> ⚠️ **ローカルの Claude Code 専用。** OmniRoute は本人の Mac の中で動くので、Web セッション（claude.ai/code）からは到達できない。
+> Web では `--llm` を無視して、上の通常ルート（自分で JSON を書く）に進むこと。試すだけ無駄にトークンを使う。
+
+自分で JSON を書かず、collect の出力を `scripts/recap-llm.mjs` に渡して書かせる。接続先は `RECAP_LLM_BASE_URL`（無ければ `OPENAI_BASE_URL`。既定 OmniRoute `http://localhost:20128/v1`、モデル `auto`）。設定は `docs/omniroute-setup.md`。
 
 ```bash
-scripts/recap-collect.sh <期間> > docs/recaps/<slug>.facts.txt
-node scripts/recap-llm.mjs docs/recaps/<slug>.facts.txt docs/recaps/<slug>.json
+FACTS="${TMPDIR:-/tmp}/recap-<slug>.facts.txt"       # facts は一時ファイル。コミットしない
+scripts/recap-collect.sh <期間> > "$FACTS"
+node scripts/recap-llm.mjs "$FACTS" docs/recaps/<slug>.json
 node scripts/recap-render.mjs docs/recaps/<slug>.json docs/recaps/<slug>.png
+rm -f "$FACTS"
 ```
 
 - 返った JSON は**必ず目視で確認**する（無料モデルは数字を盛る・項目を落とすことがある）。数字は collect と突き合わせ、違えば直す
+- スクリプトが12スロットの欠落・型違いを機械で弾く。それでも**中身の正しさは見ない**ので、目視は省略しない
 - 接続できなければ（ゲートウェイ未起動など）、その旨を1行で伝えて**自分で JSON を書く通常ルートに戻る**
 
 ### 2本立ての運用（2026-09-05 決定）

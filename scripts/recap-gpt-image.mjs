@@ -22,14 +22,23 @@ if (!jsonPath || !outPng) { console.error('usage: recap-gpt-image.mjs <slots.jso
 function envOf(name) {
   if (process.env[name]) return process.env[name];
   if (existsSync('.env.local')) {
-    const m = readFileSync('.env.local', 'utf8').match(new RegExp(`^${name}=(.+)$`, 'm'));
-    if (m) return m[1].trim().replace(/^["']|["']$/g, '');
+    const m = readFileSync('.env.local', 'utf8').match(new RegExp(`^\\s*(?:export\\s+)?${name}\\s*=\\s*(.*)$`, 'm'));
+    if (m) {
+      let v = m[1].replace(/\r$/, '').trim();
+      const q = v.match(/^(['"])([\s\S]*?)\1/);
+      if (q) return q[2];                       // 引用符付きはそのまま
+      return v.replace(/\s+#.*$/, '').trim();   // 裸の値は行内コメントを落とす
+    }
   }
   return '';
 }
+// 秘密がパスに入る形式（OmniRoute の /vscode/<KEY>/）があるので、表示時はマスクする。
+const maskUrl = (u) => u.replace(/\/(vscode|key|k)\/[^/]+/gi, '/$1/***');
 const loadKey = () => envOf('OPENAI_API_KEY');
-const baseUrl = (envOf('OPENAI_BASE_URL') || 'https://api.openai.com/v1').replace(/\/$/, '');
-const isLocalGateway = /localhost|127\.0\.0\.1/.test(baseUrl);
+const baseUrl = (envOf('OPENAI_BASE_URL') || 'https://api.openai.com/v1').replace(/\/+$/, '');
+// api.openai.com 以外＝自前ゲートウェイ（OmniRoute 等）とみなす。鍵が無くてもダミーで呼ぶ。
+const isLocalGateway = !/(^|\/\/)([^/]*\.)?api\.openai\.com(\/|$)/.test(baseUrl);
+const imgTimeoutMs = Number(envOf('RECAP_IMAGE_TIMEOUT_MS')) || 180000;
 
 const s = JSON.parse(readFileSync(jsonPath, 'utf8'));
 const strip = (t) => String(t ?? '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/`(.+?)`/g, '$1');
@@ -76,13 +85,24 @@ if (!key) {
   process.exit(0);
 }
 const model = envOf('OPENAI_IMAGE_MODEL') || 'gpt-image-2';
-console.log(`接続先: ${baseUrl}  model=${model}`);
+console.log(`接続先: ${maskUrl(baseUrl)}  model=${model}`);
 
-const res = await fetch(`${baseUrl}/images/generations`, {
-  method: 'POST',
-  headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
-  body: JSON.stringify({ model, prompt, size: '1536x1024', quality: 'high', n: 1 }),
-});
+let res;
+try {
+  res = await fetch(`${baseUrl}/images/generations`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, prompt, size: '1536x1024', quality: 'high', n: 1 }),
+    signal: AbortSignal.timeout(imgTimeoutMs),
+  });
+} catch (e) {
+  if (e?.name === 'TimeoutError' || e?.name === 'AbortError') {
+    console.error(`応答がありません（${Math.round(imgTimeoutMs / 1000)}秒）。RECAP_IMAGE_TIMEOUT_MS で伸ばせます。`);
+    process.exit(2);
+  }
+  console.error(`接続に失敗しました: ${maskUrl(baseUrl)}（${e?.cause?.code || e?.message || e}）`);
+  process.exit(2);
+}
 if (!res.ok) {
   const t = await res.text();
   console.error(`OpenAI API エラー ${res.status}: ${t.slice(0, 400)}`);

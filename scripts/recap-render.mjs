@@ -7,6 +7,8 @@
 //         did:[], built:[], decided:[], next:[], oneliner, footer }
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
+import { resolve } from 'node:path';
 import puppeteer from 'puppeteer-core';
 
 const [,, jsonPath, outPng] = process.argv;
@@ -42,7 +44,7 @@ const browser = await puppeteer.launch({ executablePath: chrome, headless: 'new'
   args: ['--no-sandbox', '--disable-setuid-sandbox', '--font-render-hinting=none'] });
 const page = await browser.newPage();
 await page.setViewport({ width: 1280, height: 800, deviceScaleFactor: 2 });
-await page.goto('file://' + process.cwd() + '/' + outHtml, { waitUntil: 'networkidle0' });
+await page.goto(pathToFileURL(resolve(outHtml)).href, { waitUntil: 'networkidle0' });
 await page.evaluate(() => document.fonts.ready);
 const h = await page.evaluate(() => document.body.scrollHeight);   // ← 高さは自動
 await page.setViewport({ width: 1280, height: h, deviceScaleFactor: 2 });
