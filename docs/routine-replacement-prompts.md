@@ -332,3 +332,44 @@ AI動画生成ツールの品質比較 / Veoプロンプト / フィルムグレ
 
 日々の進行は `brain/entities/事業-禁書ノオト.md` の「制作サイクル（月内 / 週内）」表を
 見れば済む。**日付から機械的に決まる表を引き直すのに毎朝LLMを起動する必要はない**、という判断。
+
+---
+
+## §7 毎日レッスン（Web の作成フォームで作る版）★2026-09-11 追加
+
+**なぜ作り直すか**: Claude 側（`create_trigger`）で作った Routine には**リポジトリを付けられない**。
+9/11 朝の Day 34 は届いたが、新規セッションに作業ツリーが無く `progress.md` を更新できなかった（記録ゼロ・約$1）。
+専用セッション方式も、push の許可待ちで止まった上、セッション作成が自動モードの判定で拒否された。
+**Web の作成フォームだけがリポジトリを選べる。**
+
+### 手順（`claude.ai/code/routines` → 新規作成）
+1. **Repository**: `tom44zzz-svg/-ai-slack-bot`、ブランチ `claude/ai-agent-ecosystem-visual-5ock5o`
+2. **Trigger**: 毎日 07:30（JST）
+3. **Connectors**: **全部外す**（レッスンに外部サービスは不要）
+4. **Prompt**: 下の文面をそのまま貼る
+5. 作成後、暫定 Routine「AIエージェント習得 毎日レッスン（暫定・このセッション宛）」を **Repeats オフ or 削除**
+
+> push は `.claude/settings.json` で `git push -u origin claude/ai-agent-ecosystem-visual-5ock5o` を**許可済み**（main と force push は拒否）。
+> 無人セッションが確認待ちで止まらない。
+
+### 貼り付け用プロンプト
+
+```
+今日のAIエージェント学習レッスンの時間です。すべて日本語で。
+
+## 準備
+- 作業ブランチ `claude/ai-agent-ecosystem-visual-5ock5o` に居ることを確認し `git pull --ff-only origin claude/ai-agent-ecosystem-visual-5ock5o`。main には push しない。
+- `CLAUDE.md` → `.claude/commands/lesson.md` → `brain/learning/progress.md` → `brain/learning/curriculum.md` の順に読む。
+- `progress.md` の最終学習日が今日（JST）なら「本日分は配信済み」と1行返して終える。
+
+## 届け方
+- `progress.md` の「次回やるテーマ」を `lesson.md` のフォーマットで届ける。
+- Day 29 以降の方式: 新テーマを教えるのでなく本人のデータを1つ開いて一緒に見る／宿題でなく選択肢を2つ出して選んでもらう／予告で引かずその場で1つ処理して終える。前回の選択肢に返事が無ければ A 案で進める。
+- 図解は毎回1枚。`scripts/render-lesson.mjs` で HTML→PNG（白基調＋ネイビー #14213d／ブルー #1f5fbf／ゴールド #c9a227）。puppeteer-core が無ければ `PUPPETEER_SKIP_DOWNLOAD=1 npm i puppeteer-core --no-save`。chrome が無ければ `CHROME_PATH=$(ls -d /opt/pw-browsers/chromium-*/chrome-linux/chrome | head -1)` を付けて実行。PNG は `docs/lessons/` に置き SendUserFile で送る。
+- 鮮度が要るテーマは WebSearch で1〜2回調べてから。3分で読める量。最小十分情報。
+
+## 終わったら
+- `brain/learning/progress.md` を更新（Day番号・累計・最終学習日・完了テーマ・次回テーマ・昨日の宿題欄）。
+- `git add` → `git commit` → 単独コマンドで `git push -u origin claude/ai-agent-ecosystem-visual-5ock5o`（ループや sleep と組み合わせない）。
+- 最終返答は本人がそのまま読むレッスン本文だけ。
+```
