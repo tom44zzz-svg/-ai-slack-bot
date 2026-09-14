@@ -12,7 +12,7 @@
 | | やること | 場所 | なぜ私にはできないか |
 |---|---|---|---|
 | 1 | **`/config` で3つオンにする** … `autoContinueAtUsageLimit`（上限で止まらない）／`inputNeededNotifEnabled`（承認待ちをスマホ通知）／`askUserQuestionTimeout`=never。詳細は `docs/model-fallback.md` | Claude Code の `/config` →「Model & output」付近 | 自分の権限は自分で書き換えられない。加えてこの環境の `~` は使い捨てのコンテナなので、ここで書いても消える |
-| 2 | **Meet の自動録画をオンにする**（手順は `docs/meet-recording-setup.md`） | Google カレンダー → 朝礼／DAIKEN社内MTG → 歯車 → 会議の記録 → 「会議を録画」 | カレンダーの予定は書き換えられるが、Meet の録画設定はカレンダー API に無い |
+| 2 | **Meet の記録を全会議で一括オン**（手順は `docs/meet-recording-setup.md`） | meet.google.com → 歯車 → 「会議の記録」→ 「自分が主催者の予定された会議のすべてが対象」→ メモ・文字起こし・録画の3つをオン | **カレンダー API に録画設定の項目が無い**（2026-09-15 に `update_event` の仕様で確認）。何件あっても代行できない |
 | 3 | **freee を繋ぎ直す** | Claude のコネクタ設定 → freee を再接続 → freee 側で口座連携を再認証 | コネクタが `needs_reconnect`。銀行の再認証は API で代行できる経路が存在しない |
 | 4 | **カレンダー整備の復旧** | Routine の編集画面で Google Calendar コネクタを付けて再度オン | Routine にコネクタを足す手段がエージェント側に無い |
 | 5 | **ココナラに貼る** | `business/sales/coconala-出品手順.md` を上から写す | ココナラにログインできない |
