@@ -42,7 +42,7 @@ description: 振り返り図解 — 今日/今回やったこと・作った仕�
    node scripts/recap-render.mjs docs/recaps/<同名>.json docs/recaps/<同名>.png
    ```
    （`puppeteer-core` が無ければ `PUPPETEER_SKIP_DOWNLOAD=1 npm i puppeteer-core --no-save`。
-   　Chrome の場所は `CHROME_PATH` で指定できる）
+   　Chrome は `scripts/lib/chrome.mjs` が自動で探す。見つからないときだけ `CHROME_PATH` を指定）
 4. PNG を `SendUserFile` で本人に送る（`display: render`）
 5. **本人に聞かずに**、JSON と PNG をコミットする（振り返りは資産。`.html` は捨ててよい）
 

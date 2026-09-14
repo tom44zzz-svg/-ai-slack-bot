@@ -368,7 +368,7 @@ AI動画生成ツールの品質比較 / Veoプロンプト / フィルムグレ
 ## 届け方
 - `progress.md` の「次回やるテーマ」を `lesson.md` のフォーマットで届ける。
 - Day 29 以降の方式: 新テーマを教えるのでなく本人のデータを1つ開いて一緒に見る／宿題でなく選択肢を2つ出して選んでもらう／予告で引かずその場で1つ処理して終える。前回の選択肢に返事が無ければ A 案で進める。
-- 図解は毎回1枚。`scripts/render-lesson.mjs` で HTML→PNG（白基調＋ネイビー #14213d／ブルー #1f5fbf／ゴールド #c9a227）。puppeteer-core が無ければ `PUPPETEER_SKIP_DOWNLOAD=1 npm i puppeteer-core --no-save`。chrome が無ければ `CHROME_PATH=$(ls -d /opt/pw-browsers/chromium-*/chrome-linux/chrome | head -1)` を付けて実行。PNG は `docs/lessons/` に置き SendUserFile で送る。
+- 図解は毎回1枚。`scripts/render-lesson.mjs` で HTML→PNG（白基調＋ネイビー #14213d／ブルー #1f5fbf／ゴールド #c9a227）。puppeteer-core が無ければ `PUPPETEER_SKIP_DOWNLOAD=1 npm i puppeteer-core --no-save`。Chrome は `scripts/lib/chrome.mjs` が自動で探すので指定は不要（見つからないときだけ `CHROME_PATH`）。PNG は `docs/lessons/` に置き SendUserFile で送る。
 - 鮮度が要るテーマは WebSearch で1〜2回調べてから。3分で読める量。最小十分情報。
 
 ## 終わったら

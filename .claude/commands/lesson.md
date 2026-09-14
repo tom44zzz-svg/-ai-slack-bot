@@ -34,6 +34,7 @@ description: 今日のAIエージェント習得レッスンを届ける。現�
    - **既定は高品質PNG**：図解HTMLを書いて `node scripts/render-lesson.mjs <html>` でPNG化し `SendUserFile` で送る。
      配色は**白基調**（地 #f5f7fb・パネル #fff・罫線 #d7dee9）にネイビー #14213d／ブルー #1f5fbf／ゴールド #c9a227 の3色だけ（2026-09-05 本人指定。濃紺背景は廃止）。日本語は IPAGothic。関係・流れ・対比が一目で分かる形に。
    - **画像生成AI(banana2等)は使わない**：日本語ラベルが崩れる。ラベル付き図解はHTML→PNGが最高品質。
+   - Chrome は `scripts/lib/chrome.mjs` が自動で探す（`CHROME_PATH` の指定は通常不要）。`puppeteer-core` が無ければ `PUPPETEER_SKIP_DOWNLOAD=1 npm i puppeteer-core --no-save`。
    - レンダ環境が無い/急ぐときは ASCIIアートのボックス図でフォールバック（必ず何らかの図は出す）。
 
 🎯 今日の5分アクション：{具体的な1手・今すぐできる粒度}
