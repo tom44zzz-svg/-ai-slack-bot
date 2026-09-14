@@ -1,81 +1,159 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8">
 <style>
-  /* 配色は CLAUDE.md の正本に合わせる（白基調＋ネイビー／ブルー／ゴールド）。
-     ここを触るときは portfolio.html の :root も揃えること。 */
+  /* ────────────────────────────────────────────────
+     投稿設計室 — ココナラ サービス画像
+     モチーフ: 「製図台の上の青焼き（設計図）である」
+       ・線はすべて意味を持つ（寸法線・引出線のみ。装飾罫は引かない）
+       ・角丸 0。影・グラデ・ぼかしは使わない（図面に丸みと影はない）
+       ・数字は等幅＝寸法表記
+     配色は CLAUDE.md の正本（白基調＋ネイビー／ブルー／ゴールド）
+     サイズは可変。render-lesson.mjs の第3・第4引数で 4:3 と 1:1 を出し分ける
+     ──────────────────────────────────────────────── */
   :root{
     --bg:#f5f7fb; --panel:#fff; --line:#d7dee9;
     --navy:#14213d; --blue:#1f5fbf; --gold:#c9a227;
-    --sub:#4a5670;              /* 補助テキスト */
-    --ph:#eef1f6; --ph-line:#cdd6e3;  /* 写真の入る場所 */
-    --gold-tint:#fdf8e8; --gold-dk:#8a6f1a;
+    --sub:#4a5670;
+    --grid:#e3e9f2;
   }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  html,body { width:1220px; height:1240px; }
-  body { font-family:'IPAGothic',sans-serif; background:var(--bg); color:var(--navy); position:relative; overflow:hidden; }
-  .band { position:absolute; left:0; right:0; top:0; height:14px; background:var(--navy); }
-  .wrap { padding:70px 70px 0; }
-  .who { font-size:24px; color:var(--blue); letter-spacing:6px; font-weight:bold; }
-  .nm { font-size:64px; font-weight:bold; margin-top:12px; letter-spacing:2px; }
-  .nm small { font-size:22px; color:var(--sub); font-weight:normal; letter-spacing:3px; margin-left:16px; }
-  .copy { margin-top:54px; font-size:78px; font-weight:bold; line-height:1.2; }
-  .copy .o { color:var(--gold); }
-  .sub { margin-top:26px; font-size:36px; color:var(--sub); font-weight:bold; line-height:1.4; }
-  .chips { margin-top:38px; display:flex; gap:16px; }
-  .chip { background:var(--panel); border:3px solid var(--blue); border-radius:12px; padding:14px 26px;
-          font-size:28px; font-weight:bold; color:var(--sub); }
-  .chip b { color:var(--navy); }
-  .lead { margin-top:52px; font-size:26px; font-weight:bold; color:var(--sub); }
-  .lead b { color:var(--blue); }
-  .slides { margin-top:18px; display:flex; gap:14px; }
-  .sl { flex:1; height:300px; border-radius:10px; background:var(--panel); border:2px solid var(--line);
-        position:relative; overflow:hidden; display:flex; flex-direction:column; }
-  .sl .num { position:absolute; left:8px; top:8px; font-size:16px; font-family:monospace; color:#fff;
-             background:var(--blue); border-radius:5px; padding:1px 8px; }
-  .sl .top { padding:38px 12px 8px; font-size:17px; font-weight:bold; color:var(--navy); line-height:1.35; }
-  .sl .mid { flex:1; margin:0 12px 12px; border-radius:6px; }
-  /* 表紙スライド＝ネイビーで締める */
-  .cov { background:var(--navy); border-color:var(--navy); }
-  .cov .num { background:var(--gold); color:var(--navy); }
-  .cov .top { color:#fff; font-size:20px; }
-  .cov .mid { background:rgba(255,255,255,.12); border:2px dashed rgba(255,255,255,.35); }
-  /* 写真が入る場所＝中身ではなく枠だけ示す */
-  .ph1, .ph2 { background:var(--ph); border:2px dashed var(--ph-line); }
-  /* まとめ／CTA スライド＝ゴールド */
-  .cta { background:var(--gold-tint); border-color:var(--gold); }
-  .cta .num { background:var(--gold); color:var(--navy); }
-  .cta .top { color:var(--gold-dk); }
-  .cta .mid { background:#f6ecc9; border:2px dashed var(--gold); }
-  .ft { position:absolute; left:0; right:0; bottom:0; height:170px; background:var(--navy); border-top:4px solid var(--gold);
-        display:flex; align-items:center; justify-content:space-between; padding:0 70px; }
-  .ft .l { font-size:38px; font-weight:bold; color:#fff; }
-  .ft .l small { display:block; font-size:22px; color:#b9c4d6; font-weight:normal; margin-top:8px; }
-  .ft .r { text-align:right; font-size:24px; color:#b9c4d6; line-height:1.6; }
-  .ft .r b { color:var(--gold); font-size:40px; font-family:monospace; }
+  *{margin:0;padding:0;box-sizing:border-box;border-radius:0}
+  html,body{width:100%;height:100%}
+  body{
+    font-family:'IPAGothic',sans-serif; color:var(--navy);
+    background:
+      repeating-linear-gradient(0deg,  var(--grid) 0 1px, transparent 1px 40px),
+      repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 40px),
+      var(--bg);
+    display:flex; flex-direction:column;
+    padding:34px 40px 30px;
+  }
+
+  /* ── 図枠のタイトルブロック（図面の右下にある、あれ） ── */
+  .tb{display:flex;align-items:flex-end;justify-content:space-between;
+      border-bottom:3px solid var(--navy);padding-bottom:14px}
+  .tb .nm{font-size:44px;font-weight:bold;letter-spacing:2px;line-height:1}
+  .tb .nm span{font-size:22px;font-weight:normal;color:var(--sub);letter-spacing:2px;margin-left:14px}
+  .tb .rt{text-align:right;font-size:22px;color:var(--sub);line-height:1.5}
+  .tb .rt b{color:var(--blue)}
+
+  /* ── 主役: ネタ1行 → 3つの型に分岐 ── */
+  .head{margin-top:26px;font-size:30px;font-weight:bold;line-height:1.35}
+  .head em{font-style:normal;color:var(--blue)}
+  .head u{text-decoration:none;color:var(--gold)}
+
+  .fig{flex:1;display:flex;align-items:stretch;gap:0;margin-top:20px;min-height:0}
+
+  /* 左: 入力（ネタ1行） */
+  .in{flex:0 0 244px;display:flex;flex-direction:column;justify-content:center}
+  .in .lb{font-size:22px;color:var(--sub);letter-spacing:2px;font-weight:bold;white-space:nowrap}
+  .in .box{margin-top:10px;background:var(--panel);border:2px solid var(--navy);
+           padding:20px 18px;font-size:30px;font-weight:bold;line-height:1.4}
+  .in .dim{margin-top:12px;font-family:monospace;font-size:22px;color:var(--sub);white-space:nowrap}
+
+  /* 中央: 引出線（3分岐） */
+  .br{flex:0 0 112px;position:relative}
+  .br i{position:absolute;background:var(--blue);display:block}
+  .br .h1{left:0;top:50%;width:54px;height:2px}
+  .br .v{left:54px;top:16.67%;width:2px;height:66.66%}
+  .br .o{left:54px;width:58px;height:2px}
+  .br .o1{top:16.67%} .br .o2{top:50%} .br .o3{top:83.33%}
+  .br .t{position:absolute;left:0;top:calc(50% - 42px);width:112px;text-align:center;
+         font-size:22px;color:var(--sub);font-weight:bold;background:var(--bg);padding:4px 0}
+
+  /* 右: 3つの型 */
+  .outs{flex:1;display:flex;flex-direction:column;gap:0;min-width:0}
+  .row{flex:1;background:var(--panel);border:2px solid var(--line);border-left:8px solid var(--blue);
+       padding:14px 18px;display:flex;align-items:center;gap:16px}
+  .row + .row{margin-top:-2px}
+  .row.g{border-left-color:var(--gold)}
+  .row.n{border-left-color:var(--navy)}
+  .row .no{font-family:monospace;font-size:40px;font-weight:bold;color:var(--blue);line-height:1;flex:0 0 auto}
+  .row.g .no{color:var(--gold)} .row.n .no{color:var(--navy)}
+  .row .bd{flex:1;min-width:0}
+  .row .ty{font-size:22px;color:var(--sub);font-weight:bold;letter-spacing:1px}
+  .row .ti{font-size:30px;font-weight:bold;line-height:1.3;margin-top:2px}
+  .row .wn{font-size:22px;color:var(--sub);margin-top:5px}
+  .row .wn b{color:var(--navy)}
+  .row .qt{flex:0 0 auto;text-align:right;font-family:monospace;font-size:22px;color:var(--sub);line-height:1.4}
+  .row .qt b{display:block;font-size:30px;color:var(--navy)}
+
+  /* ── 結論バー ── */
+  .concl{margin-top:20px;background:var(--navy);color:#fff;padding:16px 22px;
+         font-size:30px;font-weight:bold;letter-spacing:1px}
+  .concl b{color:var(--gold)}
+
+  /* ── 部品表（図面の凡例） ── */
+  .legend{margin-top:14px;display:flex;border:2px solid var(--line);background:var(--panel)}
+  .legend div{flex:1;padding:11px 14px;font-size:22px;color:var(--sub);border-right:1px solid var(--line);white-space:nowrap}
+  .legend div:last-child{border-right:0}
+  .legend b{font-family:monospace;font-size:30px;color:var(--navy);margin-right:6px}
+  .legend .p b{color:var(--gold)}
 </style></head>
 <body>
-  <div class="band"></div>
-  <div class="wrap">
-    <div class="who">SNS CONTENT DESIGN</div>
-    <div class="nm">投稿設計室<small>山形・米沢｜全国対応</small></div>
-    <div class="copy">ネタを送るだけ。<br><span class="o">保存される投稿</span>を一式納品</div>
-    <div class="sub">構成 → デザイン → 投稿文＋#まで。<br>感覚ではなく「型」で作ります</div>
-    <div class="chips">
-      <div class="chip">フォーマット <b>21種</b></div>
-      <div class="chip">制作ルール <b>14項目</b></div>
-      <div class="chip">納品前チェック <b>17項目</b></div>
+
+  <div class="tb">
+    <div class="nm">投稿設計室<span>山形・米沢／全国対応</span></div>
+    <div class="rt">初回サンプル1本 <b>無料</b><br>タイトル3案＋構成案までお出しします</div>
+  </div>
+
+  <div class="head">
+    ネタは1行いただくだけ。<em>型を選ぶと、守るべきルールまで決まります。</em><br>
+    <u>感覚で当てにいかないので、当たり外れが小さくなります。</u>
+  </div>
+
+  <div class="fig">
+    <div class="in">
+      <div class="lb">いただくもの</div>
+      <div class="box">「空き家を<br>売りたい」</div>
+      <div class="dim">1行 + ヒアリング1枚</div>
     </div>
-    <div class="lead">納品イメージ　<b>1本ぶんのフィード投稿</b>（表紙 → 問題提起 → 本編 → まとめ）</div>
-    <div class="slides">
-    <div class="sl cov"><div class="num">1</div><div class="top">米沢牛、部位で選ぶと世界が変わる</div><div class="mid"></div></div>
-    <div class="sl"><div class="num">2</div><div class="top">いつも同じ部位、頼んでいませんか？</div><div class="mid ph2"></div></div>
-    <div class="sl"><div class="num">3</div><div class="top">① サーロイン</div><div class="mid ph1"></div></div>
-    <div class="sl"><div class="num">4</div><div class="top">② ミスジ</div><div class="mid ph1"></div></div>
-    <div class="sl cta"><div class="num">7</div><div class="top">まとめ｜迷ったらこの順で</div><div class="mid"></div></div>
+
+    <div class="br">
+      <div class="t">型を選定</div>
+      <i class="h1"></i><i class="v"></i>
+      <i class="o o1"></i><i class="o o2"></i><i class="o o3"></i>
+    </div>
+
+    <div class="outs">
+      <div class="row">
+        <div class="no">01</div>
+        <div class="bd">
+          <div class="ty">チェックリスト型</div>
+          <div class="ti">【保存版】空き家売却<br>7つのチェックリスト</div>
+          <div class="wn">自動で付く制約 ─ <b>制度・法令は最新かを確認する</b></div>
+        </div>
+        <div class="qt"><b>7-10</b>枚</div>
+      </div>
+
+      <div class="row n">
+        <div class="no">02</div>
+        <div class="bd">
+          <div class="ty">N選型</div>
+          <div class="ti">プロが選ぶ 空き家売却 5選</div>
+          <div class="wn">自動で付く制約 ─ <b>数字の出典は国・企業に限る</b></div>
+        </div>
+        <div class="qt"><b>6-10</b>枚</div>
+      </div>
+
+      <div class="row g">
+        <div class="no">03</div>
+        <div class="bd">
+          <div class="ty">失敗・NG型</div>
+          <div class="ti">やりがちな 空き家売却 のミス 5選</div>
+          <div class="wn">自動で付く制約 ─ <b>悲壮感の強い写真・表情は使わない</b></div>
+        </div>
+        <div class="qt"><b>6-10</b>枚</div>
+      </div>
     </div>
   </div>
-  <div class="ft">
-    <div class="l">初回サンプル1本 無料<small>タイトル3案＋構成案まで。合わなければそこで終わりでOK</small></div>
-    <div class="r">構成のみ <b>2,000</b>円〜<br>まるごと制作 <b>5,000</b>円〜</div>
+
+  <div class="concl">ネタは同じ。変わるのは型。<b>だから毎回ゼロから悩みません。</b></div>
+
+  <div class="legend">
+    <div><b>21</b>種の型から選定</div>
+    <div><b>14</b>項目の制作ルール</div>
+    <div><b>17</b>項目を納品前に確認</div>
+    <div class="p"><b>2</b>日で構成案</div>
   </div>
+
 </body></html>

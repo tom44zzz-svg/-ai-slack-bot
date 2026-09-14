@@ -92,8 +92,12 @@ A: 月間プラン（準備中）でご対応します。お問い合わせく�
 
 | 順 | ファイル | 用途 |
 |---|---|---|
-| 1枚目（サムネ） | `business/sales/coconala-service-image.png` | サービス画像 |
-| 2枚目 | `business/sales/portfolio.png` | 制作システムと実績の1枚もの |
+| 1枚目（サムネ） | `business/sales/coconala-service-image-4x3.png` | **こちらを優先**。横長。情報密度が高い |
+| 1枚目（代替） | `business/sales/coconala-service-image-1x1.png` | 正方形しか受け付けない場合のみ |
+| 2枚目 | `business/sales/portfolio.png` | 制作システムと実績の1枚もの（**作り直し予定**） |
+
+> サムネは2比率を用意しました。**出品画面の推奨サイズを見て、近いほうを使ってください。**
+> 中身は同じです。横長のほうが余白が少なく読みやすいので、選べるなら 4:3 を。
 
 ## 7. プロフィール文（出品者プロフィール欄）
 

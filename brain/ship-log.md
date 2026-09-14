@@ -18,7 +18,7 @@
 **入力すべきものはもう1つも残っていない。** 残るのは貼る動作だけ＝相手不要・0歩。
 
 - 手順: `business/sales/coconala-出品手順.md`（項目ごとにコピペ用の本文が並んでいる）
-- 画像: `business/sales/coconala-service-image.png`（サムネ）／`business/sales/portfolio.png`（2枚目）
+- 画像: `business/sales/coconala-service-image-4x3.png`（サムネ・優先）／`-1x1.png`（正方形が必要な場合）／`business/sales/portfolio.png`（2枚目・作り直し予定）
 - 先に3タップ: 商標・ココナラ内検索・SNS ID の空き確認（手順書の §0）
 - **公開まで行かなくていい。「下書き保存」で達成**
 
