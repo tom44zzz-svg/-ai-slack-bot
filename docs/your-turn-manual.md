@@ -16,7 +16,8 @@
 | 3 | **freee を繋ぎ直す** | Claude のコネクタ設定 → freee を再接続 → freee 側で口座連携を再認証 | コネクタが `needs_reconnect`。銀行の再認証は API で代行できる経路が存在しない |
 | 4 | **カレンダー整備の復旧** | Routine の編集画面で Google Calendar コネクタを付けて再度オン | Routine にコネクタを足す手段がエージェント側に無い |
 | 5 | **ココナラに貼る** | `business/sales/coconala-出品手順.md` を上から写す | ココナラにログインできない |
-| 6 | **このリポジトリを private にする**（下記 ⚠️） | GitHub → Settings → Change visibility | リポジトリの公開設定は変えられない |
+| 6 | **Zoom のカレンダー連携を解除する** | Zoom の設定 → カレンダーと連絡先の連携 → 解除 | Zoom コネクタが読み取り専用。解除後、カレンダー側の不要な3件は Claude が消す（本人承諾済み・2026-09-14） |
+| 7 | **このリポジトリを private にする**（下記 ⚠️） | GitHub → Settings → Change visibility | リポジトリの公開設定は変えられない |
 
 ## 終わったもの
 
