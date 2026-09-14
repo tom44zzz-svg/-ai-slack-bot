@@ -97,8 +97,8 @@ function baseArgs(userDataDir) {
 }
 
 // ── 起動する
-// プロファイルは使い回す。ただし別の書き出しが同時に走っていると Chrome が
-// 「プロファイル使用中」で落ちるので、そのときだけ使い捨てに切り替える。
+// 既定は使い捨てプロファイル。CHROME_PROFILE_DIR を指定したときだけ固定の場所を使い、
+// それが使用中（別の書き出しが走っている）なら使い捨てに逃がす。
 export async function launchChrome() {
   const chrome = findChrome();
   if (!chrome) {
